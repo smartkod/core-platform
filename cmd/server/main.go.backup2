@@ -1,0 +1,132 @@
+﻿package main
+
+import (
+"net/http"
+
+"github.com/labstack/echo/v4"
+"github.com/labstack/echo/v4/middleware"
+)
+
+func main() {
+e := echo.New()
+e.Use(middleware.Logger())
+e.Use(middleware.Recover())
+e.Use(middleware.CORS())
+
+// Health
+e.GET("/health", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]string{
+"status":  "ok",
+"service": "Core Platform",
+"version": "0.12.0",
+})
+})
+
+// Root
+e.GET("/", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]string{
+"message": "Core Platform API",
+"status":  "running",
+})
+})
+
+// --- PROMPT ENGINE ROUTES ---
+promptGroup := e.Group("/api/prompts")
+promptGroup.POST("", func(c echo.Context) error {
+var req map[string]interface{}
+if err := c.Bind(&req); err != nil {
+return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+}
+return c.JSON(http.StatusCreated, map[string]interface{}{
+"id":          1,
+"name":        req["name"],
+"category":    req["category"],
+"description": req["description"],
+"template":    req["template"],
+"version":     "1.0.0",
+"is_active":   true,
+"created_at":  "2026-07-31T10:00:00Z",
+})
+})
+promptGroup.POST("/execute", func(c echo.Context) error {
+var req map[string]interface{}
+if err := c.Bind(&req); err != nil {
+return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+}
+return c.JSON(http.StatusOK, map[string]interface{}{
+"result":      "Merhaba, Ahmet! Bugün hava çok güzel.",
+"duration":    150,
+"template_id": 1,
+})
+})
+promptGroup.GET("", func(c echo.Context) error {
+return c.JSON(http.StatusOK, []map[string]interface{}{
+{
+"id":          1,
+"name":        "astrology_daily",
+"category":    "astrology",
+"description": "Günlük astroloji yorumu",
+"template":    "Merhaba {{.Name}}, bugün {{.Sign}} burcunda {{.Prediction}}",
+"variables":   []string{"Name", "Sign", "Prediction"},
+"is_active":   true,
+"usage_count": 150,
+},
+{
+"id":          2,
+"name":        "fitness_plan",
+"category":    "fitness",
+"description": "Kişisel fitness planı",
+"template":    "{{.Name}} için haftalık antrenman planı: {{.Plan}}",
+"variables":   []string{"Name", "Plan"},
+"is_active":   true,
+"usage_count": 85,
+},
+})
+})
+promptGroup.GET("/:name", func(c echo.Context) error {
+name := c.Param("name")
+return c.JSON(http.StatusOK, map[string]interface{}{
+"id":          1,
+"name":        name,
+"category":    "astrology",
+"description": "Günlük astroloji yorumu",
+"template":    "Merhaba {{.Name}}, bugün {{.Sign}} burcunda {{.Prediction}}",
+"variables":   []string{"Name", "Sign", "Prediction"},
+"is_active":   true,
+"usage_count": 150,
+})
+})
+promptGroup.DELETE("/:name", func(c echo.Context) error {
+name := c.Param("name")
+return c.JSON(http.StatusOK, map[string]string{
+"message": "Template '" + name + "' deleted successfully",
+})
+})
+
+// --- AI GATEWAY ROUTES ---
+aiGroup := e.Group("/api/ai")
+aiGroup.POST("/chat", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"id":       "ai_resp_123",
+"provider": "openai",
+"model":    "gpt-3.5-turbo",
+"content":  "Bu bir test yanıtıdır. Gerçek AI entegrasyonu için OpenAI API anahtarı gereklidir.",
+"usage": map[string]interface{}{
+"prompt_tokens":     10,
+"completion_tokens": 15,
+"total_tokens":      25,
+},
+"created_at": "2026-07-31T10:00:00Z",
+})
+})
+aiGroup.GET("/providers", func(c echo.Context) error {
+return c.JSON(http.StatusOK, []map[string]interface{}{
+{"id": 1, "name": "openai", "is_active": true, "priority": 1},
+{"id": 2, "name": "anthropic", "is_active": false, "priority": 2},
+{"id": 3, "name": "gemini", "is_active": false, "priority": 3},
+})
+})
+
+// Start server
+e.Logger.Fatal(e.Start(":8081"))
+}

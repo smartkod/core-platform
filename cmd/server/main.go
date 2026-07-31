@@ -2,132 +2,193 @@
 
 import (
 "net/http"
-"time"
-
-"core-platform/core/security"
 
 "github.com/labstack/echo/v4"
 "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-// Echo instance
 e := echo.New()
-
-// Logger ve Recover
 e.Use(middleware.Logger())
 e.Use(middleware.Recover())
+e.Use(middleware.CORS())
 
-// Security middleware
-secConfig := security.DefaultConfig()
-secConfig.RateLimit = 100                    // Dakikada 100 istek
-secConfig.RateLimitWindow = time.Minute
-secConfig.EnableCSRF = false                // Şimdilik devre dışı
-secConfig.EnableCORS = true
-
-sec := security.NewSecurity(secConfig)
-sec.Setup(e)
-
-// Health check
+// Health
 e.GET("/health", func(c echo.Context) error {
 return c.JSON(http.StatusOK, map[string]string{
 "status":  "ok",
 "service": "Core Platform",
-"version": "0.7.0",
+"version": "0.15.0",
 })
 })
 
-// Test route
+// Root
 e.GET("/", func(c echo.Context) error {
 return c.JSON(http.StatusOK, map[string]string{
-"message": "Core Platform v0.7.0",
+"message": "Core Platform API",
 "status":  "running",
 })
 })
 
-// --- AUTH ROUTES ---
-authGroup := e.Group("/api/auth")
-authGroup.POST("/register", func(c echo.Context) error {
-return c.JSON(http.StatusOK, map[string]string{
-"message": "Register endpoint working!",
-"email":   "test@test.com",
-})
-})
-authGroup.POST("/login", func(c echo.Context) error {
-return c.JSON(http.StatusOK, map[string]string{
-"message": "Login endpoint working!",
-"token":   "fake-jwt-token",
-})
-})
-
-// --- USERS ROUTES ---
-userGroup := e.Group("/api/users")
-
-// GET /api/users/me - Kullanıcı profili
-userGroup.GET("/me", func(c echo.Context) error {
+// --- WALLET ROUTES ---
+walletGroup := e.Group("/api/wallet")
+walletGroup.GET("", func(c echo.Context) error {
 return c.JSON(http.StatusOK, map[string]interface{}{
-"id":         1,
-"email":      "test@test.com",
-"name":       "Test User",
-"language":   "tr",
-"avatar":     "",
-"is_active":  true,
-"created_at": "2026-07-31T10:00:00Z",
-"updated_at": "2026-07-31T10:00:00Z",
+"balance":      50,
+"total_earned": 150,
+"total_spent":  100,
+})
+})
+walletGroup.GET("/balance", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"balance": 50,
+})
+})
+walletGroup.POST("/earn", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"id":          1,
+"type":        "task",
+"amount":      10,
+"description": "Gorev tamamlandi",
+"balance":     60,
+"created_at":  "2026-07-31T10:00:00Z",
+})
+})
+walletGroup.POST("/spend", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"id":          1,
+"type":        "ai_reading",
+"amount":      -5,
+"description": "AI yorum satin alindi",
+"balance":     45,
+"created_at":  "2026-07-31T10:00:00Z",
+})
+})
+walletGroup.GET("/transactions", func(c echo.Context) error {
+return c.JSON(http.StatusOK, []map[string]interface{}{
+{
+"id":          1,
+"type":        "daily_bonus",
+"amount":      5,
+"description": "Gunluk giris bonusu",
+"balance":     50,
+"created_at":  "2026-07-31T10:00:00Z",
+},
+{
+"id":          2,
+"type":        "spend",
+"amount":      -10,
+"description": "AI yorum satin alindi",
+"balance":     45,
+"created_at":  "2026-07-31T09:00:00Z",
+},
+})
+})
+walletGroup.POST("/daily-bonus", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"id":          1,
+"type":        "daily_bonus",
+"amount":      5,
+"description": "Gunluk giris bonusu: 5 jeton",
+"balance":     55,
+"created_at":  "2026-07-31T10:00:00Z",
 })
 })
 
-// PUT /api/users/me - Kullanıcı güncelle
-userGroup.PUT("/me", func(c echo.Context) error {
-var req map[string]string
+// --- REWARDED ADS ROUTES ---
+adGroup := e.Group("/api/ads")
+adGroup.GET("/status", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"can_watch":        true,
+"watched_today":    3,
+"remaining_today":  2,
+"token_per_ad":     10,
+"daily_limit":      5,
+"daily_token_limit": 50,
+})
+})
+adGroup.POST("/watch", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"success":      true,
+"message":      "Reklam izlendi! 10 jeton kazandiniz.",
+"reward_value": 10,
+"total_today":  4,
+"remaining":    1,
+})
+})
+
+// --- PREMIUM ROUTES ---
+premiumGroup := e.Group("/api/premium")
+premiumGroup.GET("/plans", func(c echo.Context) error {
+return c.JSON(http.StatusOK, []map[string]interface{}{
+{"id": 1, "name": "Aylik", "price": 49.90, "currency": "TRY", "duration": 30},
+{"id": 2, "name": "Yillik", "price": 499.90, "currency": "TRY", "duration": 365},
+{"id": 3, "name": "Omur Boyu", "price": 999.90, "currency": "TRY", "duration": 0},
+})
+})
+premiumGroup.GET("/me", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"is_active":      false,
+"days_remaining": 0,
+})
+})
+premiumGroup.POST("/purchase", func(c echo.Context) error {
+var req map[string]interface{}
 if err := c.Bind(&req); err != nil {
 return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 }
-
 return c.JSON(http.StatusOK, map[string]interface{}{
-"message":  "User updated successfully",
-"name":     req["name"],
-"language": req["language"],
+"is_active":      true,
+"plan_id":        req["plan_id"],
+"message":        "Premium satin alindi!",
+"days_remaining": 30,
+})
+})
+premiumGroup.POST("/cancel", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]string{
+"message": "Premium aboneligi iptal edildi.",
 })
 })
 
-// GET /api/users - Tüm kullanıcılar (admin)
-userGroup.GET("", func(c echo.Context) error {
+// --- LIFEWEAVE ROUTES ---
+lwGroup := e.Group("/api/lifeweave")
+lwGroup.GET("/events", func(c echo.Context) error {
+return c.JSON(http.StatusOK, []map[string]interface{}{
+{"id": 1, "title": "Yeni Eve Tasindim", "category": "residence"},
+{"id": 2, "title": "Yeni Ise Basladim", "category": "career"},
+})
+})
+lwGroup.GET("/timeline", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]interface{}{
+"2026": []map[string]interface{}{
+{"id": 1, "title": "Yeni Eve Tasindim"},
+{"id": 2, "title": "Yeni Ise Basladim"},
+},
+})
+})
+
+// --- COMMUNITY ROUTES ---
+communityGroup := e.Group("/api/community")
+communityGroup.GET("/posts", func(c echo.Context) error {
 return c.JSON(http.StatusOK, []map[string]interface{}{
 {
-"id":         1,
-"email":      "test@test.com",
-"name":       "Test User",
-"language":   "tr",
-"is_active":  true,
+"id":          1,
+"title":       "Saturn 4. evde tasinma deneyimim",
+"category":    "experience",
+"is_anonymous": true,
+"like_count":  25,
+"created_at":  "2026-07-31T10:00:00Z",
 },
+})
+})
+communityGroup.GET("/patterns", func(c echo.Context) error {
+return c.JSON(http.StatusOK, []map[string]interface{}{
 {
-"id":         2,
-"email":      "admin@test.com",
-"name":       "Admin User",
-"language":   "en",
-"is_active":  true,
+"category":     "residence",
+"total_events": 1250,
+"insight":      "Kullanicilarin %65'i Saturn 4. ev transitinde tasinma deneyimi yasadi.",
+"confidence":   85,
 },
-})
-})
-
-// GET /api/users/:id - Kullanıcı detayı (admin)
-userGroup.GET("/:id", func(c echo.Context) error {
-id := c.Param("id")
-return c.JSON(http.StatusOK, map[string]interface{}{
-"id":         id,
-"email":      "user" + id + "@test.com",
-"name":       "User " + id,
-"language":   "tr",
-"is_active":  true,
-})
-})
-
-// DELETE /api/users/:id - Kullanıcı sil (admin)
-userGroup.DELETE("/:id", func(c echo.Context) error {
-id := c.Param("id")
-return c.JSON(http.StatusOK, map[string]string{
-"message": "User " + id + " deleted successfully",
 })
 })
 

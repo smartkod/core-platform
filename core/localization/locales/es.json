@@ -1,0 +1,41 @@
+{
+  "welcome": "Bienvenido",
+  "greeting": "Hola, {{.Name}}",
+  "error": {
+    "not_found": "No encontrado",
+    "unauthorized": "No autorizado",
+    "forbidden": "Prohibido",
+    "validation": "Error de validaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â³n",
+    "internal": "Error interno del servidor",
+    "bad_request": "Solicitud incorrecta",
+    "rate_limit": "Demasiadas solicitudes. Por favor, intÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â©ntelo de nuevo mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â¡s tarde."
+  },
+  "auth": {
+    "register_success": "Registro exitoso",
+    "login_success": "Inicio de sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â³n exitoso",
+    "invalid_credentials": "Correo electrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â³nico o contraseÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â±a invÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â¡lidos",
+    "email_exists": "El correo electrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â³nico ya estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â¡ registrado",
+    "password_required": "ContraseÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â±a requerida",
+    "password_min": "La contraseÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â±a debe tener al menos 6 caracteres"
+  },
+  "user": {
+    "profile": "Perfil",
+    "updated": "Usuario actualizado",
+    "deleted": "Usuario eliminado",
+    "not_found": "Usuario no encontrado"
+  },
+  "validation": {
+    "required": "{{.Field}} es obligatorio",
+    "email": "Por favor, ingrese un correo electrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â³nico vÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬ş¡Ãƒâ€šÃ‚Â¡lido",
+    "min": "{{.Field}} debe tener al menos {{.Min}} caracteres"
+  },
+  "common": {
+    "success": "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬ş¡Ã‚Â¬Ãƒâ€šÃ‚Â°xito",
+    "error": "Error",
+    "loading": "Cargando...",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar"
+  }
+}
