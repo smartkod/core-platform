@@ -9,38 +9,30 @@ import (
 
 func main() {
 e := echo.New()
-
-// Middleware
 e.Use(middleware.Logger())
 e.Use(middleware.Recover())
 e.Use(middleware.CORS())
 
-// Test routes
-e.GET("/test", func(c echo.Context) error {
-return c.JSON(http.StatusOK, map[string]string{
-"message": "Test route works!",
-})
-})
-
+// Health
 e.GET("/health", func(c echo.Context) error {
+return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+})
+
+// Users test
+e.GET("/api/users/me", func(c echo.Context) error {
 return c.JSON(http.StatusOK, map[string]string{
-"status": "ok",
-"service": "Test Server",
+"id":    "1",
+"email": "test@test.com",
+"name":  "Test User",
 })
 })
 
-e.POST("/api/auth/register", func(c echo.Context) error {
-return c.JSON(http.StatusOK, map[string]string{
-"message": "Register works!",
+e.GET("/api/users", func(c echo.Context) error {
+return c.JSON(http.StatusOK, []map[string]string{
+{"id": "1", "email": "test@test.com", "name": "Test User"},
+{"id": "2", "email": "admin@test.com", "name": "Admin User"},
 })
 })
 
-e.POST("/api/auth/login", func(c echo.Context) error {
-return c.JSON(http.StatusOK, map[string]string{
-"message": "Login works!",
-})
-})
-
-// Start server
-e.Logger.Fatal(e.Start(":8081"))
+e.Start(":8081")
 }
