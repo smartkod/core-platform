@@ -1,0 +1,72 @@
+﻿# ============================================
+# 📌 config.example.yaml - SADECE ÖRNEK
+# 🔐 GERÇEK DEĞERLERİ .env DOSYASINDA TUT!
+# ============================================
+
+server:
+  host: 0.0.0.0
+  port: 8080
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: your-database-password-here
+  name: core_platform
+  sslmode: disable
+
+logger:
+  level: info
+  format: json
+
+jwt:
+  secret: your-jwt-secret-here
+  expiry: 86400
+  refresh_secret: your-refresh-secret-here
+  refresh_expiry: 604800
+
+external:
+  openai:
+    api_key: your-openai-api-key-here
+    base_url: https://api.openai.com/v1
+  anthropic:
+    api_key: your-anthropic-api-key-here
+  gemini:
+    api_key: your-gemini-api-key-here
+  supabase:
+    url: your-supabase-url-here
+    key: your-supabase-key-here
+  cloudflare:
+    api_token: your-cloudflare-token-here
+    account_id: your-account-id-here
+  aws:
+    access_key_id: your-aws-access-key
+    secret_access_key: your-aws-secret-key
+    region: us-east-1
+    s3_bucket: your-bucket-name
+
+redis:
+  host: localhost
+  port: 6379
+  password: your-redis-password-here
+
+modules:
+  config_path: config/modules.yaml
+  states:
+    database: ENABLED
+    logger: ENABLED
+    config: ENABLED
+    module_manager: ENABLED
+    health: ENABLED
+    api: ENABLED
+    security: ENABLED
+    auth: ENABLED
+    users: ENABLED
+    wallet: DISABLED
+    payments: DISABLED
+
+features:
+  openapi: true
+  csrf: false
+  cors: true
+  rate_limit: true

@@ -1,0 +1,361 @@
+﻿# ============================================
+# 🌟 CORE PLATFORM - .gitignore
+# Enterprise Level Security
+# ============================================
+
+# ============================================
+# 🔐 GİZLİ VE HASSAS DOSYALAR
+# ============================================
+
+# Environment files (ASLA commit etme!)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
+.env.test
+.env.example  # SADECE örnek olarak gönderilir
+
+# Secret management
+*.pem
+*.key
+*.p12
+*.crt
+*.csr
+*.p8
+*.p7b
+*.pfx
+*.der
+*.cer
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.ppk
+*.pub
+
+# API Keys ve Token'lar
+*.apikey
+*.token
+*.secret
+*.jwt
+
+# Credentials
+credentials.json
+service-account.json
+*.serviceaccount.json
+
+# ============================================
+# 🗄️ VERİTABANI VE STORAGE
+# ============================================
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db3
+*.mdb
+*.accdb
+
+# Backups
+*.backup
+*.bak
+*.dump
+*.sql.gz
+*.tar.gz
+
+# Storage
+storage/
+uploads/
+downloads/
+media/
+files/
+assets/
+
+# ============================================
+# 📊 LOGLAR VE CACHE
+# ============================================
+
+# Logs
+logs/
+*.log
+*.log.*
+access.log
+error.log
+app.log
+http.log
+
+# Cache
+cache/
+*.cache
+*.cached
+*.tmp
+tmp/
+temp/
+*.temp
+*.swap
+
+# ============================================
+# 📦 BUILD VE DEPENDENCY
+# ============================================
+
+# Go
+bin/
+dist/
+build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.cov
+coverage.txt
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+vendor/
+pkg/
+
+# Node.js (opsiyonel)
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Python (opsiyonel)
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================================
+# 🐳 DOCKER
+# ============================================
+
+# Docker secrets
+.secrets/
+*.docker-secret
+docker-compose.override.yml
+docker-compose.*.yml
+
+# Docker images
+*.tar
+*.tar.gz
+*.docker
+
+# ============================================
+# ☁️ CLOUD VE IAAS
+# ============================================
+
+# AWS
+.aws/
+aws-credentials
+aws-config
+*.pem
+*.p12
+*.crt
+
+# GCP
+*.gcp-key
+*.gcp-service-account
+gcloud-credentials.json
+
+# Azure
+*.azure-credentials
+*.azure-key
+
+# Cloudflare
+*.cloudflare-key
+*.cloudflare-token
+
+# K8s
+*.kubeconfig
+*.kubeconfig.*
+*.kube*
+.kube/
+kubeconfig
+
+# ============================================
+# 🛠️ IDE VE EDITOR
+# ============================================
+
+# VSCode
+.vscode/
+*.code-workspace
+.vscode/extensions.json
+.vscode/settings.json
+*.vscode
+
+# Intellij
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+.sublime/
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+# ============================================
+# 📝 OS VE SİSTEM
+# ============================================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# Linux
+*.orig
+*.rej
+.directory
+
+# ============================================
+# 📄 DOKÜMANTASYON VE RAPORLAR
+# ============================================
+
+# Dokümantasyon
+docs/_build/
+docs/_generated/
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+
+# Raporlar
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+
+# ============================================
+# 🧪 TEST VE ANALİZ
+# ============================================
+
+# Coverage
+*.cov
+*.out
+coverage.html
+coverage.out
+coverage.txt
+
+# Benchmark
+*.bench
+*.bench.out
+
+# Profiling
+*.cpu
+*.mem
+*.block
+*.trace
+
+# ============================================
+# 📦 TEMPORARY FILES
+# ============================================
+
+*.tmp
+*.temp
+*.swp
+*.bak
+*.backup
+*.orig
+*.rej
+*~
+.\#*
+\#*#
+*\#*
+
+# ============================================
+# 🔧 GITHUB ACTIONS
+# ============================================
+
+.github/
+!.github/workflows/
+!.github/CODEOWNERS
+!.github/PULL_REQUEST_TEMPLATE.md
+
+# ============================================
+# 📦 DEPENDENCY LOCK FILES
+# ============================================
+
+# Go (go.sum gönderilir, go.mod gönderilir)
+# go.sum zaten commit edilir
+
+# NPM
+package-lock.json
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Python
+requirements.txt
+requirements-dev.txt
+requirements-test.txt
+Pipfile.lock
+poetry.lock
+
+# ============================================
+# 🔍 TERRAFORM
+# ============================================
+
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+
+# ============================================
+# 📦 HELM
+# ============================================
+
+*.tgz
+*.tar.gz
+charts/*.tgz
+charts/*.tar.gz
+!charts/*/values.yaml
+!charts/*/values/*.yaml
+# Config files with real values
+config/config.yaml
+config/config.local.yaml
+config/config.production.yaml
+
+# Backup config files
+config/*.backup
+config/*.bak
+config/*.orig
