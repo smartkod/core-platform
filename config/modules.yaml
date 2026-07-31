@@ -1,0 +1,38 @@
+﻿# Modül durumları
+# ENABLED, DISABLED, MAINTENANCE, EXPERIMENTAL, DEPRECATED
+
+modules:
+  # Level 0 - Foundation
+  database: ENABLED
+  logger: ENABLED
+  config: ENABLED
+  module_manager: ENABLED
+  health: ENABLED
+
+  # Level 1 - Core
+  auth: ENABLED
+  users: ENABLED
+  security: ENABLED
+  api: ENABLED
+  localization: DISABLED
+
+  # Level 2 - Business
+  wallet: DISABLED
+  payments: DISABLED
+  premium: DISABLED
+  notifications: DISABLED
+  analytics: DISABLED
+  file_storage: DISABLED
+  search: DISABLED
+  community: DISABLED
+
+  # Level 3 - AI
+  ai_gateway: DISABLED
+  prompt_engine: DISABLED
+  context_engine: DISABLED
+
+  # Level 4 - Applications
+  astroscope: DISABLED
+  eduscope: DISABLED
+  fitscope: DISABLED
+  financescope: DISABLED
