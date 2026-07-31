@@ -23,6 +23,34 @@ return c.JSON(http.StatusOK, map[string]string{
 })
 
 // Root
+
+	// --- AI COPILOT ROUTES ---
+	copilotGroup := e.Group("/api/copilot")
+	copilotGroup.POST("/ask", func(c echo.Context) error {
+		var req map[string]interface{}
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+		}
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"id":      "copilot_123",
+			"answer":  "Bu dönemde, 4. ev ve IC temaları aktif. Taşınma, ev değişikliği veya ailevi konular öne çıkabilir.",
+			"context": map[string]interface{}{
+				"user_id":         1,
+				"learning_level":  "intermediate",
+				"birth_chart":     map[string]string{"sun_sign": "Leo", "moon_sign": "Taurus"},
+				"current_transits": map[string]string{"sun": "Leo", "moon": "Scorpio"},
+			},
+			"sources":    []string{"Ptolemy - Tetrabiblos II.3", "William Lilly - Christian Astrology"},
+			"confidence": 85,
+			"created_at": "2026-07-31T10:00:00Z",
+		})
+	})
+	copilotGroup.GET("/history", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, []map[string]interface{}{
+			{"id": 1, "role": "user", "content": "Bugun burcum nedir?", "created_at": "2026-07-31T10:00:00Z"},
+			{"id": 2, "role": "assistant", "content": "Bugun burcunuz Aslan.", "created_at": "2026-07-31T10:01:00Z"},
+		})
+	})
 e.GET("/", func(c echo.Context) error {
 return c.JSON(http.StatusOK, map[string]string{
 "message": "Core Platform API",
