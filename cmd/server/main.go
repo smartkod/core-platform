@@ -7,29 +7,33 @@ import (
 "core-platform/core/config"
 "core-platform/core/database"
 "core-platform/core/logger"
+"core-platform/core/module"
 )
 
 func main() {
-// Load config
 cfg := config.New()
-
-// Initialize logger
 log := logger.New(cfg.Logger.Level, cfg.Logger.Format)
 defer log.Sync()
 
 log.Info("Starting Core Platform")
 
-// Initialize database
 db, err := database.New(&cfg.Database, log)
 if err != nil {
 log.Fatal("Failed to connect to database", zap.Error(err))
 }
 defer db.Close()
 
-// Create router
+manager := module.NewManager(log, &cfg.Modules)
 e := echo.New()
 
-// Health check
+// UTF-8 middleware
+e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+return func(c echo.Context) error {
+c.Response().Header().Set("Content-Type", "application/json; charset=utf-8")
+return next(c)
+}
+})
+
 e.GET("/health", func(c echo.Context) error {
 return c.JSON(200, map[string]string{
 "status":  "ok",
@@ -38,6 +42,6 @@ return c.JSON(200, map[string]string{
 })
 })
 
-// Start server
+log.Info("Core Platform started")
 e.Logger.Fatal(e.Start(":8081"))
 }
