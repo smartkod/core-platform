@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "errors"
@@ -9,19 +9,19 @@ import (
 "gorm.io/gorm"
 )
 
-// UserService kullanıcı servisi
+// UserService kullanÄ±cÄ± servisi
 type UserService struct {
 userRepo *repository.UserRepository
 }
 
-// NewUserService yeni servis oluşturur
+// NewUserService yeni servis oluÅŸturur
 func NewUserService(db *gorm.DB) *UserService {
 return &UserService{
 userRepo: repository.NewUserRepository(db),
 }
 }
 
-// GetUserByID ID ile kullanıcı getirir
+// GetUserByID ID ile kullanÄ±cÄ± getirir
 func (s *UserService) GetUserByID(id uint) (*model.UserResponse, error) {
 user, err := s.userRepo.FindByID(id)
 if err != nil {
@@ -30,7 +30,7 @@ return nil, errors.New("user not found")
 return s.toResponse(user), nil
 }
 
-// GetUserByEmail email ile kullanıcı getirir
+// GetUserByEmail email ile kullanÄ±cÄ± getirir
 func (s *UserService) GetUserByEmail(email string) (*model.UserResponse, error) {
 user, err := s.userRepo.FindByEmail(email)
 if err != nil {
@@ -39,7 +39,7 @@ return nil, errors.New("user not found")
 return s.toResponse(user), nil
 }
 
-// GetAllUsers tüm kullanıcıları getirir
+// GetAllUsers tÃ¼m kullanÄ±cÄ±larÄ± getirir
 func (s *UserService) GetAllUsers() ([]model.UserResponse, error) {
 users, err := s.userRepo.FindAll()
 if err != nil {
@@ -53,7 +53,7 @@ responses[i] = *s.toResponse(&user)
 return responses, nil
 }
 
-// UpdateUser kullanıcı günceller
+// UpdateUser kullanÄ±cÄ± gÃ¼nceller
 func (s *UserService) UpdateUser(id uint, req *model.UpdateUserRequest) (*model.UserResponse, error) {
 user, err := s.userRepo.FindByID(id)
 if err != nil {
@@ -77,12 +77,12 @@ return nil, err
 return s.toResponse(user), nil
 }
 
-// DeleteUser kullanıcı siler
+// DeleteUser kullanÄ±cÄ± siler
 func (s *UserService) DeleteUser(id uint) error {
 return s.userRepo.Delete(id)
 }
 
-// toResponse model'den response oluşturur
+// toResponse model'den response oluÅŸturur
 func (s *UserService) toResponse(user *model.User) *model.UserResponse {
 return &model.UserResponse{
 ID:        user.ID,

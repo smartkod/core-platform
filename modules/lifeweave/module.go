@@ -1,4 +1,4 @@
-﻿package lifeweave
+package lifeweave
 
 import (
 "modules/lifeweave/api"

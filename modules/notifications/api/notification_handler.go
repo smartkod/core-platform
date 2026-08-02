@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -20,7 +20,7 @@ notifService: notifService,
 }
 }
 
-// GetNotifications kullanıcının bildirimlerini getir
+// GetNotifications kullanÄ±cÄ±nÄ±n bildirimlerini getir
 func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -42,7 +42,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, notifications)
 }
 
-// GetUnreadCount okunmamış bildirim sayısını getir
+// GetUnreadCount okunmamÄ±ÅŸ bildirim sayÄ±sÄ±nÄ± getir
 func (h *NotificationHandler) GetUnreadCount(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -59,7 +59,7 @@ return c.JSON(http.StatusOK, map[string]interface{}{
 })
 }
 
-// MarkAsRead bildirimi okundu olarak işaretle
+// MarkAsRead bildirimi okundu olarak iÅŸaretle
 func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -82,7 +82,7 @@ return c.JSON(http.StatusOK, map[string]string{
 })
 }
 
-// MarkAllAsRead tüm bildirimleri okundu olarak işaretle
+// MarkAllAsRead tÃ¼m bildirimleri okundu olarak iÅŸaretle
 func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -113,7 +113,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, prefs)
 }
 
-// UpdatePreferences bildirim tercihlerini güncelle
+// UpdatePreferences bildirim tercihlerini gÃ¼ncelle
 func (h *NotificationHandler) UpdatePreferences(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)

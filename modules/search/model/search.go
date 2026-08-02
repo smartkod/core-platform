@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// SearchHistory arama geçmişi
+// SearchHistory arama geÃ§miÅŸi
 type SearchHistory struct {
 ID          uint           json:"id" gorm:"primaryKey"
 UserID      uint           json:"user_id" gorm:"not null;index"
@@ -22,7 +22,7 @@ func (SearchHistory) TableName() string {
 return "search_history"
 }
 
-// SearchRequest arama isteği
+// SearchRequest arama isteÄŸi
 type SearchRequest struct {
 Query      string json:"query" validate:"required"
 Category   string json:"category"   // all, users, content, files
@@ -43,7 +43,7 @@ Score       float64     json:"score"
 Data        interface{} json:"data,omitempty"
 }
 
-// SearchResponse arama yanıtı
+// SearchResponse arama yanÄ±tÄ±
 type SearchResponse struct {
 Results    []SearchResult json:"results"
 Total      int64          json:"total"
@@ -52,7 +52,7 @@ Limit      int            json:"limit"
 TotalPages int            json:"total_pages"
 }
 
-// SearchSuggestion öneri
+// SearchSuggestion Ã¶neri
 type SearchSuggestion struct {
 Query string json:"query"
 Count int    json:"count"

@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -35,7 +35,7 @@ logger.Info("Router created")
 return r
 }
 
-// SetupRoutes route'ları ayarlar
+// SetupRoutes route'larÄ± ayarlar
 func (r *Router) SetupRoutes() {
 r.logger.Info("Setting up default routes...")
 
@@ -62,18 +62,18 @@ return c.JSON(http.StatusOK, r.health.Check())
 r.logger.Info("Default routes registered: /, /health")
 }
 
-// SetHealthChecker health checker'ı ayarlar
+// SetHealthChecker health checker'Ä± ayarlar
 func (r *Router) SetHealthChecker(healthChecker *health.HealthChecker) {
 r.health = healthChecker
 r.logger.Info("Health checker updated")
 
-// Health check route'u güncelle - override
+// Health check route'u gÃ¼ncelle - override
 r.echo.GET("/health", func(c echo.Context) error {
 return c.JSON(http.StatusOK, r.health.Check())
 })
 }
 
-// Start sunucuyu başlatır
+// Start sunucuyu baÅŸlatÄ±r
 func (r *Router) Start(address string) error {
 r.logger.Info("Starting server",
 zap.String("address", address),
@@ -81,7 +81,7 @@ zap.String("address", address),
 return r.echo.Start(address)
 }
 
-// GetEcho echo instance'ını döndürür
+// GetEcho echo instance'Ä±nÄ± dÃ¶ndÃ¼rÃ¼r
 func (r *Router) GetEcho() *echo.Echo {
 return r.echo
 }

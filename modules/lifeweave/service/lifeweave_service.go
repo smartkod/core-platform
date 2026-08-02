@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "encoding/json"
@@ -20,19 +20,19 @@ db: db,
 }
 }
 
-// RecordEvent kullanıcı olayını kaydeder
+// RecordEvent kullanÄ±cÄ± olayÄ±nÄ± kaydeder
 func (s *LifeWeaveService) RecordEvent(userID uint, req *model.LifeEvent) (*model.LifeEvent, error) {
-// 1. Olayı sınıflandır
+// 1. OlayÄ± sÄ±nÄ±flandÄ±r
 category, subCategory := s.classifyEvent(req.Title, req.Description)
 req.Category = category
 req.SubCategory = subCategory
 req.Confidence = 50
 
-// 2. Astrolojik bağlamı hesapla
+// 2. Astrolojik baÄŸlamÄ± hesapla
 astroContext := s.calculateAstroContext(req)
 req.AstroContext = astroContext
 
-// 3. Klasik kaynak referanslarını ekle
+// 3. Klasik kaynak referanslarÄ±nÄ± ekle
 sources := s.getClassicalSources(category, subCategory)
 req.ClassicalSources = sources
 
@@ -40,7 +40,7 @@ req.ClassicalSources = sources
 analysis := s.performAIAnalysis(req)
 req.AIAnalysis = analysis
 
-// 5. Veritabanına kaydet
+// 5. VeritabanÄ±na kaydet
 if err := s.db.Create(req).Error; err != nil {
 return nil, err
 }
@@ -48,7 +48,7 @@ return nil, err
 return req, nil
 }
 
-// GetUserEvents kullanıcının olaylarını getirir
+// GetUserEvents kullanÄ±cÄ±nÄ±n olaylarÄ±nÄ± getirir
 func (s *LifeWeaveService) GetUserEvents(userID uint) ([]model.LifeEvent, error) {
 var events []model.LifeEvent
 err := s.db.Where("user_id = ?", userID).
@@ -57,7 +57,7 @@ Find(&events).Error
 return events, err
 }
 
-// GetEventByID olayı ID'ye göre getirir
+// GetEventByID olayÄ± ID'ye gÃ¶re getirir
 func (s *LifeWeaveService) GetEventByID(eventID uint) (*model.LifeEvent, error) {
 var event model.LifeEvent
 err := s.db.First(&event, eventID).Error
@@ -67,7 +67,7 @@ return nil, err
 return &event, nil
 }
 
-// UpdateEvent olayı günceller
+// UpdateEvent olayÄ± gÃ¼nceller
 func (s *LifeWeaveService) UpdateEvent(eventID uint, req *model.LifeEvent) (*model.LifeEvent, error) {
 var event model.LifeEvent
 if err := s.db.First(&event, eventID).Error; err != nil {
@@ -90,12 +90,12 @@ return nil, err
 return &event, nil
 }
 
-// DeleteEvent olayı siler
+// DeleteEvent olayÄ± siler
 func (s *LifeWeaveService) DeleteEvent(eventID uint) error {
 return s.db.Delete(&model.LifeEvent{}, eventID).Error
 }
 
-// VerifyEvent kullanıcı geri bildirimine göre olayı doğrula
+// VerifyEvent kullanÄ±cÄ± geri bildirimine gÃ¶re olayÄ± doÄŸrula
 func (s *LifeWeaveService) VerifyEvent(eventID uint, feedback string) error {
 var event model.LifeEvent
 if err := s.db.First(&event, eventID).Error; err != nil {
@@ -127,7 +127,7 @@ event.UserFeedback = feedback
 return s.db.Save(&event).Error
 }
 
-// GetTimeline kullanıcının zaman çizelgesini getirir
+// GetTimeline kullanÄ±cÄ±nÄ±n zaman Ã§izelgesini getirir
 func (s *LifeWeaveService) GetTimeline(userID uint) (map[string][]model.LifeEvent, error) {
 events, err := s.GetUserEvents(userID)
 if err != nil {
@@ -143,18 +143,18 @@ timeline[year] = append(timeline[year], event)
 return timeline, nil
 }
 
-// classifyEvent olayı sınıflandırır
+// classifyEvent olayÄ± sÄ±nÄ±flandÄ±rÄ±r
 func (s *LifeWeaveService) classifyEvent(title, description string) (string, string) {
 categoryMap := map[string]struct {
 category    string
 subCategory string
 }{
-"taşın":   {"residence", "house_move"},
+"taÅŸÄ±n":   {"residence", "house_move"},
 "ev":      {"residence", "house_move"},
-"iş":      {"career", "new_job"},
+"iÅŸ":      {"career", "new_job"},
 "terfi":   {"career", "promotion"},
 "evlilik": {"relationship", "marriage"},
-"nişan":   {"relationship", "engagement"},
+"niÅŸan":   {"relationship", "engagement"},
 "bebek":   {"family", "birth"},
 "seyahat": {"travel", "long_travel"},
 "okul":    {"education", "graduation"},
@@ -170,7 +170,7 @@ return result.category, result.subCategory
 return "other", "unspecified"
 }
 
-// calculateAstroContext astrolojik bağlamı hesapla
+// calculateAstroContext astrolojik baÄŸlamÄ± hesapla
 func (s *LifeWeaveService) calculateAstroContext(event *model.LifeEvent) string {
 context := map[string]interface{}{
 "houses":    s.getRelevantHouses(event.Category),
@@ -182,7 +182,7 @@ result, _ := json.Marshal(context)
 return string(result)
 }
 
-// getClassicalSources klasik kaynak referanslarını getirir
+// getClassicalSources klasik kaynak referanslarÄ±nÄ± getirir
 func (s *LifeWeaveService) getClassicalSources(category, subCategory string) string {
 sources := []model.ClassicalSource{
 {
@@ -215,7 +215,7 @@ return string(result)
 // performAIAnalysis AI analizi yapar
 func (s *LifeWeaveService) performAIAnalysis(event *model.LifeEvent) string {
 analysis := map[string]interface{}{
-"summary": fmt.Sprintf("Kullanıcı '%s' olayını bildirdi. Bu olay %s kategorisinde sınıflandırıldı.", event.Title, event.Category),
+"summary": fmt.Sprintf("KullanÄ±cÄ± '%s' olayÄ±nÄ± bildirdi. Bu olay %s kategorisinde sÄ±nÄ±flandÄ±rÄ±ldÄ±.", event.Title, event.Category),
 "houses":  s.getRelevantHouses(event.Category),
 "planets": s.getRelevantPlanets(event.Category),
 "confidence": event.Confidence,

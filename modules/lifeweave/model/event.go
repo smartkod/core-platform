@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// LifeEvent yaşam olayı (LifeWeave sistemi)
+// LifeEvent yaÅŸam olayÄ± (LifeWeave sistemi)
 type LifeEvent struct {
 ID          uint           json:"id" gorm:"primaryKey"
 UserID      uint           json:"user_id" gorm:"not null;index"
@@ -16,17 +16,17 @@ Category    string         json:"category" gorm:"not null"
 SubCategory string         json:"sub_category"
 EventDate   time.Time      json:"event_date" gorm:"not null"
 
-// Güven ve Doğrulama
+// GÃ¼ven ve DoÄŸrulama
 Confidence    int       json:"confidence" gorm:"default:50"
 IsVerified    bool      json:"is_verified" gorm:"default:false"
 VerifiedCount int       json:"verified_count" gorm:"default:0"
 UserFeedback  string    json:"user_feedback"
 
-// Zaman Faktörü
+// Zaman FaktÃ¶rÃ¼
 PreEventDays  int       json:"pre_event_days" gorm:"default:30"
 PostEventDays int       json:"post_event_days" gorm:"default:30"
 
-// Astrolojik Bağlam
+// Astrolojik BaÄŸlam
 AstroContext    string json:"astro_context" gorm:"type:jsonb"
 ClassicalSources string json:"classical_sources" gorm:"type:jsonb"
 AIAnalysis      string json:"ai_analysis" gorm:"type:jsonb"
@@ -54,7 +54,7 @@ var EventCategories = map[string][]string{
 "education":  {"graduation", "new_course", "certification", "phd", "degree"},
 }
 
-// ClassicalSource klasik astroloji kaynağı
+// ClassicalSource klasik astroloji kaynaÄŸÄ±
 type ClassicalSource struct {
 Name      string json:"name"
 Book      string json:"book"

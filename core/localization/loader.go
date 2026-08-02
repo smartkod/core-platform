@@ -1,4 +1,4 @@
-﻿package localization
+package localization
 
 import (
     "encoding/json"
@@ -7,13 +7,13 @@ import (
     "path/filepath"
 )
 
-// Loader çeviri dosyalarını yükler
+// Loader Ã§eviri dosyalarÄ±nÄ± yÃ¼kler
 type Loader struct {
     localesPath string
     translations map[string]map[string]interface{}
 }
 
-// NewLoader yeni loader oluşturur
+// NewLoader yeni loader oluÅŸturur
 func NewLoader(localesPath string) *Loader {
     return &Loader{
         localesPath: localesPath,
@@ -21,7 +21,7 @@ func NewLoader(localesPath string) *Loader {
     }
 }
 
-// Load tüm çeviri dosyalarını yükler
+// Load tÃ¼m Ã§eviri dosyalarÄ±nÄ± yÃ¼kler
 func (l *Loader) Load() error {
     files, err := ioutil.ReadDir(l.localesPath)
     if err != nil {
@@ -33,7 +33,7 @@ func (l *Loader) Load() error {
             continue
         }
 
-        locale := file.Name()[:len(file.Name())-5] // .json uzantısını kaldır
+        locale := file.Name()[:len(file.Name())-5] // .json uzantÄ±sÄ±nÄ± kaldÄ±r
         path := filepath.Join(l.localesPath, file.Name())
 
         data, err := ioutil.ReadFile(path)
@@ -52,7 +52,7 @@ func (l *Loader) Load() error {
     return nil
 }
 
-// GetLocaleTranslations locale çevirilerini döndürür
+// GetLocaleTranslations locale Ã§evirilerini dÃ¶ndÃ¼rÃ¼r
 func (l *Loader) GetLocaleTranslations(locale string) map[string]interface{} {
     if translations, ok := l.translations[locale]; ok {
         return translations
@@ -64,7 +64,7 @@ func (l *Loader) GetLocaleTranslations(locale string) map[string]interface{} {
     return nil
 }
 
-// GetAllLocales tüm locale'leri döndürür
+// GetAllLocales tÃ¼m locale'leri dÃ¶ndÃ¼rÃ¼r
 func (l *Loader) GetAllLocales() []string {
     locales := make([]string, 0, len(l.translations))
     for locale := range l.translations {

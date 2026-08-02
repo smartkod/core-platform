@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -42,7 +42,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusCreated, event)
 }
 
-// GetEvents kullanıcının olaylarını getirir
+// GetEvents kullanÄ±cÄ±nÄ±n olaylarÄ±nÄ± getirir
 func (h *LifeWeaveHandler) GetEvents(c echo.Context) error {
 userID := uint(1) // TODO: JWT'den al
 
@@ -56,7 +56,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, events)
 }
 
-// GetEvent olay detayını getirir
+// GetEvent olay detayÄ±nÄ± getirir
 func (h *LifeWeaveHandler) GetEvent(c echo.Context) error {
 id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 if err != nil {
@@ -75,7 +75,7 @@ return c.JSON(http.StatusNotFound, map[string]string{
 return c.JSON(http.StatusOK, event)
 }
 
-// UpdateEvent olayı günceller
+// UpdateEvent olayÄ± gÃ¼nceller
 func (h *LifeWeaveHandler) UpdateEvent(c echo.Context) error {
 id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 if err != nil {
@@ -101,7 +101,7 @@ return c.JSON(http.StatusNotFound, map[string]string{
 return c.JSON(http.StatusOK, event)
 }
 
-// DeleteEvent olayı siler
+// DeleteEvent olayÄ± siler
 func (h *LifeWeaveHandler) DeleteEvent(c echo.Context) error {
 id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 if err != nil {
@@ -121,7 +121,7 @@ return c.JSON(http.StatusOK, map[string]string{
 })
 }
 
-// VerifyEvent olayı doğrula
+// VerifyEvent olayÄ± doÄŸrula
 func (h *LifeWeaveHandler) VerifyEvent(c echo.Context) error {
 id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 if err != nil {
@@ -148,7 +148,7 @@ return c.JSON(http.StatusOK, map[string]string{
 })
 }
 
-// GetTimeline kullanıcının zaman çizelgesini getirir
+// GetTimeline kullanÄ±cÄ±nÄ±n zaman Ã§izelgesini getirir
 func (h *LifeWeaveHandler) GetTimeline(c echo.Context) error {
 userID := uint(1) // TODO: JWT'den al
 

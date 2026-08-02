@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// User kullanıcı modeli (Auth modülünden genişletilmiş)
+// User kullanÄ±cÄ± modeli (Auth modÃ¼lÃ¼nden geniÅŸletilmiÅŸ)
 type User struct {
 ID        uint           `json:"id" gorm:"primaryKey"`
 Email     string         `json:"email" gorm:"uniqueIndex;not null"`
@@ -21,19 +21,19 @@ UpdatedAt time.Time      `json:"updated_at"`
 DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-// TableName tablo adını döndürür
+// TableName tablo adÄ±nÄ± dÃ¶ndÃ¼rÃ¼r
 func (User) TableName() string {
 return "users"
 }
 
-// UpdateUserRequest kullanıcı güncelleme isteği
+// UpdateUserRequest kullanÄ±cÄ± gÃ¼ncelleme isteÄŸi
 type UpdateUserRequest struct {
 Name     string `json:"name"`
 Language string `json:"language"`
 Avatar   string `json:"avatar"`
 }
 
-// UserResponse kullanıcı yanıtı
+// UserResponse kullanÄ±cÄ± yanÄ±tÄ±
 type UserResponse struct {
 ID        uint      `json:"id"`
 Email     string    `json:"email"`

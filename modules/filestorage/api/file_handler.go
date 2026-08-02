@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -20,7 +20,7 @@ fileService: fileService,
 }
 }
 
-// UploadFile dosya yükler
+// UploadFile dosya yÃ¼kler
 func (h *FileHandler) UploadFile(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -60,7 +60,7 @@ return c.JSON(http.StatusBadRequest, map[string]string{
 return c.JSON(http.StatusOK, response)
 }
 
-// GetFiles kullanıcının dosyalarını getirir
+// GetFiles kullanÄ±cÄ±nÄ±n dosyalarÄ±nÄ± getirir
 func (h *FileHandler) GetFiles(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)

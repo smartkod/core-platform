@@ -1,4 +1,4 @@
-﻿package repository
+package repository
 
 import (
 "modules/premium/model"
@@ -16,7 +16,7 @@ db: db,
 }
 }
 
-// GetPlanByID plan ID'ye göre getir
+// GetPlanByID plan ID'ye gÃ¶re getir
 func (r *PremiumRepository) GetPlanByID(id uint) (*model.PremiumPlan, error) {
 var plan model.PremiumPlan
 err := r.db.First(&plan, id).Error
@@ -26,14 +26,14 @@ return nil, err
 return &plan, nil
 }
 
-// GetActivePlans aktif planları getir
+// GetActivePlans aktif planlarÄ± getir
 func (r *PremiumRepository) GetActivePlans() ([]model.PremiumPlan, error) {
 var plans []model.PremiumPlan
 err := r.db.Where("is_active = ?", true).Find(&plans).Error
 return plans, err
 }
 
-// GetUserPremium kullanıcının premium kaydını getir
+// GetUserPremium kullanÄ±cÄ±nÄ±n premium kaydÄ±nÄ± getir
 func (r *PremiumRepository) GetUserPremium(userID uint) (*model.UserPremium, error) {
 var premium model.UserPremium
 err := r.db.Where("user_id = ? AND is_active = ?", userID, true).First(&premium).Error
@@ -43,17 +43,17 @@ return nil, err
 return &premium, nil
 }
 
-// CreateUserPremium kullanıcı premium kaydı oluştur
+// CreateUserPremium kullanÄ±cÄ± premium kaydÄ± oluÅŸtur
 func (r *PremiumRepository) CreateUserPremium(premium *model.UserPremium) error {
 return r.db.Create(premium).Error
 }
 
-// UpdateUserPremium kullanıcı premium kaydını güncelle
+// UpdateUserPremium kullanÄ±cÄ± premium kaydÄ±nÄ± gÃ¼ncelle
 func (r *PremiumRepository) UpdateUserPremium(premium *model.UserPremium) error {
 return r.db.Save(premium).Error
 }
 
-// CancelUserPremium kullanıcı premium kaydını iptal et
+// CancelUserPremium kullanÄ±cÄ± premium kaydÄ±nÄ± iptal et
 func (r *PremiumRepository) CancelUserPremium(userID uint) error {
 return r.db.Model(&model.UserPremium{}).
 Where("user_id = ?", userID).

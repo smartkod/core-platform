@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -19,7 +19,7 @@ promptService: promptService,
 }
 }
 
-// CreatePrompt yeni prompt oluşturur
+// CreatePrompt yeni prompt oluÅŸturur
 func (h *PromptHandler) CreatePrompt(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -41,7 +41,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusCreated, response)
 }
 
-// ExecutePrompt prompt çalıştırır
+// ExecutePrompt prompt Ã§alÄ±ÅŸtÄ±rÄ±r
 func (h *PromptHandler) ExecutePrompt(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -75,7 +75,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, templates)
 }
 
-// GetTemplateByName isme göre template getirir
+// GetTemplateByName isme gÃ¶re template getirir
 func (h *PromptHandler) GetTemplateByName(c echo.Context) error {
 name := c.Param("name")
 template, err := h.promptService.GetTemplateByName(name)

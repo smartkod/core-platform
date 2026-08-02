@@ -1,4 +1,4 @@
-﻿package prompt_engine
+package prompt_engine
 
 import (
 "modules/prompt_engine/api"

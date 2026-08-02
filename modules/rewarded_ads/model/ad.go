@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// AdReward reklam ödül kaydı
+// AdReward reklam Ã¶dÃ¼l kaydÄ±
 type AdReward struct {
 ID          uint           json:"id" gorm:"primaryKey"
 UserID      uint           json:"user_id" gorm:"not null;index"
@@ -24,7 +24,7 @@ func (AdReward) TableName() string {
 return "ad_rewards"
 }
 
-// DailyAdLimit günlük reklam limiti
+// DailyAdLimit gÃ¼nlÃ¼k reklam limiti
 type DailyAdLimit struct {
 ID           uint           json:"id" gorm:"primaryKey"
 UserID       uint           json:"user_id" gorm:"uniqueIndex;not null"
@@ -40,14 +40,14 @@ func (DailyAdLimit) TableName() string {
 return "daily_ad_limits"
 }
 
-// AdWatchRequest reklam izleme isteği
+// AdWatchRequest reklam izleme isteÄŸi
 type AdWatchRequest struct {
 AdProvider string json:"ad_provider" validate:"required"
 AdID       string json:"ad_id" validate:"required"
 RewardType string json:"reward_type" validate:"required" // token, premium_day
 }
 
-// AdRewardResponse reklam ödül yanıtı
+// AdRewardResponse reklam Ã¶dÃ¼l yanÄ±tÄ±
 type AdRewardResponse struct {
 Success     bool   json:"success"
 Message     string json:"message"
@@ -56,7 +56,7 @@ TotalToday  int    json:"total_today"
 Remaining   int    json:"remaining"
 }
 
-// AdStatusResponse reklam durumu yanıtı
+// AdStatusResponse reklam durumu yanÄ±tÄ±
 type AdStatusResponse struct {
 CanWatch        bool json:"can_watch"
 WatchedToday    int  json:"watched_today"

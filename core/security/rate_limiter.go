@@ -1,4 +1,4 @@
-﻿package security
+package security
 
 import (
     "sync"
@@ -7,7 +7,7 @@ import (
     "github.com/labstack/echo/v4"
 )
 
-// RateLimiter rate limiting yapılandırması
+// RateLimiter rate limiting yapÄ±landÄ±rmasÄ±
 type RateLimiter struct {
     mu       sync.RWMutex
     requests map[string][]time.Time
@@ -15,7 +15,7 @@ type RateLimiter struct {
     window   time.Duration
 }
 
-// NewRateLimiter yeni rate limiter oluşturur
+// NewRateLimiter yeni rate limiter oluÅŸturur
 func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
     return &RateLimiter{
         requests: make(map[string][]time.Time),
@@ -33,7 +33,7 @@ func (rl *RateLimiter) Middleware() echo.MiddlewareFunc {
             rl.mu.Lock()
             defer rl.mu.Unlock()
             
-            // Eski kayıtları temizle
+            // Eski kayÄ±tlarÄ± temizle
             now := time.Now()
             var valid []time.Time
             for _, t := range rl.requests[key] {
@@ -43,7 +43,7 @@ func (rl *RateLimiter) Middleware() echo.MiddlewareFunc {
             }
             rl.requests[key] = valid
             
-            // Limit kontrolü
+            // Limit kontrolÃ¼
             if len(rl.requests[key]) >= rl.limit {
                 return c.JSON(429, map[string]string{
                     "error": "Too many requests. Please try again later.",

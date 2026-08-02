@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -10,22 +10,22 @@ import (
 "github.com/labstack/echo/v4"
 )
 
-// UserHandler kullanıcı handler'ı
+// UserHandler kullanÄ±cÄ± handler'Ä±
 type UserHandler struct {
 userService *service.UserService
 }
 
-// NewUserHandler yeni handler oluşturur
+// NewUserHandler yeni handler oluÅŸturur
 func NewUserHandler(userService *service.UserService) *UserHandler {
 return &UserHandler{
 userService: userService,
 }
 }
 
-// GetMe kullanıcı profilini getirir
+// GetMe kullanÄ±cÄ± profilini getirir
 func (h *UserHandler) GetMe(c echo.Context) error {
 // TODO: JWT'den user ID al
-userID := uint(1) // Geçici
+userID := uint(1) // GeÃ§ici
 
 user, err := h.userService.GetUserByID(userID)
 if err != nil {
@@ -35,10 +35,10 @@ return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 return c.JSON(http.StatusOK, user)
 }
 
-// UpdateMe kullanıcı profilini günceller
+// UpdateMe kullanÄ±cÄ± profilini gÃ¼nceller
 func (h *UserHandler) UpdateMe(c echo.Context) error {
 // TODO: JWT'den user ID al
-userID := uint(1) // Geçici
+userID := uint(1) // GeÃ§ici
 
 var req model.UpdateUserRequest
 if err := c.Bind(&req); err != nil {
@@ -53,7 +53,7 @@ return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 return c.JSON(http.StatusOK, user)
 }
 
-// GetAllUsers tüm kullanıcıları getirir (admin)
+// GetAllUsers tÃ¼m kullanÄ±cÄ±larÄ± getirir (admin)
 func (h *UserHandler) GetAllUsers(c echo.Context) error {
 users, err := h.userService.GetAllUsers()
 if err != nil {
@@ -63,7 +63,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Err
 return c.JSON(http.StatusOK, users)
 }
 
-// GetUserByID kullanıcı detayını getirir (admin)
+// GetUserByID kullanÄ±cÄ± detayÄ±nÄ± getirir (admin)
 func (h *UserHandler) GetUserByID(c echo.Context) error {
 id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 if err != nil {
@@ -78,7 +78,7 @@ return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 return c.JSON(http.StatusOK, user)
 }
 
-// DeleteUser kullanıcı siler (admin)
+// DeleteUser kullanÄ±cÄ± siler (admin)
 func (h *UserHandler) DeleteUser(c echo.Context) error {
 id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 if err != nil {

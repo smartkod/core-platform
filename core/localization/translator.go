@@ -1,4 +1,4 @@
-﻿package localization
+package localization
 
 import (
     "fmt"
@@ -6,19 +6,19 @@ import (
     "text/template"
 )
 
-// Translator çeviri işlemlerini yapar
+// Translator Ã§eviri iÅŸlemlerini yapar
 type Translator struct {
     loader *Loader
 }
 
-// NewTranslator yeni translator oluşturur
+// NewTranslator yeni translator oluÅŸturur
 func NewTranslator(loader *Loader) *Translator {
     return &Translator{
         loader: loader,
     }
 }
 
-// Translate key'e göre çeviri yapar
+// Translate key'e gÃ¶re Ã§eviri yapar
 func (t *Translator) Translate(locale, key string, data interface{}) string {
     translations := t.loader.GetLocaleTranslations(locale)
     if translations == nil {
@@ -35,7 +35,7 @@ func (t *Translator) Translate(locale, key string, data interface{}) string {
         return fmt.Sprintf("%v", value)
     }
 
-    // Template değişkenlerini işle
+    // Template deÄŸiÅŸkenlerini iÅŸle
     if data != nil && strings.Contains(str, "{{") {
         tmpl, err := template.New("trans").Parse(str)
         if err != nil {
@@ -52,7 +52,7 @@ func (t *Translator) Translate(locale, key string, data interface{}) string {
     return str
 }
 
-// getNestedValue nested key'den değer alır
+// getNestedValue nested key'den deÄŸer alÄ±r
 func getNestedValue(data map[string]interface{}, key string) interface{} {
     parts := strings.Split(key, ".")
     current := data

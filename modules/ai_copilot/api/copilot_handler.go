@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -46,7 +46,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, response)
 }
 
-// GetHistory sohbet geçmişini getir
+// GetHistory sohbet geÃ§miÅŸini getir
 func (h *CopilotHandler) GetHistory(c echo.Context) error {
 userID := uint(1) // TODO: JWT'den al
 

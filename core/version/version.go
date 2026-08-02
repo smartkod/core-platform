@@ -4,7 +4,7 @@ var (
     // Version platform versiyonu
     Version = "0.5.0"
     
-    // BuildTime build zamanı
+    // BuildTime build zamanÃ„Â±
     BuildTime = ""
     
     // GitCommit git commit hash
@@ -14,7 +14,7 @@ var (
     GitBranch = ""
 )
 
-// GetVersion versiyon bilgisini döndürür
+// GetVersion versiyon bilgisini dÃƒÂ¶ndÃƒÂ¼rÃƒÂ¼r
 func GetVersion() string {
     if GitCommit != "" {
         return Version + " (" + GitCommit[:8] + ")"
@@ -22,7 +22,7 @@ func GetVersion() string {
     return Version
 }
 
-// GetFullVersion tam versiyon bilgisini döndürür
+// GetFullVersion tam versiyon bilgisini dÃƒÂ¶ndÃƒÂ¼rÃƒÂ¼r
 func GetFullVersion() map[string]string {
     return map[string]string{
         "version":    Version,

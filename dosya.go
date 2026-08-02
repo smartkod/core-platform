@@ -1,4 +1,4 @@
-﻿package main
+package main
 
 import (
 "core-platform/core/api"
@@ -24,7 +24,7 @@ panic("Failed to initialize localization: " + err.Error())
 }
 e.Use(localizer.GetMiddleware().Middleware())
 
-// Health check (çoklu dil desteği ile)
+// Health check (Ã§oklu dil desteÄŸi ile)
 e.GET("/health", func(c echo.Context) error {
 msg := localization.T(c, "welcome", nil)
 return api.SuccessResponse(c, map[string]interface{}{

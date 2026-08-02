@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -20,7 +20,7 @@ contextService: contextService,
 }
 }
 
-// CreateSession yeni oturum oluşturur
+// CreateSession yeni oturum oluÅŸturur
 func (h *ContextHandler) CreateSession(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -42,7 +42,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusCreated, session)
 }
 
-// GetSessions kullanıcının tüm oturumlarını getirir
+// GetSessions kullanÄ±cÄ±nÄ±n tÃ¼m oturumlarÄ±nÄ± getirir
 func (h *ContextHandler) GetSessions(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -96,7 +96,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusCreated, message)
 }
 
-// GetMessages oturumun mesajlarını getirir
+// GetMessages oturumun mesajlarÄ±nÄ± getirir
 func (h *ContextHandler) GetMessages(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)

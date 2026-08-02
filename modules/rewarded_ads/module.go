@@ -1,4 +1,4 @@
-﻿package rewarded_ads
+package rewarded_ads
 
 import (
 "modules/rewarded_ads/model"

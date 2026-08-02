@@ -1,4 +1,4 @@
-﻿package ai_copilot
+package ai_copilot
 
 import (
 "modules/ai_copilot/api"

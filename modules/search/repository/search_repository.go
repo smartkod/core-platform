@@ -1,4 +1,4 @@
-﻿package repository
+package repository
 
 import (
 "modules/search/model"
@@ -16,12 +16,12 @@ db: db,
 }
 }
 
-// SaveSearchHistory arama geçmişini kaydeder
+// SaveSearchHistory arama geÃ§miÅŸini kaydeder
 func (r *SearchRepository) SaveSearchHistory(history *model.SearchHistory) error {
 return r.db.Create(history).Error
 }
 
-// GetSearchHistory kullanıcının arama geçmişini getirir
+// GetSearchHistory kullanÄ±cÄ±nÄ±n arama geÃ§miÅŸini getirir
 func (r *SearchRepository) GetSearchHistory(userID uint, limit int) ([]model.SearchHistory, error) {
 var history []model.SearchHistory
 err := r.db.Where("user_id = ?", userID).
@@ -31,7 +31,7 @@ Find(&history).Error
 return history, err
 }
 
-// GetPopularSearches popüler aramaları getirir
+// GetPopularSearches popÃ¼ler aramalarÄ± getirir
 func (r *SearchRepository) GetPopularSearches(limit int) ([]model.SearchSuggestion, error) {
 var results []model.SearchSuggestion
 err := r.db.Model(&model.SearchHistory{}).
@@ -43,7 +43,7 @@ Scan(&results).Error
 return results, err
 }
 
-// SearchUsers kullanıcı arar
+// SearchUsers kullanÄ±cÄ± arar
 func (r *SearchRepository) SearchUsers(query string, limit int) ([]map[string]interface{}, error) {
 var results []map[string]interface{}
 err := r.db.Table("users").

@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "crypto/sha256"
@@ -28,7 +28,7 @@ openAIClient: clients.NewOpenAIClient(openAIKey, openAIBaseURL),
 
 // Chat AI ile sohbet
 func (s *AIGatewayService) Chat(userID uint, req *model.AIRequest) (*model.AIResponse, error) {
-// 1. Önbellek kontrolü
+// 1. Ã–nbellek kontrolÃ¼
 promptHash := s.hashPrompt(req.Prompt)
 cached, err := s.aiRepo.GetCache(req.Provider, req.Model, promptHash)
 if err == nil && cached != nil {
@@ -41,7 +41,7 @@ CreatedAt: cached.CreatedAt,
 }, nil
 }
 
-// 2. Provider'a göre istek yap
+// 2. Provider'a gÃ¶re istek yap
 var response string
 switch req.Provider {
 case "openai":
@@ -60,7 +60,7 @@ if err != nil {
 return nil, err
 }
 
-// 3. Önbelleğe kaydet
+// 3. Ã–nbelleÄŸe kaydet
 cache := &model.AICache{
 Provider:   req.Provider,
 Model:      req.Model,
@@ -70,7 +70,7 @@ ExpiresAt:  time.Now().Add(24 * time.Hour),
 }
 s.aiRepo.SaveCache(cache)
 
-// 4. Kullanım istatistiklerini kaydet
+// 4. KullanÄ±m istatistiklerini kaydet
 usage := &model.AIUsage{
 Provider: req.Provider,
 Model:    req.Model,
@@ -93,7 +93,7 @@ hash := sha256.Sum256([]byte(prompt))
 return hex.EncodeToString(hash[:])
 }
 
-// GetProviders aktif provider'ları getirir
+// GetProviders aktif provider'larÄ± getirir
 func (s *AIGatewayService) GetProviders() ([]model.AIProvider, error) {
 return s.aiRepo.GetActiveProviders()
 }

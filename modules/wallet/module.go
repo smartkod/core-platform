@@ -1,4 +1,4 @@
-﻿package wallet
+package wallet
 
 import (
 "modules/wallet/api"

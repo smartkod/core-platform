@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// User kullanıcı modeli
+// User kullanÃ„Â±cÃ„Â± modeli
 type User struct {
 ID        uint           `json:"id" gorm:"primaryKey"`
 Email     string         `json:"email" gorm:"uniqueIndex;not null"`
@@ -21,25 +21,25 @@ UpdatedAt time.Time      `json:"updated_at"`
 DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-// TableName tablo adını döndürür
+// TableName tablo adÃ„Â±nÃ„Â± dÃƒÂ¶ndÃƒÂ¼rÃƒÂ¼r
 func (User) TableName() string {
 return "users"
 }
 
-// LoginRequest login isteği
+// LoginRequest login isteÃ„Å¸i
 type LoginRequest struct {
 Email    string `json:"email" validate:"required,email"`
 Password string `json:"password" validate:"required,min=6"`
 }
 
-// RegisterRequest kayıt isteği
+// RegisterRequest kayÃ„Â±t isteÃ„Å¸i
 type RegisterRequest struct {
 Email    string `json:"email" validate:"required,email"`
 Password string `json:"password" validate:"required,min=6"`
 Name     string `json:"name" validate:"required"`
 }
 
-// LoginResponse login yanıtı
+// LoginResponse login yanÃ„Â±tÃ„Â±
 type LoginResponse struct {
 AccessToken  string `json:"access_token"`
 RefreshToken string `json:"refresh_token"`
@@ -47,7 +47,7 @@ TokenType    string `json:"token_type"`
 ExpiresIn    int64  `json:"expires_in"`
 }
 
-// UserResponse kullanıcı yanıtı
+// UserResponse kullanÃ„Â±cÃ„Â± yanÃ„Â±tÃ„Â±
 type UserResponse struct {
 ID       uint   `json:"id"`
 Email    string `json:"email"`

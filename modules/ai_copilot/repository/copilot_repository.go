@@ -1,4 +1,4 @@
-﻿package repository
+package repository
 
 import (
 "modules/ai_copilot/model"

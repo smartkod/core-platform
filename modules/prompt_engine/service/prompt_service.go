@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "bytes"
@@ -23,9 +23,9 @@ promptRepo: repository.NewPromptRepository(db),
 }
 }
 
-// CreatePrompt yeni prompt oluşturur
+// CreatePrompt yeni prompt oluÅŸturur
 func (s *PromptService) CreatePrompt(userID uint, req *model.CreatePromptRequest) (*model.PromptResponse, error) {
-// Varsayılan versiyon
+// VarsayÄ±lan versiyon
 if req.Version == "" {
 req.Version = "1.0.0"
 }
@@ -48,7 +48,7 @@ return nil, err
 return s.toResponse(prompt), nil
 }
 
-// ExecutePrompt prompt'u çalıştırır
+// ExecutePrompt prompt'u Ã§alÄ±ÅŸtÄ±rÄ±r
 func (s *PromptService) ExecutePrompt(userID uint, req *model.ExecutePromptRequest) (*model.ExecutePromptResponse, error) {
 // Template'i bul
 prompt, err := s.promptRepo.FindByName(req.TemplateName)
@@ -66,7 +66,7 @@ if err != nil {
 return nil, fmt.Errorf("invalid template: %w", err)
 }
 
-// Template'i çalıştır
+// Template'i Ã§alÄ±ÅŸtÄ±r
 startTime := time.Now()
 var result bytes.Buffer
 err = tmpl.Execute(&result, req.Variables)
@@ -86,7 +86,7 @@ s.promptRepo.SaveExecution(execution)
 return nil, fmt.Errorf("template execution failed: %w", err)
 }
 
-// Başarılı kaydı
+// BaÅŸarÄ±lÄ± kaydÄ±
 execution := &model.PromptExecution{
 TemplateID: prompt.ID,
 UserID:     userID,
@@ -97,7 +97,7 @@ Duration:   duration,
 }
 s.promptRepo.SaveExecution(execution)
 
-// Kullanım sayısını artır
+// KullanÄ±m sayÄ±sÄ±nÄ± artÄ±r
 s.promptRepo.IncrementUsage(prompt.ID)
 
 return &model.ExecutePromptResponse{
@@ -107,7 +107,7 @@ TemplateID: prompt.ID,
 }, nil
 }
 
-// GetTemplates tüm prompt template'lerini getirir
+// GetTemplates tÃ¼m prompt template'lerini getirir
 func (s *PromptService) GetTemplates(category string) ([]model.PromptResponse, error) {
 templates, err := s.promptRepo.GetTemplates(category)
 if err != nil {
@@ -121,7 +121,7 @@ responses[i] = *s.toResponse(&t)
 return responses, nil
 }
 
-// GetTemplateByName isme göre template getirir
+// GetTemplateByName isme gÃ¶re template getirir
 func (s *PromptService) GetTemplateByName(name string) (*model.PromptResponse, error) {
 prompt, err := s.promptRepo.FindByName(name)
 if err != nil {
@@ -135,7 +135,7 @@ func (s *PromptService) DeleteTemplate(name string) error {
 return s.promptRepo.DeleteByName(name)
 }
 
-// toResponse model'den response oluşturur
+// toResponse model'den response oluÅŸturur
 func (s *PromptService) toResponse(prompt *model.PromptTemplate) *model.PromptResponse {
 return &model.PromptResponse{
 ID:          prompt.ID,
@@ -164,7 +164,7 @@ return result
 }
 
 func (s *PromptService) convertToStringSlice(variables string) []string {
-// Basit parse - JSON'dan dönüştür
+// Basit parse - JSON'dan dÃ¶nÃ¼ÅŸtÃ¼r
 if variables == "" || variables == "[]" {
 return []string{}
 }

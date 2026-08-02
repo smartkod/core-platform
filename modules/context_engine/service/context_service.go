@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "crypto/rand"
@@ -22,11 +22,11 @@ maxTokens   int
 func NewContextService(db *gorm.DB) *ContextService {
 return &ContextService{
 contextRepo: repository.NewContextRepository(db),
-maxTokens:   4000, // Maksimum context token sayısı
+maxTokens:   4000, // Maksimum context token sayÄ±sÄ±
 }
 }
 
-// CreateSession yeni oturum oluşturur
+// CreateSession yeni oturum oluÅŸturur
 func (s *ContextService) CreateSession(userID uint, req *model.CreateSessionRequest) (*model.SessionResponse, error) {
 sessionID := s.generateSessionID()
 
@@ -53,7 +53,7 @@ return nil, errors.New("session not found")
 return s.toSessionResponse(session), nil
 }
 
-// GetSessions kullanıcının tüm oturumlarını getirir
+// GetSessions kullanÄ±cÄ±nÄ±n tÃ¼m oturumlarÄ±nÄ± getirir
 func (s *ContextService) GetSessions(userID uint) ([]model.SessionResponse, error) {
 sessions, err := s.contextRepo.FindSessions(userID)
 if err != nil {
@@ -78,7 +78,7 @@ if !session.IsActive {
 return nil, errors.New("session is not active")
 }
 
-// Token sayısını hesapla (basit)
+// Token sayÄ±sÄ±nÄ± hesapla (basit)
 tokens := len(strings.Split(req.Content, " "))
 
 message := &model.ContextMessage{
@@ -92,11 +92,11 @@ if err := s.contextRepo.AddMessage(message); err != nil {
 return nil, err
 }
 
-// Oturum bilgilerini güncelle
+// Oturum bilgilerini gÃ¼ncelle
 session.MessageCount++
 session.TokenCount += tokens
 
-// Context'i güncelle
+// Context'i gÃ¼ncelle
 s.updateContext(session)
 
 if err := s.contextRepo.UpdateSession(session); err != nil {
@@ -106,7 +106,7 @@ return nil, err
 return s.toMessageResponse(message), nil
 }
 
-// GetMessages oturumun mesajlarını getirir
+// GetMessages oturumun mesajlarÄ±nÄ± getirir
 func (s *ContextService) GetMessages(userID uint, sessionID string, limit int) ([]model.MessageResponse, error) {
 session, err := s.contextRepo.FindSession(userID, sessionID)
 if err != nil {
@@ -145,9 +145,9 @@ session.TokenCount = 0
 return s.contextRepo.UpdateSession(session)
 }
 
-// updateContext oturumun context'ini günceller
+// updateContext oturumun context'ini gÃ¼nceller
 func (s *ContextService) updateContext(session *model.ContextSession) {
-// Basit context yönetimi
+// Basit context yÃ¶netimi
 messages, _ := s.contextRepo.GetMessages(session.ID, 10)
 
 var contextBuilder strings.Builder
@@ -159,20 +159,20 @@ session.Context = contextBuilder.String()
 
 // Token limitini kontrol et
 if session.TokenCount > s.maxTokens {
-// Token limiti aşıldı, eski mesajları özetle
-session.Summary = "Context özetlenmiş: " + session.Context[:200]
+// Token limiti aÅŸÄ±ldÄ±, eski mesajlarÄ± Ã¶zetle
+session.Summary = "Context Ã¶zetlenmiÅŸ: " + session.Context[:200]
 session.Context = session.Summary
 }
 }
 
-// generateSessionID benzersiz session ID oluşturur
+// generateSessionID benzersiz session ID oluÅŸturur
 func (s *ContextService) generateSessionID() string {
 bytes := make([]byte, 16)
 rand.Read(bytes)
 return hex.EncodeToString(bytes)
 }
 
-// toSessionResponse model'den response oluşturur
+// toSessionResponse model'den response oluÅŸturur
 func (s *ContextService) toSessionResponse(session *model.ContextSession) *model.SessionResponse {
 return &model.SessionResponse{
 ID:           session.ID,
@@ -188,7 +188,7 @@ UpdatedAt:    session.UpdatedAt,
 }
 }
 
-// toMessageResponse model'den response oluşturur
+// toMessageResponse model'den response oluÅŸturur
 func (s *ContextService) toMessageResponse(msg *model.ContextMessage) *model.MessageResponse {
 return &model.MessageResponse{
 ID:        msg.ID,

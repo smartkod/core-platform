@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -31,7 +31,7 @@ return c.JSON(http.StatusBadRequest, map[string]string{
 })
 }
 
-// Varsayılan değerler
+// VarsayÄ±lan deÄŸerler
 if req.MaxTokens <= 0 {
 req.MaxTokens = 1000
 }
@@ -49,7 +49,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, response)
 }
 
-// GetProviders aktif provider'ları getirir
+// GetProviders aktif provider'larÄ± getirir
 func (h *AIGatewayHandler) GetProviders(c echo.Context) error {
 providers, err := h.aiService.GetProviders()
 if err != nil {

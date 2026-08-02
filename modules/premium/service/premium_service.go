@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "errors"
@@ -20,7 +20,7 @@ premiumRepo: repository.NewPremiumRepository(db),
 }
 }
 
-// GetPlans aktif premium planlarını getir
+// GetPlans aktif premium planlarÄ±nÄ± getir
 func (s *PremiumService) GetPlans() ([]model.PremiumPlanResponse, error) {
 plans, err := s.premiumRepo.GetActivePlans()
 if err != nil {
@@ -34,7 +34,7 @@ responses[i] = s.toPlanResponse(&plan)
 return responses, nil
 }
 
-// GetUserPremium kullanıcının premium durumunu getir
+// GetUserPremium kullanÄ±cÄ±nÄ±n premium durumunu getir
 func (s *PremiumService) GetUserPremium(userID uint) (*model.PremiumResponse, error) {
 premium, err := s.premiumRepo.GetUserPremium(userID)
 if err != nil {
@@ -46,7 +46,7 @@ IsActive: false,
 return nil, err
 }
 
-// Premium süresi dolmuş mu kontrol et
+// Premium sÃ¼resi dolmuÅŸ mu kontrol et
 if premium.EndDate != nil && premium.EndDate.Before(time.Now()) {
 premium.IsActive = false
 s.premiumRepo.UpdateUserPremium(premium)
@@ -80,9 +80,9 @@ AutoRenew:     premium.AutoRenew,
 }, nil
 }
 
-// PurchasePremium premium satın al
+// PurchasePremium premium satÄ±n al
 func (s *PremiumService) PurchasePremium(userID uint, req *model.PurchaseRequest) (*model.PremiumResponse, error) {
-// Planı kontrol et
+// PlanÄ± kontrol et
 plan, err := s.premiumRepo.GetPlanByID(req.PlanID)
 if err != nil {
 return nil, errors.New("plan not found")
@@ -92,7 +92,7 @@ if !plan.IsActive {
 return nil, errors.New("plan is not active")
 }
 
-// Mevcut premium kaydını kontrol et
+// Mevcut premium kaydÄ±nÄ± kontrol et
 existing, _ := s.premiumRepo.GetUserPremium(userID)
 
 startDate := time.Now()
@@ -106,12 +106,12 @@ end := startDate.AddDate(0, 0, plan.Duration)
 endDate = &end
 }
 
-// Ödeme işlemi yapılacak (mock)
+// Ã–deme iÅŸlemi yapÄ±lacak (mock)
 // TODO: Payment entegrasyonu
 
-// Yeni premium kaydı oluştur veya güncelle
+// Yeni premium kaydÄ± oluÅŸtur veya gÃ¼ncelle
 if existing != nil {
-// Mevcut premiumu güncelle
+// Mevcut premiumu gÃ¼ncelle
 existing.PlanID = plan.ID
 existing.StartDate = startDate
 existing.EndDate = endDate
@@ -123,7 +123,7 @@ if err := s.premiumRepo.UpdateUserPremium(existing); err != nil {
 return nil, err
 }
 } else {
-// Yeni premium kaydı oluştur
+// Yeni premium kaydÄ± oluÅŸtur
 premium := &model.UserPremium{
 UserID:    userID,
 PlanID:    plan.ID,
@@ -151,7 +151,7 @@ return errors.New("no active premium subscription found")
 return s.premiumRepo.CancelUserPremium(userID)
 }
 
-// CheckPremium kullanıcının premium aktif mi kontrol et
+// CheckPremium kullanÄ±cÄ±nÄ±n premium aktif mi kontrol et
 func (s *PremiumService) CheckPremium(userID uint) bool {
 response, err := s.GetUserPremium(userID)
 if err != nil {
@@ -160,10 +160,10 @@ return false
 return response.IsActive
 }
 
-// toPlanResponse model'den response oluştur
+// toPlanResponse model'den response oluÅŸtur
 func (s *PremiumService) toPlanResponse(plan *model.PremiumPlan) model.PremiumPlanResponse {
 var features []string
-// JSON features'ı parse et
+// JSON features'Ä± parse et
 // TODO: JSON parse
 
 return model.PremiumPlanResponse{

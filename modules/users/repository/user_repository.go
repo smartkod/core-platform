@@ -1,4 +1,4 @@
-﻿package repository
+package repository
 
 import (
 "modules/users/model"
@@ -6,24 +6,24 @@ import (
 "gorm.io/gorm"
 )
 
-// UserRepository kullanıcı repository'si
+// UserRepository kullanÄ±cÄ± repository'si
 type UserRepository struct {
 db *gorm.DB
 }
 
-// NewUserRepository yeni repository oluşturur
+// NewUserRepository yeni repository oluÅŸturur
 func NewUserRepository(db *gorm.DB) *UserRepository {
 return &UserRepository{
 db: db,
 }
 }
 
-// Create kullanıcı oluşturur
+// Create kullanÄ±cÄ± oluÅŸturur
 func (r *UserRepository) Create(user *model.User) error {
 return r.db.Create(user).Error
 }
 
-// FindByEmail email ile kullanıcı bulur
+// FindByEmail email ile kullanÄ±cÄ± bulur
 func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 var user model.User
 err := r.db.Where("email = ?", email).First(&user).Error
@@ -33,7 +33,7 @@ return nil, err
 return &user, nil
 }
 
-// FindByID ID ile kullanıcı bulur
+// FindByID ID ile kullanÄ±cÄ± bulur
 func (r *UserRepository) FindByID(id uint) (*model.User, error) {
 var user model.User
 err := r.db.First(&user, id).Error
@@ -43,19 +43,19 @@ return nil, err
 return &user, nil
 }
 
-// FindAll tüm kullanıcıları bulur
+// FindAll tÃ¼m kullanÄ±cÄ±larÄ± bulur
 func (r *UserRepository) FindAll() ([]model.User, error) {
 var users []model.User
 err := r.db.Find(&users).Error
 return users, err
 }
 
-// Update kullanıcı günceller
+// Update kullanÄ±cÄ± gÃ¼nceller
 func (r *UserRepository) Update(user *model.User) error {
 return r.db.Save(user).Error
 }
 
-// Delete kullanıcı siler
+// Delete kullanÄ±cÄ± siler
 func (r *UserRepository) Delete(id uint) error {
 return r.db.Delete(&model.User{}, id).Error
 }

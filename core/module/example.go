@@ -4,15 +4,15 @@ import (
 "core-platform/core/logger"
 )
 
-// ExampleModule örnek modül
+// ExampleModule ÃƒÂ¶rnek modÃƒÂ¼l
 type ExampleModule struct {
 *BaseModule
 }
 
-// NewExampleModule örnek modül oluşturur
+// NewExampleModule ÃƒÂ¶rnek modÃƒÂ¼l oluÃ…Å¸turur
 func NewExampleModule(logger *logger.Logger) *ExampleModule {
 base := NewBaseModule("example", "1.0.0", StateEnabled, logger)
-// Bağımlılıkları kaldır - şimdilik boş
+// BaÃ„Å¸Ã„Â±mlÃ„Â±lÃ„Â±klarÃ„Â± kaldÃ„Â±r - Ã…Å¸imdilik boÃ…Å¸
 base.SetDependsOn([]string{})
 
 return &ExampleModule{

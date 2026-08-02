@@ -1,0 +1,48 @@
+Copyright (c) 2026 - Zafer Sözen, SmartKod
+
+PolyForm Noncommercial License 1.0.0
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software for any noncommercial purpose,
+subject to the following conditions:
+
+1. Redistributions of the Software must retain the above copyright notice,
+   this list of conditions, and the following disclaimer.
+
+2. The Software may not be used for commercial purposes without prior
+   written permission from the copyright holder.
+
+3. The Software may not be used for any artificial intelligence (AI) or
+   machine learning (ML) training, data scraping, or model training
+   purposes, including but not limited to:
+   - Training or fine-tuning any AI/ML model
+   - Data collection for AI/ML training
+   - Building or improving any AI/ML system
+   - Web scraping or automated data extraction for AI/ML
+
+   This restriction applies regardless of whether the use is commercial
+   or noncommercial, and applies to the Software and any derivative works.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Additional Terms - AI/ML Restriction
+
+This Software may not be used, in whole or in part, for any purpose related to:
+- Artificial Intelligence (AI) training
+- Machine Learning (ML) model development
+- Data scraping or crawling for AI/ML
+- Large Language Model (LLM) training or fine-tuning
+- Any automated data extraction for AI/ML purposes
+
+This restriction applies to all uses, including noncommercial uses.
+
+For commercial licensing inquiries, please contact: smartmatriks@gmail.com

@@ -10,7 +10,7 @@ import (
 "go.uber.org/zap"
 )
 
-// ModuleState modül durumları
+// ModuleState modÃƒÂ¼l durumlarÃ„Â±
 type ModuleState string
 
 const (
@@ -21,7 +21,7 @@ StateExperimental ModuleState = "EXPERIMENTAL"
 StateDeprecated   ModuleState = "DEPRECATED"
 )
 
-// Module modül arayüzü
+// Module modÃƒÂ¼l arayÃƒÂ¼zÃƒÂ¼
 type Module interface {
 Name() string
 State() ModuleState
@@ -31,7 +31,7 @@ Stop() error
 DependsOn() []string
 }
 
-// ModuleInfo modül bilgileri
+// ModuleInfo modÃƒÂ¼l bilgileri
 type ModuleInfo struct {
 Name      string       `json:"name"`
 State     ModuleState  `json:"state"`
@@ -40,7 +40,7 @@ DependsOn []string     `json:"depends_on"`
 Started   bool         `json:"started"`
 }
 
-// Manager modül yöneticisi
+// Manager modÃƒÂ¼l yÃƒÂ¶neticisi
 type Manager struct {
 mu       sync.RWMutex
 modules  map[string]Module
@@ -49,7 +49,7 @@ logger   *logger.Logger
 config   *config.ModulesConfig
 }
 
-// NewManager yeni modül yöneticisi oluşturur
+// NewManager yeni modÃƒÂ¼l yÃƒÂ¶neticisi oluÃ…Å¸turur
 func NewManager(logger *logger.Logger, cfg *config.ModulesConfig) *Manager {
 return &Manager{
 modules: make(map[string]Module),
@@ -59,7 +59,7 @@ config:  cfg,
 }
 }
 
-// Register modülü kaydeder
+// Register modÃƒÂ¼lÃƒÂ¼ kaydeder
 func (m *Manager) Register(module Module) error {
 m.mu.Lock()
 defer m.mu.Unlock()
@@ -69,7 +69,7 @@ if _, exists := m.modules[name]; exists {
 return fmt.Errorf("module %s already registered", name)
 }
 
-// Modül durumunu kontrol et
+// ModÃƒÂ¼l durumunu kontrol et
 state := module.State()
 if state == "" {
 state = StateDisabled
@@ -91,17 +91,17 @@ zap.String("state", string(state)),
 return nil
 }
 
-// Initialize tüm modülleri başlatır
+// Initialize tÃƒÂ¼m modÃƒÂ¼lleri baÃ…Å¸latÃ„Â±r
 func (m *Manager) Initialize() error {
 m.mu.Lock()
 defer m.mu.Unlock()
 
-// Önce bağımlılıkları kontrol et
+// Ãƒâ€“nce baÃ„Å¸Ã„Â±mlÃ„Â±lÃ„Â±klarÃ„Â± kontrol et
 if err := m.validateDependencies(); err != nil {
 return err
 }
 
-// Modülleri sıralı olarak başlat
+// ModÃƒÂ¼lleri sÃ„Â±ralÃ„Â± olarak baÃ…Å¸lat
 for name, module := range m.modules {
 if m.isModuleEnabled(name) {
 m.logger.Info("Initializing module",
@@ -116,7 +116,7 @@ return fmt.Errorf("failed to initialize module %s: %w", name, err)
 return nil
 }
 
-// Start tüm modülleri başlatır
+// Start tÃƒÂ¼m modÃƒÂ¼lleri baÃ…Å¸latÃ„Â±r
 func (m *Manager) Start() error {
 m.mu.Lock()
 defer m.mu.Unlock()
@@ -135,7 +135,7 @@ return fmt.Errorf("failed to start module %s: %w", name, err)
 return nil
 }
 
-// Stop tüm modülleri durdurur
+// Stop tÃƒÂ¼m modÃƒÂ¼lleri durdurur
 func (m *Manager) Stop() error {
 m.mu.Lock()
 defer m.mu.Unlock()
@@ -157,7 +157,7 @@ zap.Error(err),
 return nil
 }
 
-// GetModule modülü döndürür
+// GetModule modÃƒÂ¼lÃƒÂ¼ dÃƒÂ¶ndÃƒÂ¼rÃƒÂ¼r
 func (m *Manager) GetModule(name string) (Module, bool) {
 m.mu.RLock()
 defer m.mu.RUnlock()
@@ -165,7 +165,7 @@ module, exists := m.modules[name]
 return module, exists
 }
 
-// GetModuleState modül durumunu döndürür
+// GetModuleState modÃƒÂ¼l durumunu dÃƒÂ¶ndÃƒÂ¼rÃƒÂ¼r
 func (m *Manager) GetModuleState(name string) ModuleState {
 m.mu.RLock()
 defer m.mu.RUnlock()
@@ -175,7 +175,7 @@ return state
 return StateDisabled
 }
 
-// SetModuleState modül durumunu değiştirir
+// SetModuleState modÃƒÂ¼l durumunu deÃ„Å¸iÃ…Å¸tirir
 func (m *Manager) SetModuleState(name string, state ModuleState) error {
 m.mu.Lock()
 defer m.mu.Unlock()
@@ -193,7 +193,7 @@ zap.String("state", string(state)),
 return nil
 }
 
-// GetModules tüm modülleri döndürür
+// GetModules tÃƒÂ¼m modÃƒÂ¼lleri dÃƒÂ¶ndÃƒÂ¼rÃƒÂ¼r
 func (m *Manager) GetModules() map[string]ModuleInfo {
 m.mu.RLock()
 defer m.mu.RUnlock()
@@ -210,7 +210,7 @@ Started:   m.isModuleEnabled(name),
 return result
 }
 
-// validateDependencies bağımlılıkları doğrular
+// validateDependencies baÃ„Å¸Ã„Â±mlÃ„Â±lÃ„Â±klarÃ„Â± doÃ„Å¸rular
 func (m *Manager) validateDependencies() error {
 for name, module := range m.modules {
 if !m.isModuleEnabled(name) {
@@ -228,7 +228,7 @@ return fmt.Errorf("module %s depends on %s which does not exist", name, dep)
 return nil
 }
 
-// isModuleEnabled modülün aktif olup olmadığını kontrol eder
+// isModuleEnabled modÃƒÂ¼lÃƒÂ¼n aktif olup olmadÃ„Â±Ã„Å¸Ã„Â±nÃ„Â± kontrol eder
 func (m *Manager) isModuleEnabled(name string) bool {
 state, exists := m.states[name]
 if !exists {

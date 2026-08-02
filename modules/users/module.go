@@ -1,4 +1,4 @@
-﻿package users
+package users
 
 import (
 "modules/users/api"
@@ -12,7 +12,7 @@ import (
 "gorm.io/gorm"
 )
 
-// UsersModule users modülü
+// UsersModule users modÃ¼lÃ¼
 type UsersModule struct {
 *module.BaseModule
 db          *gorm.DB
@@ -22,7 +22,7 @@ userService *service.UserService
 router      *echo.Echo
 }
 
-// NewUsersModule yeni users modülü oluşturur
+// NewUsersModule yeni users modÃ¼lÃ¼ oluÅŸturur
 func NewUsersModule(db *gorm.DB, logger *logger.Logger, echo *echo.Echo) *UsersModule {
 base := module.NewBaseModule("users", "1.0.0", module.StateEnabled, logger)
 base.SetDependsOn([]string{"auth", "database"})
@@ -35,13 +35,13 @@ router:     echo,
 }
 }
 
-// Initialize modülü başlatır
+// Initialize modÃ¼lÃ¼ baÅŸlatÄ±r
 func (m *UsersModule) Initialize() error {
 if err := m.BaseModule.Initialize(); err != nil {
 return err
 }
 
-// Servis ve handler'ı oluştur
+// Servis ve handler'Ä± oluÅŸtur
 m.userService = service.NewUserService(m.db)
 m.handler = api.NewUserHandler(m.userService)
 
@@ -49,13 +49,13 @@ m.logger.Info("Users module initialized")
 return nil
 }
 
-// Start modülü başlatır ve route'ları ekler
+// Start modÃ¼lÃ¼ baÅŸlatÄ±r ve route'larÄ± ekler
 func (m *UsersModule) Start() error {
 if err := m.BaseModule.Start(); err != nil {
 return err
 }
 
-// Route'ları ekle
+// Route'larÄ± ekle
 userGroup := m.router.Group("/api/users")
 userGroup.GET("/me", m.handler.GetMe)
 userGroup.PUT("/me", m.handler.UpdateMe)
@@ -67,11 +67,11 @@ m.logger.Info("Users module started - routes registered")
 return nil
 }
 
-// Stop modülü durdurur
+// Stop modÃ¼lÃ¼ durdurur
 func (m *UsersModule) Stop() error {
 m.logger.Info("Users module stopped")
 return m.BaseModule.Stop()
 }
 
-// User modelini dışa aktar
+// User modelini dÄ±ÅŸa aktar
 type User = model.User

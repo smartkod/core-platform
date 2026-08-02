@@ -1,4 +1,4 @@
-﻿package ai_gateway
+package ai_gateway
 
 import (
 "os"

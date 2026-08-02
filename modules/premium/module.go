@@ -1,4 +1,4 @@
-﻿package premium
+package premium
 
 import (
 "modules/premium/model"

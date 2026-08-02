@@ -1,4 +1,4 @@
-﻿package security
+package security
 
 import (
     "crypto/rand"
@@ -8,14 +8,14 @@ import (
     "github.com/labstack/echo/v4"
 )
 
-// CSRF CSRF koruması
+// CSRF CSRF korumasÄ±
 type CSRF struct {
     tokenLength int
     cookieName  string
     headerName  string
 }
 
-// NewCSRF yeni CSRF oluşturur
+// NewCSRF yeni CSRF oluÅŸturur
 func NewCSRF() *CSRF {
     return &CSRF{
         tokenLength: 32,
@@ -28,7 +28,7 @@ func NewCSRF() *CSRF {
 func (c *CSRF) Middleware() echo.MiddlewareFunc {
     return func(next echo.HandlerFunc) echo.HandlerFunc {
         return func(ctx echo.Context) error {
-            // GET, HEAD, OPTIONS, TRACE metodları için kontrol etme
+            // GET, HEAD, OPTIONS, TRACE metodlarÄ± iÃ§in kontrol etme
             method := ctx.Request().Method
             if method == "GET" || method == "HEAD" || method == "OPTIONS" || method == "TRACE" {
                 return next(ctx)
@@ -50,7 +50,7 @@ func (c *CSRF) Middleware() echo.MiddlewareFunc {
                 })
             }
 
-            // Token'ları karşılaştır
+            // Token'larÄ± karÅŸÄ±laÅŸtÄ±r
             if cookie.Value != token {
                 return ctx.JSON(http.StatusForbidden, map[string]string{
                     "error": "CSRF token mismatch",
@@ -62,7 +62,7 @@ func (c *CSRF) Middleware() echo.MiddlewareFunc {
     }
 }
 
-// GenerateToken yeni CSRF token oluşturur
+// GenerateToken yeni CSRF token oluÅŸturur
 func (c *CSRF) GenerateToken() (string, error) {
     bytes := make([]byte, c.tokenLength)
     if _, err := rand.Read(bytes); err != nil {
@@ -71,7 +71,7 @@ func (c *CSRF) GenerateToken() (string, error) {
     return base64.URLEncoding.EncodeToString(bytes), nil
 }
 
-// SetCookie CSRF token'ı cookie olarak ayarlar
+// SetCookie CSRF token'Ä± cookie olarak ayarlar
 func (c *CSRF) SetCookie(ctx echo.Context, token string) {
     cookie := &http.Cookie{
         Name:     c.cookieName,

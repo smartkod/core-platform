@@ -1,4 +1,4 @@
-﻿package localization
+package localization
 
 import (
     "strings"
@@ -13,7 +13,7 @@ type Middleware struct {
     supportedLocales []string
 }
 
-// NewMiddleware yeni middleware oluşturur
+// NewMiddleware yeni middleware oluÅŸturur
 func NewMiddleware(translator *Translator, defaultLocale string, supportedLocales []string) *Middleware {
     return &Middleware{
         translator: translator,
@@ -22,7 +22,7 @@ func NewMiddleware(translator *Translator, defaultLocale string, supportedLocale
     }
 }
 
-// Middleware dil middleware'ini döndürür
+// Middleware dil middleware'ini dÃ¶ndÃ¼rÃ¼r
 func (m *Middleware) Middleware() echo.MiddlewareFunc {
     return func(next echo.HandlerFunc) echo.HandlerFunc {
         return func(c echo.Context) error {
@@ -30,14 +30,14 @@ func (m *Middleware) Middleware() echo.MiddlewareFunc {
             // 1. Query parametresi: ?lang=tr
             // 2. Cookie: lang=tr
             // 3. Header: Accept-Language: tr-TR,tr;q=0.9
-            // 4. Varsayılan dil
+            // 4. VarsayÄ±lan dil
 
             locale := m.getLocale(c)
 
             // Context'e locale'i ekle
             c.Set("locale", locale)
 
-            // Translator'ı context'e ekle
+            // Translator'Ä± context'e ekle
             c.Set("translator", m.translator)
 
             return next(c)
@@ -76,7 +76,7 @@ func (m *Middleware) getLocale(c echo.Context) string {
         }
     }
 
-    // 4. Varsayılan dil
+    // 4. VarsayÄ±lan dil
     return m.defaultLocale
 }
 
@@ -90,7 +90,7 @@ func (m *Middleware) isSupported(locale string) bool {
     return false
 }
 
-// GetLocale context'ten locale alır
+// GetLocale context'ten locale alÄ±r
 func GetLocale(c echo.Context) string {
     if locale, ok := c.Get("locale").(string); ok {
         return locale
@@ -98,7 +98,7 @@ func GetLocale(c echo.Context) string {
     return "en"
 }
 
-// GetTranslator context'ten translator alır
+// GetTranslator context'ten translator alÄ±r
 func GetTranslator(c echo.Context) *Translator {
     if translator, ok := c.Get("translator").(*Translator); ok {
         return translator
@@ -106,7 +106,7 @@ func GetTranslator(c echo.Context) *Translator {
     return nil
 }
 
-// T context'ten çeviri yapar
+// T context'ten Ã§eviri yapar
 func T(c echo.Context, key string, data interface{}) string {
     translator := GetTranslator(c)
     if translator == nil {

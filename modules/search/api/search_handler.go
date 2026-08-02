@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -60,7 +60,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, response)
 }
 
-// GetHistory arama geçmişini getirir
+// GetHistory arama geÃ§miÅŸini getirir
 func (h *SearchHandler) GetHistory(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -82,7 +82,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, history)
 }
 
-// GetPopular popüler aramaları getirir
+// GetPopular popÃ¼ler aramalarÄ± getirir
 func (h *SearchHandler) GetPopular(c echo.Context) error {
 limit := 10
 if limitStr := c.QueryParam("limit"); limitStr != "" {

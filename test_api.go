@@ -123,11 +123,11 @@ return c.JSON(http.StatusOK, map[string]interface{}{
 paymentGroup := e.Group("/api/payments")
 paymentGroup.GET("/methods", func(c echo.Context) error {
 return c.JSON(http.StatusOK, []map[string]string{
-{"id": "paynow", "name": "PayNow", "icon": "Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¸Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¬"},
-{"id": "grabpay", "name": "GrabPay", "icon": "Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¸Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¬"},
-{"id": "shopeepay", "name": "ShopeePay", "icon": "Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¸Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¬"},
-{"id": "card", "name": "Credit/Debit Card", "icon": "Ã„Å¸Ã…Â¸Ã¢â‚¬â„¢Ã‚Â³"},
-{"id": "fpx", "name": "FPX", "icon": "Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â²Ã„Å¸Ã…Â¸Ã¢â‚¬Â¡Ã‚Â¾"},
+{"id": "paynow", "name": "PayNow", "icon": "ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬"},
+{"id": "grabpay", "name": "GrabPay", "icon": "ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬"},
+{"id": "shopeepay", "name": "ShopeePay", "icon": "ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬"},
+{"id": "card", "name": "Credit/Debit Card", "icon": "ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬ÂÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³"},
+{"id": "fpx", "name": "FPX", "icon": "ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â²ÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¾"},
 })
 })
 paymentGroup.POST("/create", func(c echo.Context) error {
@@ -182,8 +182,8 @@ return c.JSON(http.StatusOK, []map[string]interface{}{
 {
 "id":         1,
 "type":       "inapp",
-"title":      "HoÃƒâ€¦Ã…Â¸ geldiniz!",
-"content":    "Core Platform'a hoÃƒâ€¦Ã…Â¸ geldiniz!",
+"title":      "HoÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ geldiniz!",
+"content":    "Core Platform'a hoÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ geldiniz!",
 "is_read":    false,
 "is_sent":    true,
 "created_at": "2026-07-31T10:00:00Z",
@@ -191,8 +191,8 @@ return c.JSON(http.StatusOK, []map[string]interface{}{
 {
 "id":         2,
 "type":       "email",
-"title":      "Premium ÃƒÆ’Ã‚Â¼yeliÃƒâ€Ã…Â¸iniz aktif!",
-"content":    "Premium ÃƒÆ’Ã‚Â¼yeliÃƒâ€Ã…Â¸iniz baÃƒâ€¦Ã…Â¸arÃƒâ€Ã‚Â±yla aktifleÃƒâ€¦Ã…Â¸tirildi.",
+"title":      "Premium ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼yeliÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸iniz aktif!",
+"content":    "Premium ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼yeliÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸iniz baÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸arÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±yla aktifleÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸tirildi.",
 "is_read":    true,
 "is_sent":    true,
 "created_at": "2026-07-31T09:00:00Z",
@@ -242,7 +242,7 @@ return c.JSON(http.StatusOK, map[string]interface{}{
 "id":       "ai_resp_123",
 "provider": "openai",
 "model":    "gpt-3.5-turbo",
-"content":  "Bu bir test yanıtıdır. Gerçek AI entegrasyonu için OpenAI API anahtarı gereklidir.",
+"content":  "Bu bir test yanÃ„Â±tÃ„Â±dÃ„Â±r. GerÃƒÂ§ek AI entegrasyonu iÃƒÂ§in OpenAI API anahtarÃ„Â± gereklidir.",
 "usage": map[string]interface{}{
 "prompt_tokens":     10,
 "completion_tokens": 15,
@@ -268,7 +268,7 @@ return c.JSON(http.StatusOK, map[string]interface{}{
 {
 "id": "1",
 "type": "user",
-"title": "Ahmet YÄ±lmaz",
+"title": "Ahmet YÃƒâ€Ã‚Â±lmaz",
 "description": "ahmet@example.com",
 "url": "/users/1",
 "score": 0.95,
@@ -299,7 +299,7 @@ return c.JSON(http.StatusOK, []map[string]interface{}{
 },
 {
 "id": 2,
-"query": "burÃ§ yorumu",
+"query": "burÃƒÆ’Ã‚Â§ yorumu",
 "category": "content",
 "result_count": 8,
 "created_at": "2026-07-31T09:00:00Z",
@@ -309,10 +309,10 @@ return c.JSON(http.StatusOK, []map[string]interface{}{
 searchGroup.GET("/popular", func(c echo.Context) error {
 return c.JSON(http.StatusOK, []map[string]interface{}{
 {"query": "astroloji", "count": 120},
-{"query": "burÃ§ yorumu", "count": 95},
-{"query": "aÃ…Å¸k", "count": 80},
+{"query": "burÃƒÆ’Ã‚Â§ yorumu", "count": 95},
+{"query": "aÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€¦Ã‚Â¸k", "count": 80},
 {"query": "kariyer", "count": 65},
-{"query": "saÃ„Å¸lÃ„Â±k", "count": 50},
+{"query": "saÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸lÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±k", "count": 50},
 })
 })
 

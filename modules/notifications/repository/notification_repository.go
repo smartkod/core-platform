@@ -1,4 +1,4 @@
-﻿package repository
+package repository
 
 import (
 "modules/notifications/model"
@@ -16,12 +16,12 @@ db: db,
 }
 }
 
-// CreateNotification bildirim oluştur
+// CreateNotification bildirim oluÅŸtur
 func (r *NotificationRepository) CreateNotification(notification *model.Notification) error {
 return r.db.Create(notification).Error
 }
 
-// GetUserNotifications kullanıcının bildirimlerini getir
+// GetUserNotifications kullanÄ±cÄ±nÄ±n bildirimlerini getir
 func (r *NotificationRepository) GetUserNotifications(userID uint, limit int) ([]model.Notification, error) {
 var notifications []model.Notification
 err := r.db.Where("user_id = ?", userID).
@@ -31,7 +31,7 @@ Find(&notifications).Error
 return notifications, err
 }
 
-// GetUnreadCount okunmamış bildirim sayısını getir
+// GetUnreadCount okunmamÄ±ÅŸ bildirim sayÄ±sÄ±nÄ± getir
 func (r *NotificationRepository) GetUnreadCount(userID uint) (int64, error) {
 var count int64
 err := r.db.Model(&model.Notification{}).
@@ -40,7 +40,7 @@ Count(&count).Error
 return count, err
 }
 
-// MarkAsRead bildirimi okundu olarak işaretle
+// MarkAsRead bildirimi okundu olarak iÅŸaretle
 func (r *NotificationRepository) MarkAsRead(notificationID uint) error {
 return r.db.Model(&model.Notification{}).
 Where("id = ?", notificationID).
@@ -50,7 +50,7 @@ Updates(map[string]interface{}{
 }).Error
 }
 
-// MarkAllAsRead tüm bildirimleri okundu olarak işaretle
+// MarkAllAsRead tÃ¼m bildirimleri okundu olarak iÅŸaretle
 func (r *NotificationRepository) MarkAllAsRead(userID uint) error {
 return r.db.Model(&model.Notification{}).
 Where("user_id = ? AND is_read = ?", userID, false).
@@ -60,7 +60,7 @@ Updates(map[string]interface{}{
 }).Error
 }
 
-// GetPreferences kullanıcının bildirim tercihlerini getir
+// GetPreferences kullanÄ±cÄ±nÄ±n bildirim tercihlerini getir
 func (r *NotificationRepository) GetPreferences(userID uint) (*model.NotificationPreference, error) {
 var prefs model.NotificationPreference
 err := r.db.Where("user_id = ?", userID).First(&prefs).Error
@@ -70,7 +70,7 @@ return nil, err
 return &prefs, nil
 }
 
-// CreateOrUpdatePreferences bildirim tercihlerini oluştur veya güncelle
+// CreateOrUpdatePreferences bildirim tercihlerini oluÅŸtur veya gÃ¼ncelle
 func (r *NotificationRepository) CreateOrUpdatePreferences(prefs *model.NotificationPreference) error {
 return r.db.Save(prefs).Error
 }

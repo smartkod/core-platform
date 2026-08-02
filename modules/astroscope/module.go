@@ -1,4 +1,4 @@
-﻿package astroscope
+package astroscope
 
 import (
 "modules/astroscope/api"

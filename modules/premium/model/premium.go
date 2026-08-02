@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -13,7 +13,7 @@ Name        string         json:"name" gorm:"not null"
 Description string         json:"description"
 Price       float64        json:"price" gorm:"not null"
 Currency    string         json:"currency" gorm:"default:TRY"
-Duration    int            json:"duration" gorm:"not null" // Gün cinsinden
+Duration    int            json:"duration" gorm:"not null" // GÃ¼n cinsinden
 Features    string         json:"features" gorm:"type:jsonb"
 IsActive    bool           json:"is_active" gorm:"default:true"
 CreatedAt   time.Time      json:"created_at"
@@ -25,7 +25,7 @@ func (PremiumPlan) TableName() string {
 return "premium_plans"
 }
 
-// UserPremium kullanıcı premium kaydı
+// UserPremium kullanÄ±cÄ± premium kaydÄ±
 type UserPremium struct {
 ID          uint           json:"id" gorm:"primaryKey"
 UserID      uint           json:"user_id" gorm:"uniqueIndex;not null"
@@ -44,13 +44,13 @@ func (UserPremium) TableName() string {
 return "user_premiums"
 }
 
-// PremiumPurchaseRequest premium satın alma isteği
+// PremiumPurchaseRequest premium satÄ±n alma isteÄŸi
 type PremiumPurchaseRequest struct {
 PlanID    uint json:"plan_id" validate:"required"
 AutoRenew bool json:"auto_renew"
 }
 
-// PremiumResponse premium yanıtı
+// PremiumResponse premium yanÄ±tÄ±
 type PremiumResponse struct {
 IsActive       bool       json:"is_active"
 PlanName       string     json:"plan_name,omitempty"

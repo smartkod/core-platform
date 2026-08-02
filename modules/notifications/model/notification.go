@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -47,7 +47,7 @@ func (NotificationPreference) TableName() string {
 return "notification_preferences"
 }
 
-// CreateNotificationRequest bildirim oluşturma isteği
+// CreateNotificationRequest bildirim oluÅŸturma isteÄŸi
 type CreateNotificationRequest struct {
 UserID  uint   json:"user_id" validate:"required"
 Type    string json:"type" validate:"required" // email, push, inapp, sms
@@ -56,7 +56,7 @@ Content string json:"content" validate:"required"
 Data    string json:"data"
 }
 
-// NotificationResponse bildirim yanıtı
+// NotificationResponse bildirim yanÄ±tÄ±
 type NotificationResponse struct {
 ID        uint       json:"id"
 Type      string     json:"type"
@@ -69,7 +69,7 @@ CreatedAt time.Time  json:"created_at"
 ReadAt    *time.Time json:"read_at,omitempty"
 }
 
-// NotificationPreferenceResponse bildirim tercihi yanıtı
+// NotificationPreferenceResponse bildirim tercihi yanÄ±tÄ±
 type NotificationPreferenceResponse struct {
 Email       bool json:"email"
 Push        bool json:"push"
@@ -80,7 +80,7 @@ Transaction bool json:"transaction"
 System      bool json:"system"
 }
 
-// UpdatePreferenceRequest bildirim tercihi güncelleme isteği
+// UpdatePreferenceRequest bildirim tercihi gÃ¼ncelleme isteÄŸi
 type UpdatePreferenceRequest struct {
 Email       *bool json:"email"
 Push        *bool json:"push"

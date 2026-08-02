@@ -1,4 +1,4 @@
-﻿package security
+package security
 
 import (
     "time"
@@ -6,7 +6,7 @@ import (
     "github.com/labstack/echo/v4"
 )
 
-// Security ana security modülü
+// Security ana security modÃ¼lÃ¼
 type Security struct {
     rateLimiter *RateLimiter
     csrf        *CSRF
@@ -14,7 +14,7 @@ type Security struct {
     config      Config
 }
 
-// Config security yapılandırması
+// Config security yapÄ±landÄ±rmasÄ±
 type Config struct {
     RateLimit       int
     RateLimitWindow time.Duration
@@ -23,7 +23,7 @@ type Config struct {
     CORSConfig      CORSConfig
 }
 
-// DefaultConfig varsayılan yapılandırma
+// DefaultConfig varsayÄ±lan yapÄ±landÄ±rma
 func DefaultConfig() Config {
     return Config{
         RateLimit:       100,
@@ -34,7 +34,7 @@ func DefaultConfig() Config {
     }
 }
 
-// NewSecurity yeni security modülü oluşturur
+// NewSecurity yeni security modÃ¼lÃ¼ oluÅŸturur
 func NewSecurity(config Config) *Security {
     return &Security{
         rateLimiter: NewRateLimiter(config.RateLimit, config.RateLimitWindow),
@@ -55,17 +55,17 @@ func (s *Security) Setup(e *echo.Echo) {
     }
 }
 
-// GetValidator validator'ı döndürür
+// GetValidator validator'Ä± dÃ¶ndÃ¼rÃ¼r
 func (s *Security) GetValidator() *Validator {
     return s.validator
 }
 
-// GetCSRF CSRF'yi döndürür
+// GetCSRF CSRF'yi dÃ¶ndÃ¼rÃ¼r
 func (s *Security) GetCSRF() *CSRF {
     return s.csrf
 }
 
-// GetRateLimiter rate limiter'ı döndürür
+// GetRateLimiter rate limiter'Ä± dÃ¶ndÃ¼rÃ¼r
 func (s *Security) GetRateLimiter() *RateLimiter {
     return s.rateLimiter
 }

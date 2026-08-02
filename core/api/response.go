@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
     "net/http"
@@ -6,7 +6,7 @@ import (
     "github.com/labstack/echo/v4"
 )
 
-// Response standart API yanıtı
+// Response standart API yanÄ±tÄ±
 type Response struct {
     Success bool        `json:"success"`
     Data    interface{} `json:"data,omitempty"`
@@ -15,7 +15,7 @@ type Response struct {
     Code    int         `json:"code"`
 }
 
-// SuccessResponse başarılı yanıt oluşturur
+// SuccessResponse baÅŸarÄ±lÄ± yanÄ±t oluÅŸturur
 func SuccessResponse(c echo.Context, data interface{}) error {
     return c.JSON(http.StatusOK, Response{
         Success: true,
@@ -24,7 +24,7 @@ func SuccessResponse(c echo.Context, data interface{}) error {
     })
 }
 
-// CreatedResponse oluşturma yanıtı
+// CreatedResponse oluÅŸturma yanÄ±tÄ±
 func CreatedResponse(c echo.Context, data interface{}) error {
     return c.JSON(http.StatusCreated, Response{
         Success: true,
@@ -33,7 +33,7 @@ func CreatedResponse(c echo.Context, data interface{}) error {
     })
 }
 
-// ErrorResponse hata yanıtı oluşturur
+// ErrorResponse hata yanÄ±tÄ± oluÅŸturur
 func ErrorResponse(c echo.Context, statusCode int, message string) error {
     return c.JSON(statusCode, Response{
         Success: false,
@@ -42,27 +42,27 @@ func ErrorResponse(c echo.Context, statusCode int, message string) error {
     })
 }
 
-// BadRequestResponse geçersiz istek yanıtı
+// BadRequestResponse geÃ§ersiz istek yanÄ±tÄ±
 func BadRequestResponse(c echo.Context, message string) error {
     return ErrorResponse(c, http.StatusBadRequest, message)
 }
 
-// NotFoundResponse bulunamadı yanıtı
+// NotFoundResponse bulunamadÄ± yanÄ±tÄ±
 func NotFoundResponse(c echo.Context, message string) error {
     return ErrorResponse(c, http.StatusNotFound, message)
 }
 
-// UnauthorizedResponse yetkisiz yanıtı
+// UnauthorizedResponse yetkisiz yanÄ±tÄ±
 func UnauthorizedResponse(c echo.Context, message string) error {
     return ErrorResponse(c, http.StatusUnauthorized, message)
 }
 
-// ForbiddenResponse yasak yanıtı
+// ForbiddenResponse yasak yanÄ±tÄ±
 func ForbiddenResponse(c echo.Context, message string) error {
     return ErrorResponse(c, http.StatusForbidden, message)
 }
 
-// InternalServerErrorResponse sunucu hatası yanıtı
+// InternalServerErrorResponse sunucu hatasÄ± yanÄ±tÄ±
 func InternalServerErrorResponse(c echo.Context, message string) error {
     return ErrorResponse(c, http.StatusInternalServerError, message)
 }

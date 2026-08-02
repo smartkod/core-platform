@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// CommunityPost topluluk paylaşımı
+// CommunityPost topluluk paylaÅŸÄ±mÄ±
 type CommunityPost struct {
 ID          uint           json:"id" gorm:"primaryKey"
 UserID      uint           json:"user_id" gorm:"not null;index"
@@ -66,7 +66,7 @@ func (EventPattern) TableName() string {
 return "event_patterns"
 }
 
-// CommunityPostRequest topluluk paylaşımı isteği
+// CommunityPostRequest topluluk paylaÅŸÄ±mÄ± isteÄŸi
 type CommunityPostRequest struct {
 Title       string   json:"title" validate:"required"
 Content     string   json:"content" validate:"required"
@@ -75,7 +75,7 @@ Tags        []string json:"tags"
 IsAnonymous bool     json:"is_anonymous"
 }
 
-// CommunityPostResponse topluluk paylaşımı yanıtı
+// CommunityPostResponse topluluk paylaÅŸÄ±mÄ± yanÄ±tÄ±
 type CommunityPostResponse struct {
 ID           uint      json:"id"
 Title        string    json:"title"
@@ -90,7 +90,7 @@ CreatedAt    time.Time json:"created_at"
 UpdatedAt    time.Time json:"updated_at"
 }
 
-// PatternDiscoveryResponse desen keşfi yanıtı
+// PatternDiscoveryResponse desen keÅŸfi yanÄ±tÄ±
 type PatternDiscoveryResponse struct {
 Category    string                 json:"category"
 SubCategory string                 json:"sub_category"

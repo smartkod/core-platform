@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -19,7 +19,7 @@ premiumService: premiumService,
 }
 }
 
-// GetPlans premium planlarını getir
+// GetPlans premium planlarÄ±nÄ± getir
 func (h *PremiumHandler) GetPlans(c echo.Context) error {
 plans, err := h.premiumService.GetPlans()
 if err != nil {
@@ -30,7 +30,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, plans)
 }
 
-// GetMyPremium kullanıcının premium durumunu getir
+// GetMyPremium kullanÄ±cÄ±nÄ±n premium durumunu getir
 func (h *PremiumHandler) GetMyPremium(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)
@@ -44,7 +44,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, premium)
 }
 
-// PurchasePremium premium satın al
+// PurchasePremium premium satÄ±n al
 func (h *PremiumHandler) PurchasePremium(c echo.Context) error {
 // TODO: JWT'den user ID al
 userID := uint(1)

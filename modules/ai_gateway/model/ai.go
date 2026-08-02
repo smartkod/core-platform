@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,11 +6,11 @@ import (
 "gorm.io/gorm"
 )
 
-// AIProvider AI sağlayıcı
+// AIProvider AI saÄŸlayÄ±cÄ±
 type AIProvider struct {
 ID          uint           json:"id" gorm:"primaryKey"
 Name        string         json:"name" gorm:"unique;not null" // openai, anthropic, gemini
-APIKey      string         json:"-" gorm:"not null"           // API anahtarı
+APIKey      string         json:"-" gorm:"not null"           // API anahtarÄ±
 BaseURL     string         json:"base_url"
 Models      string         json:"models" gorm:"type:jsonb"    // JSON array
 IsActive    bool           json:"is_active" gorm:"default:true"
@@ -24,7 +24,7 @@ func (AIProvider) TableName() string {
 return "ai_providers"
 }
 
-// AIRequest AI isteği
+// AIRequest AI isteÄŸi
 type AIRequest struct {
 Provider    string                 json:"provider" validate:"required" // openai, anthropic, gemini
 Model       string                 json:"model" validate:"required"
@@ -34,7 +34,7 @@ Temperature float64                json:"temperature"
 Options     map[string]interface{} json:"options"
 }
 
-// AIResponse AI yanıtı
+// AIResponse AI yanÄ±tÄ±
 type AIResponse struct {
 ID           string                 json:"id"
 Provider     string                 json:"provider"
@@ -45,7 +45,7 @@ FinishReason string                 json:"finish_reason"
 CreatedAt    time.Time              json:"created_at"
 }
 
-// AICache AI önbellek
+// AICache AI Ã¶nbellek
 type AICache struct {
 ID          uint           json:"id" gorm:"primaryKey"
 Provider    string         json:"provider" gorm:"not null"
@@ -62,7 +62,7 @@ func (AICache) TableName() string {
 return "ai_cache"
 }
 
-// AIUsage AI kullanım istatistikleri
+// AIUsage AI kullanÄ±m istatistikleri
 type AIUsage struct {
 ID          uint           json:"id" gorm:"primaryKey"
 Provider    string         json:"provider" gorm:"not null"

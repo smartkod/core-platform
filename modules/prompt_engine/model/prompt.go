@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// PromptTemplate prompt şablonu
+// PromptTemplate prompt ÅŸablonu
 type PromptTemplate struct {
 ID          uint           json:"id" gorm:"primaryKey"
 Name        string         json:"name" gorm:"unique;not null"
@@ -27,7 +27,7 @@ func (PromptTemplate) TableName() string {
 return "prompt_templates"
 }
 
-// PromptExecution prompt çalıştırma kaydı
+// PromptExecution prompt Ã§alÄ±ÅŸtÄ±rma kaydÄ±
 type PromptExecution struct {
 ID           uint           json:"id" gorm:"primaryKey"
 TemplateID   uint           json:"template_id" gorm:"not null"
@@ -47,7 +47,7 @@ func (PromptExecution) TableName() string {
 return "prompt_executions"
 }
 
-// CreatePromptRequest prompt oluşturma isteği
+// CreatePromptRequest prompt oluÅŸturma isteÄŸi
 type CreatePromptRequest struct {
 Name        string            json:"name" validate:"required"
 Category    string            json:"category" validate:"required"
@@ -57,13 +57,13 @@ Variables   []string          json:"variables"
 Version     string            json:"version"
 }
 
-// ExecutePromptRequest prompt çalıştırma isteği
+// ExecutePromptRequest prompt Ã§alÄ±ÅŸtÄ±rma isteÄŸi
 type ExecutePromptRequest struct {
 TemplateName string                 json:"template_name" validate:"required"
 Variables    map[string]interface{} json:"variables"
 }
 
-// PromptResponse prompt yanıtı
+// PromptResponse prompt yanÄ±tÄ±
 type PromptResponse struct {
 ID          uint     json:"id"
 Name        string   json:"name"
@@ -77,7 +77,7 @@ UsageCount  int      json:"usage_count"
 CreatedAt   time.Time json:"created_at"
 }
 
-// ExecutePromptResponse prompt çalıştırma yanıtı
+// ExecutePromptResponse prompt Ã§alÄ±ÅŸtÄ±rma yanÄ±tÄ±
 type ExecutePromptResponse struct {
 Result      string json:"result"
 TokensIn    int    json:"tokens_in"

@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "errors"
@@ -20,9 +20,9 @@ notifRepo: repository.NewNotificationRepository(db),
 }
 }
 
-// SendNotification bildirim gönder
+// SendNotification bildirim gÃ¶nder
 func (s *NotificationService) SendNotification(req *model.CreateNotificationRequest) (*model.NotificationResponse, error) {
-// Bildirim oluştur
+// Bildirim oluÅŸtur
 notification := &model.Notification{
 UserID:  req.UserID,
 Type:    req.Type,
@@ -37,8 +37,8 @@ if err := s.notifRepo.CreateNotification(notification); err != nil {
 return nil, err
 }
 
-// Bildirimi gönder (mock)
-// TODO: Gerçek bildirim gönderimi (Firebase, SMTP, SMS API)
+// Bildirimi gÃ¶nder (mock)
+// TODO: GerÃ§ek bildirim gÃ¶nderimi (Firebase, SMTP, SMS API)
 now := time.Now()
 notification.IsSent = true
 notification.SentAt = &now
@@ -46,7 +46,7 @@ notification.SentAt = &now
 return s.toResponse(notification), nil
 }
 
-// GetNotifications kullanıcının bildirimlerini getir
+// GetNotifications kullanÄ±cÄ±nÄ±n bildirimlerini getir
 func (s *NotificationService) GetNotifications(userID uint, limit int) ([]model.NotificationResponse, error) {
 notifications, err := s.notifRepo.GetUserNotifications(userID, limit)
 if err != nil {
@@ -60,27 +60,27 @@ responses[i] = *s.toResponse(&notif)
 return responses, nil
 }
 
-// GetUnreadCount okunmamış bildirim sayısını getir
+// GetUnreadCount okunmamÄ±ÅŸ bildirim sayÄ±sÄ±nÄ± getir
 func (s *NotificationService) GetUnreadCount(userID uint) (int64, error) {
 return s.notifRepo.GetUnreadCount(userID)
 }
 
-// MarkAsRead bildirimi okundu olarak işaretle
+// MarkAsRead bildirimi okundu olarak iÅŸaretle
 func (s *NotificationService) MarkAsRead(notificationID uint) error {
 return s.notifRepo.MarkAsRead(notificationID)
 }
 
-// MarkAllAsRead tüm bildirimleri okundu olarak işaretle
+// MarkAllAsRead tÃ¼m bildirimleri okundu olarak iÅŸaretle
 func (s *NotificationService) MarkAllAsRead(userID uint) error {
 return s.notifRepo.MarkAllAsRead(userID)
 }
 
-// GetPreferences kullanıcının bildirim tercihlerini getir
+// GetPreferences kullanÄ±cÄ±nÄ±n bildirim tercihlerini getir
 func (s *NotificationService) GetPreferences(userID uint) (*model.NotificationPreferenceResponse, error) {
 prefs, err := s.notifRepo.GetPreferences(userID)
 if err != nil {
 if errors.Is(err, gorm.ErrRecordNotFound) {
-// Varsayılan tercihleri oluştur
+// VarsayÄ±lan tercihleri oluÅŸtur
 defaultPrefs := &model.NotificationPreference{
 UserID:      userID,
 Email:       true,
@@ -101,7 +101,7 @@ return nil, err
 return s.toPreferenceResponse(prefs), nil
 }
 
-// UpdatePreferences bildirim tercihlerini güncelle
+// UpdatePreferences bildirim tercihlerini gÃ¼ncelle
 func (s *NotificationService) UpdatePreferences(userID uint, req *model.UpdatePreferenceRequest) (*model.NotificationPreferenceResponse, error) {
 prefs, err := s.notifRepo.GetPreferences(userID)
 if err != nil {
@@ -143,7 +143,7 @@ return nil, err
 return s.toPreferenceResponse(prefs), nil
 }
 
-// toResponse model'den response oluştur
+// toResponse model'den response oluÅŸtur
 func (s *NotificationService) toResponse(notification *model.Notification) *model.NotificationResponse {
 return &model.NotificationResponse{
 ID:        notification.ID,
@@ -158,7 +158,7 @@ ReadAt:    notification.ReadAt,
 }
 }
 
-// toPreferenceResponse model'den response oluştur
+// toPreferenceResponse model'den response oluÅŸtur
 func (s *NotificationService) toPreferenceResponse(prefs *model.NotificationPreference) *model.NotificationPreferenceResponse {
 return &model.NotificationPreferenceResponse{
 Email:       prefs.Email,

@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,11 +6,11 @@ import (
 "gorm.io/gorm"
 )
 
-// ZodiacSign burç
+// ZodiacSign burÃ§
 type ZodiacSign struct {
 ID          uint           json:"id" gorm:"primaryKey"
 Name        string         json:"name" gorm:"unique;not null" // Aries, Taurus, Gemini, ...
-Symbol      string         json:"symbol" gorm:"not null"      // ♈, ♉, ♊, ...
+Symbol      string         json:"symbol" gorm:"not null"      // â™ˆ, â™‰, â™Š, ...
 Element     string         json:"element"                     // Fire, Earth, Air, Water
 Quality     string         json:"quality"                     // Cardinal, Fixed, Mutable
 RulingPlanet string        json:"ruling_planet"
@@ -26,7 +26,7 @@ func (ZodiacSign) TableName() string {
 return "zodiac_signs"
 }
 
-// Horoscope burç yorumu
+// Horoscope burÃ§ yorumu
 type Horoscope struct {
 ID          uint           json:"id" gorm:"primaryKey"
 SignID      uint           json:"sign_id" gorm:"not null"
@@ -50,7 +50,7 @@ func (Horoscope) TableName() string {
 return "horoscopes"
 }
 
-// BirthChart doğum haritası
+// BirthChart doÄŸum haritasÄ±
 type BirthChart struct {
 ID          uint           json:"id" gorm:"primaryKey"
 UserID      uint           json:"user_id" gorm:"uniqueIndex;not null"
@@ -73,13 +73,13 @@ func (BirthChart) TableName() string {
 return "birth_charts"
 }
 
-// CompatibilityRequest uyumluluk isteği
+// CompatibilityRequest uyumluluk isteÄŸi
 type CompatibilityRequest struct {
 Sign1 string json:"sign1" validate:"required"
 Sign2 string json:"sign2" validate:"required"
 }
 
-// CompatibilityResponse uyumluluk yanıtı
+// CompatibilityResponse uyumluluk yanÄ±tÄ±
 type CompatibilityResponse struct {
 Sign1          string  json:"sign1"
 Sign2          string  json:"sign2"
@@ -92,13 +92,13 @@ Strengths      []string json:"strengths"
 Challenges     []string json:"challenges"
 }
 
-// HoroscopeRequest burç yorumu isteği
+// HoroscopeRequest burÃ§ yorumu isteÄŸi
 type HoroscopeRequest struct {
 Sign string json:"sign" validate:"required"
 Type string json:"type" // daily, weekly, monthly
 }
 
-// HoroscopeResponse burç yorumu yanıtı
+// HoroscopeResponse burÃ§ yorumu yanÄ±tÄ±
 type HoroscopeResponse struct {
 Sign        string json:"sign"
 Date        string json:"date"

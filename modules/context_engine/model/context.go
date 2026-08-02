@@ -1,4 +1,4 @@
-﻿package model
+package model
 
 import (
 "time"
@@ -6,7 +6,7 @@ import (
 "gorm.io/gorm"
 )
 
-// ContextSession kullanıcı oturumu
+// ContextSession kullanÄ±cÄ± oturumu
 type ContextSession struct {
 ID          uint           json:"id" gorm:"primaryKey"
 UserID      uint           json:"user_id" gorm:"not null;index"
@@ -27,7 +27,7 @@ func (ContextSession) TableName() string {
 return "context_sessions"
 }
 
-// ContextMessage konuşma mesajı
+// ContextMessage konuÅŸma mesajÄ±
 type ContextMessage struct {
 ID          uint           json:"id" gorm:"primaryKey"
 SessionID   uint           json:"session_id" gorm:"not null;index"
@@ -42,18 +42,18 @@ func (ContextMessage) TableName() string {
 return "context_messages"
 }
 
-// CreateSessionRequest oturum oluşturma isteği
+// CreateSessionRequest oturum oluÅŸturma isteÄŸi
 type CreateSessionRequest struct {
 Title string json:"title"
 }
 
-// AddMessageRequest mesaj ekleme isteği
+// AddMessageRequest mesaj ekleme isteÄŸi
 type AddMessageRequest struct {
 Role    string json:"role" validate:"required" // user, assistant, system
 Content string json:"content" validate:"required"
 }
 
-// SessionResponse oturum yanıtı
+// SessionResponse oturum yanÄ±tÄ±
 type SessionResponse struct {
 ID           uint      json:"id"
 SessionID    string    json:"session_id"
@@ -67,7 +67,7 @@ CreatedAt    time.Time json:"created_at"
 UpdatedAt    time.Time json:"updated_at"
 }
 
-// MessageResponse mesaj yanıtı
+// MessageResponse mesaj yanÄ±tÄ±
 type MessageResponse struct {
 ID        uint      json:"id"
 Role      string    json:"role"

@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -14,7 +14,7 @@ func NewCommunityHandler() *CommunityHandler {
 return &CommunityHandler{}
 }
 
-// CreatePost topluluk paylaşımı oluşturur
+// CreatePost topluluk paylaÅŸÄ±mÄ± oluÅŸturur
 func (h *CommunityHandler) CreatePost(c echo.Context) error {
 var req model.CommunityPostRequest
 if err := c.Bind(&req); err != nil {
@@ -35,15 +35,15 @@ return c.JSON(http.StatusCreated, map[string]interface{}{
 })
 }
 
-// GetPosts topluluk paylaşımlarını getirir
+// GetPosts topluluk paylaÅŸÄ±mlarÄ±nÄ± getirir
 func (h *CommunityHandler) GetPosts(c echo.Context) error {
 category := c.QueryParam("category")
 
 posts := []map[string]interface{}{
 {
 "id":            1,
-"title":         "Satürn 4. evde taşınma deneyimim",
-"content":       "Satürn 4. ev transitinde taşındım ve hayatım değişti...",
+"title":         "SatÃ¼rn 4. evde taÅŸÄ±nma deneyimim",
+"content":       "SatÃ¼rn 4. ev transitinde taÅŸÄ±ndÄ±m ve hayatÄ±m deÄŸiÅŸti...",
 "category":      "experience",
 "tags":          []string{"saturn", "4th-house", "move"},
 "is_anonymous":  true,
@@ -54,8 +54,8 @@ posts := []map[string]interface{}{
 },
 {
 "id":            2,
-"title":         "Jüpiter 10. evde kariyer değişikliği",
-"content":       "Jüpiter 10. ev transitinde iş değiştirdim ve çok mutluyum...",
+"title":         "JÃ¼piter 10. evde kariyer deÄŸiÅŸikliÄŸi",
+"content":       "JÃ¼piter 10. ev transitinde iÅŸ deÄŸiÅŸtirdim ve Ã§ok mutluyum...",
 "category":      "experience",
 "tags":          []string{"jupiter", "10th-house", "career"},
 "is_anonymous":  false,
@@ -79,13 +79,13 @@ return c.JSON(http.StatusOK, filtered)
 return c.JSON(http.StatusOK, posts)
 }
 
-// GetPost paylaşım detayını getirir
+// GetPost paylaÅŸÄ±m detayÄ±nÄ± getirir
 func (h *CommunityHandler) GetPost(c echo.Context) error {
 id := c.Param("id")
 return c.JSON(http.StatusOK, map[string]interface{}{
 "id":            id,
-"title":         "Satürn 4. evde taşınma deneyimim",
-"content":       "Satürn 4. ev transitinde taşındım ve hayatım değişti...",
+"title":         "SatÃ¼rn 4. evde taÅŸÄ±nma deneyimim",
+"content":       "SatÃ¼rn 4. ev transitinde taÅŸÄ±ndÄ±m ve hayatÄ±m deÄŸiÅŸti...",
 "category":      "experience",
 "tags":          []string{"saturn", "4th-house", "move"},
 "is_anonymous":  true,
@@ -95,7 +95,7 @@ return c.JSON(http.StatusOK, map[string]interface{}{
 "comments": []map[string]interface{}{
 {
 "id":             1,
-"content":        "Ben de benzer bir deneyim yaşadım!",
+"content":        "Ben de benzer bir deneyim yaÅŸadÄ±m!",
 "is_anonymous":   true,
 "helpful_count":  3,
 "created_at":     "2026-07-31T11:00:00Z",
@@ -123,7 +123,7 @@ return c.JSON(http.StatusCreated, map[string]interface{}{
 })
 }
 
-// LikePost paylaşımı beğenir
+// LikePost paylaÅŸÄ±mÄ± beÄŸenir
 func (h *CommunityHandler) LikePost(c echo.Context) error {
 id := c.Param("id")
 return c.JSON(http.StatusOK, map[string]string{
@@ -131,7 +131,7 @@ return c.JSON(http.StatusOK, map[string]string{
 })
 }
 
-// MarkHelpful yorumu faydalı olarak işaretler
+// MarkHelpful yorumu faydalÄ± olarak iÅŸaretler
 func (h *CommunityHandler) MarkHelpful(c echo.Context) error {
 id := c.Param("id")
 return c.JSON(http.StatusOK, map[string]string{
@@ -139,7 +139,7 @@ return c.JSON(http.StatusOK, map[string]string{
 })
 }
 
-// GetPatterns desen keşfi sonuçlarını getirir
+// GetPatterns desen keÅŸfi sonuÃ§larÄ±nÄ± getirir
 func (h *CommunityHandler) GetPatterns(c echo.Context) error {
 category := c.QueryParam("category")
 
@@ -152,11 +152,11 @@ patterns := []map[string]interface{}{
 "common_houses": []string{"4", "2", "3"},
 "common_planets": []string{"Moon", "Saturn", "Jupiter"},
 "common_transits": []string{"Saturn 4th house", "Moon IC", "Jupiter 4th house"},
-"insight":       "Kullanıcıların %65'i Satürn 4. ev transitinde taşınma deneyimi yaşadı.",
+"insight":       "KullanÄ±cÄ±larÄ±n %65'i SatÃ¼rn 4. ev transitinde taÅŸÄ±nma deneyimi yaÅŸadÄ±.",
 "confidence":    85,
 "statistics": map[string]interface{}{
 "average_age": 32,
-"top_cities":  []string{"İstanbul", "Ankara", "İzmir"},
+"top_cities":  []string{"Ä°stanbul", "Ankara", "Ä°zmir"},
 },
 },
 {
@@ -167,11 +167,11 @@ patterns := []map[string]interface{}{
 "common_houses": []string{"10", "6", "2"},
 "common_planets": []string{"Jupiter", "Saturn", "Sun"},
 "common_transits": []string{"Jupiter 10th house", "Saturn 6th house"},
-"insight":       "Kullanıcıların %55'i Jüpiter 10. ev transitinde iş değiştirdi.",
+"insight":       "KullanÄ±cÄ±larÄ±n %55'i JÃ¼piter 10. ev transitinde iÅŸ deÄŸiÅŸtirdi.",
 "confidence":    78,
 "statistics": map[string]interface{}{
 "average_age": 28,
-"top_industries": []string{"Teknoloji", "Finans", "Eğitim"},
+"top_industries": []string{"Teknoloji", "Finans", "EÄŸitim"},
 },
 },
 }

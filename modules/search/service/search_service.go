@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "math"
@@ -21,7 +21,7 @@ searchRepo: repository.NewSearchRepository(db),
 
 // Search genel arama yapar
 func (s *SearchService) Search(userID uint, req *model.SearchRequest) (*model.SearchResponse, error) {
-// Varsayılan değerler
+// VarsayÄ±lan deÄŸerler
 if req.Limit <= 0 {
 req.Limit = 20
 }
@@ -41,7 +41,7 @@ req.SortOrder = "desc"
 var results []model.SearchResult
 var total int64
 
-// Kategoriye göre arama
+// Kategoriye gÃ¶re arama
 switch req.Category {
 case "users":
 users, err := s.searchRepo.SearchUsers(req.Query, req.Limit)
@@ -80,7 +80,7 @@ Data:        file,
 total = int64(len(files))
 
 default: // "all"
-// Tüm kategorilerde ara
+// TÃ¼m kategorilerde ara
 users, _ := s.searchRepo.SearchUsers(req.Query, req.Limit/2)
 for _, user := range users {
 results = append(results, model.SearchResult{
@@ -109,7 +109,7 @@ Data:        file,
 total = int64(len(results))
 }
 
-// Arama geçmişini kaydet
+// Arama geÃ§miÅŸini kaydet
 history := &model.SearchHistory{
 UserID:      userID,
 Query:       req.Query,
@@ -131,7 +131,7 @@ TotalPages: totalPages,
 }, nil
 }
 
-// GetSearchHistory kullanıcının arama geçmişini getirir
+// GetSearchHistory kullanÄ±cÄ±nÄ±n arama geÃ§miÅŸini getirir
 func (s *SearchService) GetSearchHistory(userID uint, limit int) ([]model.SearchHistory, error) {
 if limit <= 0 {
 limit = 20
@@ -139,7 +139,7 @@ limit = 20
 return s.searchRepo.GetSearchHistory(userID, limit)
 }
 
-// GetPopularSearches popüler aramaları getirir
+// GetPopularSearches popÃ¼ler aramalarÄ± getirir
 func (s *SearchService) GetPopularSearches(limit int) ([]model.SearchSuggestion, error) {
 if limit <= 0 {
 limit = 10

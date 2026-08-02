@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 "net/http"
@@ -20,7 +20,7 @@ walletService: walletService,
 }
 }
 
-// GetWallet cüzdan bilgilerini getirir
+// GetWallet cÃ¼zdan bilgilerini getirir
 func (h *WalletHandler) GetWallet(c echo.Context) error {
 userID := uint(1) // TODO: JWT'den al
 
@@ -50,7 +50,7 @@ return c.JSON(http.StatusOK, map[string]interface{}{
 })
 }
 
-// EarnToken jeton kazandırır
+// EarnToken jeton kazandÄ±rÄ±r
 func (h *WalletHandler) EarnToken(c echo.Context) error {
 userID := uint(1) // TODO: JWT'den al
 
@@ -97,7 +97,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, tx)
 }
 
-// GetTransactions işlem geçmişini getirir
+// GetTransactions iÅŸlem geÃ§miÅŸini getirir
 func (h *WalletHandler) GetTransactions(c echo.Context) error {
 userID := uint(1) // TODO: JWT'den al
 
@@ -118,7 +118,7 @@ return c.JSON(http.StatusInternalServerError, map[string]string{
 return c.JSON(http.StatusOK, transactions)
 }
 
-// ClaimDailyBonus günlük bonus al
+// ClaimDailyBonus gÃ¼nlÃ¼k bonus al
 func (h *WalletHandler) ClaimDailyBonus(c echo.Context) error {
 userID := uint(1) // TODO: JWT'den al
 

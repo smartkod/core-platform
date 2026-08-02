@@ -1,4 +1,4 @@
-﻿package security
+package security
 
 import (
     "regexp"
@@ -8,19 +8,19 @@ import (
 // Validator request validasyonu
 type Validator struct{}
 
-// NewValidator yeni validator oluşturur
+// NewValidator yeni validator oluÅŸturur
 func NewValidator() *Validator {
     return &Validator{}
 }
 
-// ValidateEmail email formatını doğrular
+// ValidateEmail email formatÄ±nÄ± doÄŸrular
 func (v *Validator) ValidateEmail(email string) bool {
     pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
     matched, _ := regexp.MatchString(pattern, email)
     return matched
 }
 
-// ValidatePassword şifre gücünü doğrular
+// ValidatePassword ÅŸifre gÃ¼cÃ¼nÃ¼ doÄŸrular
 func (v *Validator) ValidatePassword(password string) bool {
     if len(password) < 6 {
         return false

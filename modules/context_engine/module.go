@@ -1,4 +1,4 @@
-﻿package context_engine
+package context_engine
 
 import (
 "modules/context_engine/api"

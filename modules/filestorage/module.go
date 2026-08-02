@@ -1,4 +1,4 @@
-﻿package filestorage
+package filestorage
 
 import (
 "modules/filestorage/api"

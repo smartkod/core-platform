@@ -1,11 +1,11 @@
-﻿package security
+package security
 
 import (
     "github.com/labstack/echo/v4"
     "github.com/labstack/echo/v4/middleware"
 )
 
-// CORSConfig CORS yapılandırması
+// CORSConfig CORS yapÄ±landÄ±rmasÄ±
 type CORSConfig struct {
     AllowOrigins     []string
     AllowMethods     []string
@@ -15,7 +15,7 @@ type CORSConfig struct {
     MaxAge           int
 }
 
-// DefaultCORSConfig varsayılan CORS yapılandırması
+// DefaultCORSConfig varsayÄ±lan CORS yapÄ±landÄ±rmasÄ±
 func DefaultCORSConfig() CORSConfig {
     return CORSConfig{
         AllowOrigins:     []string{"*"},
@@ -27,7 +27,7 @@ func DefaultCORSConfig() CORSConfig {
     }
 }
 
-// CORS CORS middleware'ini döndürür
+// CORS CORS middleware'ini dÃ¶ndÃ¼rÃ¼r
 func CORS(config CORSConfig) echo.MiddlewareFunc {
     return middleware.CORSWithConfig(middleware.CORSConfig{
         AllowOrigins:     config.AllowOrigins,

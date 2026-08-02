@@ -1,4 +1,4 @@
-﻿package service
+package service
 
 import (
 "errors"
@@ -30,7 +30,7 @@ db:        db,
 }
 }
 
-// GetAdStatus kullanıcının reklam durumunu getirir
+// GetAdStatus kullanÄ±cÄ±nÄ±n reklam durumunu getirir
 func (s *AdService) GetAdStatus(userID uint) (*model.AdStatusResponse, error) {
 today := time.Now().Format("2006-01-02")
 
@@ -61,11 +61,11 @@ DailyTokenLimit: config.DailyTokenLimit,
 }, nil
 }
 
-// WatchAd reklam izleme işlemi
+// WatchAd reklam izleme iÅŸlemi
 func (s *AdService) WatchAd(userID uint, req *model.AdWatchRequest) (*model.AdRewardResponse, error) {
 today := time.Now().Format("2006-01-02")
 
-// Günlük limit kontrolü
+// GÃ¼nlÃ¼k limit kontrolÃ¼
 limit, err := s.adRepo.GetDailyLimit(userID, today)
 if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 return nil, err
@@ -82,7 +82,7 @@ if watchedToday >= config.DailyLimit {
 return nil, errors.New("daily ad limit reached")
 }
 
-// Aynı reklam kontrolü
+// AynÄ± reklam kontrolÃ¼
 exists, err := s.adRepo.AdExists(userID, req.AdID, req.AdProvider)
 if err != nil {
 return nil, err
@@ -91,13 +91,13 @@ if exists {
 return nil, errors.New("this ad has already been rewarded")
 }
 
-// Ödül hesapla
+// Ã–dÃ¼l hesapla
 rewardValue := config.TokenPerAd
 
-// Transaction başlat
+// Transaction baÅŸlat
 tx := s.db.Begin()
 
-// Ödül kaydı oluştur
+// Ã–dÃ¼l kaydÄ± oluÅŸtur
 reward := &model.AdReward{
 UserID:      userID,
 AdProvider:  req.AdProvider,
@@ -113,7 +113,7 @@ tx.Rollback()
 return nil, err
 }
 
-// Günlük limit güncelle
+// GÃ¼nlÃ¼k limit gÃ¼ncelle
 if limit == nil {
 limit = &model.DailyAdLimit{
 UserID: userID,
@@ -129,7 +129,7 @@ return nil, err
 }
 
 // Wallet'a token ekle
-if err := s.walletSvc.AddTokens(userID, rewardValue, "ad_reward", fmt.Sprintf("Reklam ödülü: %s", req.AdID)); err != nil {
+if err := s.walletSvc.AddTokens(userID, rewardValue, "ad_reward", fmt.Sprintf("Reklam Ã¶dÃ¼lÃ¼: %s", req.AdID)); err != nil {
 tx.Rollback()
 return nil, err
 }
@@ -152,7 +152,7 @@ Remaining:   remaining,
 }, nil
 }
 
-// getAdConfig reklam konfigürasyonunu getirir
+// getAdConfig reklam konfigÃ¼rasyonunu getirir
 func (s *AdService) getAdConfig() *model.AdConfig {
 return &model.AdConfig{
 DailyLimit:      5,
