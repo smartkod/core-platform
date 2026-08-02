@@ -1,0 +1,29 @@
+name: Deploy Core Platform
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            --build-arg OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            --build-arg SUPABASE_KEY=${{ secrets.SUPABASE_KEY }} \
+            --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            -t core-platform:${{ github.sha }} .
+      
+      - name: Push to Container Registry
+        run: |
+          docker tag core-platform:${{ github.sha }} ${{ secrets.REGISTRY_URL }}/core-platform:latest
+          docker push ${{ secrets.REGISTRY_URL }}/core-platform:latest
