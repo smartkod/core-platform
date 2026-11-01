@@ -43,3 +43,6 @@ data/
 
 # Büyük adres verisi: diskte kalır, repoya girmez
 data-kaynak/ptt_il_ilce_mahalle.json
+
+# skills deposunun kapatılmış git meta'sı
+.agents/skills/.git_disabled/
