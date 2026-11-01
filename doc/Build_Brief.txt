@@ -1,0 +1,42 @@
+PRODUCT
+Customer-Finding SaaS
+
+CORE STACK
+Frontend: React / Next.js
+Backend: Go
+Database: PostgreSQL
+Payments: Stripe
+Repository: GitHub
+
+NON-NEGOTIABLE
+- Production-quality code
+- Secure authentication
+- Persistent PostgreSQL data
+- Automated tests
+- Responsive UI
+- Environment-based secrets
+- No hardcoded credentials
+- Error handling
+- Logging
+- Migration support
+
+AGENT AUTONOMY
+Agent chooses implementation details,
+libraries and internal architecture unless
+they conflict with the above constraints.
+
+V1 MUST WORK
+Register
+→ Login
+→ Define ICP
+→ Discover leads
+→ View/filter leads
+→ Export
+→ Usage credits
+→ Subscription
+→ Payment
+→ Production deployment
+
+DONE
+A real user can complete the entire flow
+without developer intervention.

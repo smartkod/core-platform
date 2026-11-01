@@ -1,0 +1,62 @@
+İlk sürümünü küçük tutup “Architecture Guardian / Change Planner” olarak tasarla
+Ben olsam başlangıçta yaklaşık şu yapıyı kurardım:
+
+skills/
+└── archify/
+    ├── SKILL.md
+    ├── architecture-rules.md
+    ├── decision-rules.md
+    ├── dependency-rules.md
+    └── templates/
+        ├── architecture-report.md
+        └── change-plan.md
+
+
+SKILL.md de yaklaşık şu mantıkta olur:
+ARCHIFY
+
+Amaç:
+Projedeki mimari bütünlüğü korumak.
+
+Görevler:
+1. Proje mimarisini analiz et.
+2. Mevcut sözleşmeleri ve kuralları oku.
+3. Kullanıcı isteğinin etki alanını belirle.
+4. Etkilenen modülleri belirle.
+5. Bağımlılıkları çıkar.
+6. Mimari riskleri tespit et.
+7. En küçük güvenli değişiklik alanını öner.
+8. Kod yazmadan önce değişiklik planı oluştur.
+9. Kod değişikliğinden sonra mimari doğrulama yap.
+
+Kurallar:
+- Gereksiz dosya oluşturma.
+- Mevcut modülü yeniden yazma.
+- Aynı işlevi ikinci kez oluşturma.
+- Core kodunu gerekmedikçe değiştirme.
+- Public API'leri gerekçesiz değiştirme.
+- Database şemasını gerekçesiz değiştirme.
+- Güvenlik katmanını bypass etme.
+- Plugin bağımlılığı eklemeden önce mevcut bağımlılıkları kontrol et.
+- Kullanıcı isteğini mevcut mimariye uydur; mimariyi gereksiz yere kullanıcı isteğine göre bozma.
+
+
+
+
+
+
+
+
+
+Mevcut mimariyi keşfet → kuralları çıkar → değişikliğin etkisini belirle → minimum değişiklik öner → doğrula.”
+
+ARCHIFY
+│
+├── Discover
+│   └── Mevcut mimariyi keşfet
+│
+├── Plan
+│   └── Değişikliğin mimari etkisini planla
+│
+└── Validate
+    └── Değişiklik mimari kurallara uyuyor mu?

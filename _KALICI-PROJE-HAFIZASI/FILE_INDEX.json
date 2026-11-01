@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-23T07:28:47.132Z",
+  "algorithm": "sha256",
+  "root": ".",
+  "note": "scripts/ai-memory.mjs tarafından üretilir. Elle düzenlemeyin.",
+  "stats": {
+    "fileCount": 55,
+    "totalBytes": 330820
+  },
+  "files": {
+    ".ai/ARCHITECTURE.md": {
+      "size": 2702,
+      "mtimeMs": 1792736949133.3657,
+      "mtime": "2026-10-23T06:29:09.133Z",
+      "hash": "eb8613b69ccbe023b571b27629983fe86edfcadd2c97c81c844c212279cf2562"
+    },
+    ".ai/VERIFICATION.md": {
+      "size": 1672,
+      "mtimeMs": 1792740518081.5378,
+      "mtime": "2026-10-23T07:28:38.081Z",
+      "hash": "100230c930317ef55cca27c08f090e23016a907ec972dd9af738396d3470a479"
+    },
+    ".gitignore": {
+      "size": 483,
+      "mtimeMs": 1792740513204.7632,
+      "mtime": "2026-10-23T07:28:33.204Z",
+      "hash": "61bb39923b0c299da3a177bda4c6367ef974e319866411f0d75344e57766085b"
+    },
+    ".opencode/commands/handoff.md": {
+      "size": 972,
+      "mtimeMs": 1792736895938.3818,
+      "mtime": "2026-10-23T06:28:15.938Z",
+      "hash": "71df3f7d0bdca30f093c353c6b622543d654e9a8db15e718c32fad7e695f30e5"
+    },
+    ".opencode/commands/resume.md": {
+      "size": 683,
+      "mtimeMs": 1792736895938.3818,
+      "mtime": "2026-10-23T06:28:15.938Z",
+      "hash": "571310888d3474989c4932c08a999ec1682e102a5036321580e184603da25e9f"
+    },
+    ".opencode/plugins/project-memory.ts": {
+      "size": 1617,
+      "mtimeMs": 1792737254914.124,
+      "mtime": "2026-10-23T06:34:14.914Z",
+      "hash": "a640a0adcbb4850a7f940896de3894e2df6410085fc218a3d11662f4739b2143"
+    },
+    ".prettierignore": {
+      "size": 70,
+      "mtimeMs": 1792738755004.4631,
+      "mtime": "2026-10-23T06:59:15.004Z",
+      "hash": "97c9d5198ac38d5cc1635be12c3d4796c0bbba1fc56a8fcc71638796e73cee15"
+    },
+    ".prettierrc.json": {
+      "size": 90,
+      "mtimeMs": 1792738755002.457,
+      "mtime": "2026-10-23T06:59:15.002Z",
+      "hash": "5c8eb643734ce0d0d164140805353557e5469f90476d8d97119c199ade054ab8"
+    },
+    "AGENTS.md": {
+      "size": 3975,
+      "mtimeMs": 1792736949133.3657,
+      "mtime": "2026-10-23T06:29:09.133Z",
+      "hash": "e658a3533568304dc1c65e460f1ed97f5813144d440c9a4ca80288bf2a7dc3bf"
+    },
+    "AI VERİMLİLİK ANAYASASI.txt": {
+      "size": 5089,
+      "mtimeMs": 1792736375332.2979,
+      "mtime": "2026-10-23T06:19:35.332Z",
+      "hash": "d9b6156726787a567b26d4b78dad445f00de1378aee5d752e421eedf65d35645"
+    },
+    "KALICI AI PROJE HAFIZASI.txt": {
+      "size": 10377,
+      "mtimeMs": 1792736325843.5212,
+      "mtime": "2026-10-23T06:18:45.843Z",
+      "hash": "3a9e701cbc86347e9be3e837f03f854c09e107b88b5072458b8e6bc4b6c5e277"
+    },
+    "README.md": {
+      "size": 2046,
+      "mtimeMs": 1792739646693.3477,
+      "mtime": "2026-10-23T07:14:06.693Z",
+      "hash": "cb288963b3c81c32dacefd756a104a00635846be16a01cea32dc02a173b3fe73"
+    },
+    "_ana_promt.txt": {
+      "size": 7042,
+      "mtimeMs": 1791952394176.6514,
+      "mtime": "2026-10-14T04:33:14.176Z",
+      "hash": "98c9c9dfe9bed16624ca2130669683f8df6fff02d873fe3aea02b0e649555dc8"
+    },
+    "apps/api/nest-cli.json": {
+      "size": 214,
+      "mtimeMs": 1792739045358.7146,
+      "mtime": "2026-10-23T07:04:05.358Z",
+      "hash": "571f7760f530b8c09f5384fdb7c83799b49221ea595504c5cab4a4b0effab2c2"
+    },
+    "apps/api/package.json": {
+      "size": 644,
+      "mtimeMs": 1792739045360.6235,
+      "mtime": "2026-10-23T07:04:05.360Z",
+      "hash": "998ea349f93d1a2d6475a0016c27bee20e5a865f2ec3ef10f0bcbd6d06d92cdf"
+    },
+    "apps/api/src/app.module.ts": {
+      "size": 164,
+      "mtimeMs": 1792739045358.7146,
+      "mtime": "2026-10-23T07:04:05.358Z",
+      "hash": "7524c83fa064cb17a8038f80ce4aab1c2aec94fa5f833b90b194202eeb788f36"
+    },
+    "apps/api/src/health/health.controller.spec.ts": {
+      "size": 490,
+      "mtimeMs": 1792739045368.6665,
+      "mtime": "2026-10-23T07:04:05.368Z",
+      "hash": "8b4f46f42b8f5d9c64e35e91741f4267b8dfbe916eee97378a591829b66017d8"
+    },
+    "apps/api/src/health/health.controller.ts": {
+      "size": 443,
+      "mtimeMs": 1792739045370.7107,
+      "mtime": "2026-10-23T07:04:05.370Z",
+      "hash": "e43431996e15b1ba63b8f767cb98af31615c16cddfda2282ab0f61f40e1b4704"
+    },
+    "apps/api/src/health/health.module.ts": {
+      "size": 176,
+      "mtimeMs": 1792739045370.7107,
+      "mtime": "2026-10-23T07:04:05.370Z",
+      "hash": "e32b4636932cabfb0526487060e66023e97b91149e3f3d16d22b06826b87b219"
+    },
+    "apps/api/src/main.ts": {
+      "size": 766,
+      "mtimeMs": 1792739045358.7146,
+      "mtime": "2026-10-23T07:04:05.358Z",
+      "hash": "610e4fb33da503fba6f5d946d36aff5565d6dc1e6353f2aac428f919ef3a0454"
+    },
+    "apps/api/tsconfig.build.json": {
+      "size": 94,
+      "mtimeMs": 1792739045361.1309,
+      "mtime": "2026-10-23T07:04:05.361Z",
+      "hash": "9f0b2ed3ffbba9a50ce13d7af2b2560354a87ec057595f34312a2e3f9bc16ef6"
+    },
+    "apps/api/tsconfig.json": {
+      "size": 406,
+      "mtimeMs": 1792739045361.1309,
+      "mtime": "2026-10-23T07:04:05.361Z",
+      "hash": "b58edd7dc53b9e11502c35c20403ba0b4d2498c81dbbee018d2c406e4857290a"
+    },
+    "apps/api/vitest.config.mts": {
+      "size": 156,
+      "mtimeMs": 1792739327794.0852,
+      "mtime": "2026-10-23T07:08:47.794Z",
+      "hash": "03046b71dfe598a532cf27c1691a01b303a85a30fdd5072c0f53bd95ff0dfb0b"
+    },
+    "apps/web/next-env.d.ts": {
+      "size": 288,
+      "mtimeMs": 1792740156859.903,
+      "mtime": "2026-10-23T07:22:36.859Z",
+      "hash": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b"
+    },
+    "apps/web/next.config.ts": {
+      "size": 211,
+      "mtimeMs": 1792740089009.3616,
+      "mtime": "2026-10-23T07:21:29.009Z",
+      "hash": "16d18a5f66b1de6d818157ec5edd20596c94ed6288442fb2bb828985091a6a9a"
+    },
+    "apps/web/package.json": {
+      "size": 521,
+      "mtimeMs": 1792739091652.811,
+      "mtime": "2026-10-23T07:04:51.652Z",
+      "hash": "5968685ceb8f17d75bbba56f151b63cc925e3ac23ba79a85be60dc3df6af79a9"
+    },
+    "apps/web/src/app/globals.css": {
+      "size": 1643,
+      "mtimeMs": 1792739091663.937,
+      "mtime": "2026-10-23T07:04:51.663Z",
+      "hash": "12bd3d5b339fecaaad6e4bc2c111d924f09307e8872888fa3b00c4d99ac37877"
+    },
+    "apps/web/src/app/layout.tsx": {
+      "size": 414,
+      "mtimeMs": 1792739091635.5627,
+      "mtime": "2026-10-23T07:04:51.635Z",
+      "hash": "b9c0b26f347a1600f4d592caac7563df225446160b0aef6493ebfd67685aec25"
+    },
+    "apps/web/src/app/page.tsx": {
+      "size": 972,
+      "mtimeMs": 1792739091635.5627,
+      "mtime": "2026-10-23T07:04:51.635Z",
+      "hash": "dc510e1acbb5336af569b199c4bc361b11e2b6bdf91e18a079359972da5aba4f"
+    },
+    "apps/web/tsconfig.json": {
+      "size": 491,
+      "mtimeMs": 1792739091635.5627,
+      "mtime": "2026-10-23T07:04:51.635Z",
+      "hash": "86fe445be32fc64b728c4aa60981ded9e104512c98217ab3cf1fa53932acaeda"
+    },
+    "doc/00-PROJE-TANIMI.md": {
+      "size": 6489,
+      "mtimeMs": 1792706277303.4749,
+      "mtime": "2026-10-22T21:57:57.303Z",
+      "hash": "b580630dfad9becbaf6566268e54a87b4db83886dbb7fc716b9054779f5f5412"
+    },
+    "doc/01-KARARLAR-VE-CELISKILER.md": {
+      "size": 10916,
+      "mtimeMs": 1792740312176.3396,
+      "mtime": "2026-10-23T07:25:12.176Z",
+      "hash": "9c72c0c6837c0a6fc6447a1e79ecb01f804f0326bef83f1f855cd6ea063822fd"
+    },
+    "doc/02-YOL-HARITASI.md": {
+      "size": 15082,
+      "mtimeMs": 1792706766347.9062,
+      "mtime": "2026-10-22T22:06:06.347Z",
+      "hash": "3ea07896ed8be773ba8252f3df7254386a62bf58f50de344c934c7fa73ed0c1b"
+    },
+    "doc/03-PROJE-NOTLARI.md": {
+      "size": 9181,
+      "mtimeMs": 1792740387766.139,
+      "mtime": "2026-10-23T07:26:27.766Z",
+      "hash": "3b9bdf592064082f4621ae9acbbe43527d9178a26145f903cbed0181c9059c8d"
+    },
+    "doc/04-SIRADAKI-ISLER.md": {
+      "size": 3810,
+      "mtimeMs": 1792740312194.625,
+      "mtime": "2026-10-23T07:25:12.194Z",
+      "hash": "e5bbde07e575d90282740d53d2bee9fcbf4b79f14cf21da8904872d1f90b45ef"
+    },
+    "eslint.config.mjs": {
+      "size": 852,
+      "mtimeMs": 1792738754999.0637,
+      "mtime": "2026-10-23T06:59:14.999Z",
+      "hash": "0c6761c86e3244ce8859a2bd0bfbc66beafeaec3c06e2005056df67923a1342e"
+    },
+    "infra/docker-compose.yml": {
+      "size": 2140,
+      "mtimeMs": 1792739646670.102,
+      "mtime": "2026-10-23T07:14:06.670Z",
+      "hash": "00a92bc93a46257ab855cc21b040390bf297db06f3e970dc7667388cefa720a1"
+    },
+    "package-lock.json": {
+      "size": 202904,
+      "mtimeMs": 1792739290597.2207,
+      "mtime": "2026-10-23T07:08:10.597Z",
+      "hash": "497cc7c7840354ae58103d9551c2dbdb05c3be9a46d8758d77aa503e8507bd1a"
+    },
+    "package.json": {
+      "size": 1312,
+      "mtimeMs": 1792739795616.8447,
+      "mtime": "2026-10-23T07:16:35.616Z",
+      "hash": "c5678ca3446e2e9a149a23edcfd0879f33ff05900e64a0663cb92ed47c2030ce"
+    },
+    "packages/shared/package.json": {
+      "size": 383,
+      "mtimeMs": 1792739435172.3967,
+      "mtime": "2026-10-23T07:10:35.172Z",
+      "hash": "abda7c6f6cfe5802898a0819984495d634968e8c9e143dec85d0440acc723cc5"
+    },
+    "packages/shared/src/constants.ts": {
+      "size": 393,
+      "mtimeMs": 1792738920888.6924,
+      "mtime": "2026-10-23T07:02:00.888Z",
+      "hash": "525aa49f4a99b7ddc1bfdc01cf9151ce964ede29010a5656dab775131970105b"
+    },
+    "packages/shared/src/errors.test.ts": {
+      "size": 804,
+      "mtimeMs": 1792739435162.8684,
+      "mtime": "2026-10-23T07:10:35.162Z",
+      "hash": "4682b95013985cfb6f57e71fedd030b2b8c0dff31f2a1f854c3f8110f5136394"
+    },
+    "packages/shared/src/errors.ts": {
+      "size": 896,
+      "mtimeMs": 1792738920889.5134,
+      "mtime": "2026-10-23T07:02:00.889Z",
+      "hash": "0859f1643746cd0d6ebb33b7d88b838e778386c6135d5a1d7f886e951a469f53"
+    },
+    "packages/shared/src/index.ts": {
+      "size": 80,
+      "mtimeMs": 1792739435162.8684,
+      "mtime": "2026-10-23T07:10:35.162Z",
+      "hash": "3caea5fac772cc72f761b795e52e2ea90f4b80ed349ccb561e09d5f6e67d4cf1"
+    },
+    "packages/shared/src/types.ts": {
+      "size": 162,
+      "mtimeMs": 1792738920889.5134,
+      "mtime": "2026-10-23T07:02:00.889Z",
+      "hash": "3b892360f5d7317dc6f4860f6ab1749f99ea44acd9da8ef1dc048e8ae9953926"
+    },
+    "packages/shared/tsconfig.json": {
+      "size": 203,
+      "mtimeMs": 1792738920892.686,
+      "mtime": "2026-10-23T07:02:00.892Z",
+      "hash": "3c1c96268f01dfb1661c8168b3a4b0fd1fcc3caab4700cdcb9e19d15d0fba78d"
+    },
+    "packages/ui/package.json": {
+      "size": 436,
+      "mtimeMs": 1792739435176.604,
+      "mtime": "2026-10-23T07:10:35.176Z",
+      "hash": "229af8cb541e863e3873409913cadddc593cf397a03a04a8970d730ef20a9133"
+    },
+    "packages/ui/src/Button.tsx": {
+      "size": 487,
+      "mtimeMs": 1792738991841.4387,
+      "mtime": "2026-10-23T07:03:11.841Z",
+      "hash": "50c7349bf8b835c2ea479edd1b4b4d6fa67a57b73ba3b2b28f439c5c0bb1f98e"
+    },
+    "packages/ui/src/index.ts": {
+      "size": 80,
+      "mtimeMs": 1792739435162.8684,
+      "mtime": "2026-10-23T07:10:35.162Z",
+      "hash": "3723c99ca55b2c62a17d407edfa668c85856888d2a37368bb04b43b2c91c2a1d"
+    },
+    "packages/ui/tsconfig.json": {
+      "size": 290,
+      "mtimeMs": 1792738991818.3147,
+      "mtime": "2026-10-23T07:03:11.818Z",
+      "hash": "54d5ecdd8ba175db40fa27438866ca6050aaad8094e2f4b543d0dd6096a06ae4"
+    },
+    "scripts/ai-memory.mjs": {
+      "size": 17277,
+      "mtimeMs": 1792740513204.7632,
+      "mtime": "2026-10-23T07:28:33.204Z",
+      "hash": "fbcd28faf9cd45195d861ff4ccf0e3be8fb9e5ed7d855ddd252a4d8505620143"
+    },
+    "scripts/dev.mjs": {
+      "size": 1624,
+      "mtimeMs": 1792740089011.38,
+      "mtime": "2026-10-23T07:21:29.011Z",
+      "hash": "fc794d92ef6cb28bf98080bc96e46e7f912faa89948e10fa0d4b365b9f88e3e4"
+    },
+    "scripts/setup.mjs": {
+      "size": 662,
+      "mtimeMs": 1792738815566.3762,
+      "mtime": "2026-10-23T07:00:15.566Z",
+      "hash": "23c12d74af12b85c5202a2eb3260b18633729fecddf8dc78721e24aa03ec8237"
+    },
+    "scripts/test-memory.mjs": {
+      "size": 9083,
+      "mtimeMs": 1792737043724.0132,
+      "mtime": "2026-10-23T06:30:43.724Z",
+      "hash": "81e3f635dfe72bcacdae63c079e451324883946f1d2231139c1a6ce968f3e7f1"
+    },
+    "tsconfig.base.json": {
+      "size": 363,
+      "mtimeMs": 1792738754997.259,
+      "mtime": "2026-10-23T06:59:14.997Z",
+      "hash": "c7c3e42e62cf693a61671c7d6febefd23094197272cf3703d0e446478ce84261"
+    }
+  }
+}
