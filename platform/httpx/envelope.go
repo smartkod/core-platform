@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"core-platform/contract/core"
+	econ "core-platform/contract/economy"
 )
 
 // ErrorBody is the error object inside the envelope.
@@ -52,6 +53,21 @@ func codeOf(err error) (string, int) {
 		return "INSUFFICIENT_BALANCE", http.StatusPaymentRequired
 	case errors.Is(err, core.ErrEntitlementRequired):
 		return "ENTITLEMENT_REQUIRED", http.StatusPaymentRequired
+	// Economy sentinels (contract/economy). Same single mapping point.
+	case errors.Is(err, econ.ErrRewardTooEarly):
+		return "REWARD_TOO_EARLY", http.StatusUnprocessableEntity
+	case errors.Is(err, econ.ErrRewardLimitReached):
+		return "REWARD_LIMIT_REACHED", http.StatusTooManyRequests
+	case errors.Is(err, econ.ErrAdNotAvailable):
+		return "AD_NOT_AVAILABLE", http.StatusNotFound
+	case errors.Is(err, econ.ErrSessionNotOpen):
+		return "SESSION_NOT_OPEN", http.StatusConflict
+	case errors.Is(err, econ.ErrDuplicateEntry):
+		return "DUPLICATE_ENTRY", http.StatusConflict
+	case errors.Is(err, econ.ErrUnknownCurrency),
+		errors.Is(err, econ.ErrAdInvalid),
+		errors.Is(err, econ.ErrInvalidAmount):
+		return "VALIDATION_ERROR", http.StatusUnprocessableEntity
 	}
 	return "INTERNAL", http.StatusInternalServerError
 }

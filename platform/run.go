@@ -217,6 +217,11 @@ func wireProviders(deps core.Deps, mods []core.Module, mgr *module.Manager) core
 				deps.Notifications = n
 			}
 		}
+		if p, ok := mod.(core.EconomyProvider); ok && deps.Economy == nil {
+			if e := p.Economy(); e != nil {
+				deps.Economy = e
+			}
+		}
 	}
 	return deps
 }

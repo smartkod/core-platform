@@ -22,3 +22,12 @@ type FileProvider interface {
 type StorageProvider interface {
 	Storage() Storage
 }
+
+// EconomyProvider is implemented by the economy module (L2).
+//
+// The bootstrap fills Deps.Economy from whichever module satisfies this, so
+// an application calls Wallet()/Ads() through contract/economy and never
+// imports the module package.
+type EconomyProvider interface {
+	Economy() Economy
+}

@@ -6,6 +6,35 @@ All notable changes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added - L2 economy: wallet ledger + rewarded ads
+
+- `contract/economy`: the public L2 surface (`Wallet`, `Ads`, sentinel errors,
+  reason codes). Applications reach it through `core.Deps.Economy`, so they
+  never import the module package; `core.EconomyProvider` is wired by the
+  bootstrap like the L1 providers.
+- `mod/economy`: append-only token ledger. Balances move with a single
+  conditional `UPDATE ... WHERE balance + delta >= 0`; a trigger blocks
+  `UPDATE`/`DELETE` on `wallet_entries`, so the audit trail cannot be rewritten.
+  `SUM(delta) == balance` is asserted by the tests.
+- Welcome grant (10 tokens by default) is applied on the first wallet view and
+  keyed `signup_grant:<userID>`, so it pays exactly once.
+- Rewarded ads: `Pick` -> server-stamped `StartView` -> `ClaimView`. The
+  required duration and both stamps are server facts; claiming early returns
+  `REWARD_TOO_EARLY` and the client cannot influence the amount.
+- One earning session per `(user, ad, day)` enforced by a unique index, so
+  watching one creative repeatedly is structurally impossible.
+- Watch and click rewards share one earn pool; caps default to 3/day and
+  10/month over UTC boundaries and are read from `reward_settings`.
+- Admin surface: ads CRUD (video/image/text), affiliate URLs restricted to
+  https, per-ad stats, and the reward dials with `updated_by` audit.
+  There is deliberately no user-facing credit/debit endpoint; admins move
+  tokens through `/economy/admin/wallets/:user_id/{credit,debit}` with a fixed
+  reason code.
+- `mod/economy/migrations/0001_economy_init.sql` also carries the catalog,
+  orders, payments, payment events, entitlements and refunds tables for the
+  next increment (no service code yet).
+- `cmd/server` now boots at L2 so the module runs end to end.
+
 ### Added — AI provider client (prep for L3)
 
 - `platform/ai`: OpenAI-compatible chat client behind a one-method `Provider`

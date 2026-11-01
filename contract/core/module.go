@@ -6,6 +6,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+
+	econ "core-platform/contract/economy"
 )
 
 // Module is the contract every platform module and application module
@@ -51,6 +53,18 @@ type Deps struct {
 	// Notifications is populated by the bootstrap when the notifications module
 	// is present.
 	Notifications Notifications
+	// Economy is populated by the bootstrap when an economy module is present.
+	// It is an optional L2 service: applications that do not use tokens never
+	// see it, and it stays nil here otherwise.
+	Economy Economy
+}
+
+// Economy is the L2 money surface available to applications. It wires the
+// wallet and rewarded-ads contracts together so an application imports only
+// contract/core and contract/economy, never the economy module itself.
+type Economy interface {
+	Wallet() econ.Wallet
+	Ads() econ.Ads
 }
 
 // ConfigView is the slice of configuration a module is allowed to read.

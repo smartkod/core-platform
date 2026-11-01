@@ -1,14 +1,15 @@
 // Command server is the reference binary for the platform itself.
 //
-// It runs at L1 (kernel + identity) so the engine can be exercised end to end
-// without an application on top. An application's own main.go is generated from
-// the same shape by corectl.
+// It runs at L2 (kernel + identity + files + notifications + economy) so the
+// engine can be exercised end to end without an application on top. An
+// application's own main.go is generated from the same shape by corectl.
 package main
 
 import (
 	"log"
 
 	"core-platform/contract/core"
+	"core-platform/mod/economy"
 	"core-platform/mod/files"
 	"core-platform/mod/identity"
 	"core-platform/mod/notifications"
@@ -28,6 +29,7 @@ func main() {
 			identity.New(),
 			files.New(),
 			notifications.New(),
+			economy.New(),
 		},
 		ConfigPath: "config/config.yaml",
 	}); err != nil {
