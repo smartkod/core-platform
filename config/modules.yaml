@@ -1,38 +1,10 @@
-﻿# Modül durumları
-# ENABLED, DISABLED, MAINTENANCE, EXPERIMENTAL, DEPRECATED
+﻿# Module states. This is an operational switch, not a feature toggle:
+# a module still has to be compiled into the binary.
+#
+# ENABLED      loaded and running
+# DISABLED     not loaded; no routes, no migrations
+# MAINTENANCE  routes answer 503
+# EXPERIMENTAL loaded only when APP_ENV != production
+# DEPRECATED   loaded, adds a Deprecation header and logs a warning
 
-modules:
-  # Level 0 - Foundation
-  database: ENABLED
-  logger: ENABLED
-  config: ENABLED
-  module_manager: ENABLED
-  health: ENABLED
-
-  # Level 1 - Core
-  auth: ENABLED
-  users: ENABLED
-  security: ENABLED
-  api: ENABLED
-  localization: DISABLED
-
-  # Level 2 - Business
-  wallet: DISABLED
-  payments: DISABLED
-  premium: DISABLED
-  notifications: DISABLED
-  analytics: DISABLED
-  file_storage: DISABLED
-  search: DISABLED
-  community: DISABLED
-
-  # Level 3 - AI
-  ai_gateway: DISABLED
-  prompt_engine: DISABLED
-  context_engine: DISABLED
-
-  # Level 4 - Applications
-  astroscope: DISABLED
-  eduscope: DISABLED
-  fitscope: DISABLED
-  financescope: DISABLED
+modules: {}

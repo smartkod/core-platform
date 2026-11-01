@@ -1,92 +1,50 @@
-﻿# ============================================
-# 🌟 CORE PLATFORM - config.yaml
-# 📌 SADECE YAPI - HASSAS DEĞERLER YOK!
-# ============================================
+﻿# Core Platform — config
+
+env: development
 
 server:
-  host: ${SERVER_HOST:-0.0.0.0}
-  port: ${SERVER_PORT:-8080}
+  host: 0.0.0.0
+  port: 8080
 
-database:
-  host: ${DB_HOST:-localhost}
-  port: ${DB_PORT:-5432}
-  user: ${DB_USER:-postgres}
-  password: ${DB_PASSWORD}  # 🔐 Environment variable'dan alınır
-  name: ${DB_NAME:-core_platform}
-  sslmode: ${DB_SSLMODE:-disable}
+db:
+  host: localhost
+  port: 5432
+  user: postgres
+  name: core_platform
+  sslmode: disable
+  max_open_conns: 25
+  slow_query: 200ms
 
-logger:
-  level: ${LOG_LEVEL:-info}
-  format: ${LOG_FORMAT:-json}
+http:
+  body_limit: 8M
+  request_timeout: 30s
+  shutdown_timeout: 10s
 
-jwt:
-  secret: ${JWT_SECRET}  # 🔐 Environment variable'dan alınır
-  expiry: ${JWT_EXPIRY:-86400}
-  refresh_secret: ${REFRESH_SECRET}  # 🔐 Environment variable'dan alınır
-  refresh_expiry: ${REFRESH_EXPIRY:-604800}
+log:
+  level: info
+  format: json
 
-external:
-  openai:
-    api_key: ${OPENAI_API_KEY}  # 🔐 Environment variable'dan alınır
-    base_url: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
-  anthropic:
-    api_key: ${ANTHROPIC_API_KEY}  # 🔐 Environment variable'dan alınır
-  gemini:
-    api_key: ${GEMINI_API_KEY}  # 🔐 Environment variable'dan alınır
-  supabase:
-    url: ${SUPABASE_URL}
-    key: ${SUPABASE_KEY}  # 🔐 Environment variable'dan alınır
-  cloudflare:
-    api_token: ${CLOUDFLARE_API_TOKEN}  # 🔐 Environment variable'dan alınır
-    account_id: ${CLOUDFLARE_ACCOUNT_ID}
-  aws:
-    access_key_id: ${AWS_ACCESS_KEY_ID}  # 🔐 Environment variable'dan alınır
-    secret_access_key: ${AWS_SECRET_ACCESS_KEY}  # 🔐 Environment variable'dan alınır
-    region: ${AWS_REGION:-us-east-1}
-    s3_bucket: ${AWS_S3_BUCKET}
+security:
+  allowed_origins: []
 
-redis:
-  host: ${REDIS_HOST:-localhost}
-  port: ${REDIS_PORT:-6379}
-  password: ${REDIS_PASSWORD}  # 🔐 Environment variable'dan alınır
+# L1 identity. Secrets may come from here or from JWT_ACCESS_SECRET /
+# JWT_REFRESH_SECRET. Production refuses to start without them.
+identity:
+  access_ttl: 15m
+  refresh_ttl: 168h
+  password_min_length: 10
+  cookie_secure: false
 
-modules:
-  config_path: config/modules.yaml
-  states:
-    # Core modules - Always enabled
-    database: ENABLED
-    logger: ENABLED
-    config: ENABLED
-    module_manager: ENABLED
-    health: ENABLED
-    api: ENABLED
-    security: ENABLED
-    
-    # Business modules
-    auth: ENABLED
-    users: ENABLED
-    wallet: DISABLED
-    payments: DISABLED
-    premium: DISABLED
-    notifications: DISABLED
-    analytics: DISABLED
-    file_storage: DISABLED
-    search: DISABLED
-    community: DISABLED
-    
-    # AI modules
-    ai_gateway: DISABLED
-    prompt_engine: DISABLED
-    context_engine: DISABLED
-    
-    # Applications
-    astroscope: DISABLED
-    eduscope: DISABLED
-    fitscope: DISABLED
-    financescope: DISABLED
+files:
+  driver: local
+  local_root: data/uploads
+  max_size: 10MB
+  signed_url_ttl: 15m
 
-features:
-  openapi: ${ENABLE_OPENAPI:-true}
-  csrf: ${ENABLE_CSRF:-false}
-  cors: ${ENABLE_CORS:-true}
-  rate_limit: ${ENABLE_RATE_LIMIT:-true}
+# AI (L3). The API key is read from AI_API_KEY only and never written here.
+ai:
+  enabled: false
+  base_url: https://api.example.com/v1
+  default_model:
+  request_timeout: 60s
+  max_retries: 2

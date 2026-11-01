@@ -1,67 +1,24 @@
-﻿# ============================================
-# 🐳 DOCKERIGNORE - Güvenli Build
-# ============================================
-
-# Gizli dosyalar
+﻿.git
+.gitignore
 .env
 .env.*
-*.pem
-*.key
-*.p12
-*.crt
-*.token
-*.secret
-*.jwt
-
-# Version control
-.git/
-.gitignore
-.gitattributes
-.github/
-.gitlab/
-.bitbucket/
-
-# IDE
-.vscode/
-.idea/
-*.iml
-*.swp
-*.swo
-
-# Build artifacts
+!.env.example
 bin/
-dist/
-build/
-vendor/
-node_modules/
-
-# Tests
+*.exe
 *.test
-*.prof
-*.cov
-coverage.html
-coverage.txt
-
-# Logs
-*.log
-logs/
-
-# Temp
-tmp/
-temp/
-*.tmp
-*.swp
-*.bak
-
-# OS
-.DS_Store
-Thumbs.db
-
-# README ve dokümantasyon
+*.out
+_legacy/
+demo-l0/
+demo-l1/
+demo-l3/
+makefile
+Makefile
 README.md
-CHANGELOG.md
-CONTRIBUTING.md
-LICENSE
-*.md
-!docs/
-!*.md
+references/
+doc/
+data-kaynak/
+_KALICI-PROJE-HAFIZASI/
+.agents/
+.github/
+web/
+deployment/

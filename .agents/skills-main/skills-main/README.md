@@ -1,0 +1,178 @@
+<div align="center">
+
+# 🧩 yprkemrullah · Claude Code Skills
+
+**YouTube videolarımda gösterdiğim [Claude Code](https://docs.claude.com/en/docs/claude-code) skill'lerinin toplandığı repo.**
+
+Her skill, Claude'a yeni bir yetenek kazandıran küçük bir paket: bir görevi nasıl yapacağını adım adım anlatan talimatlar + gerektiğinde referans dosyaları. Aşağıdaki skill'leri kopyala, Claude Code sana o işi baştan sona yapsın.
+
+[![YouTube](https://img.shields.io/badge/YouTube-@yprkemrullah-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/@yprkemrullah)
+
+</div>
+
+---
+
+## 📺 Bu repo ne işe yarar?
+
+YouTube kanalımda Claude Code ile neler yapılabileceğini anlatıyorum. Videolarda gösterdiğim **skill'leri** burada paylaşıyorum ki sen de kendi makinende birebir aynısını kullanabilesin.
+
+> **Skill nedir?**
+> Claude Code'a "şu işi şöyle yap" diye öğreten, içinde talimatların (`SKILL.md`) ve yardımcı dosyaların bulunduğu bir klasör. Sen normal dilde isteğini yazarsın (örn. *"uygulamamı yayına al"*), Claude ilgili skill'i otomatik devreye sokar ve işi yürütür.
+
+---
+
+## 🛠️ Mevcut skill'ler
+
+Her skill'in altında onu anlattığım videonun linki var. Kurmadan önce videoyu açıp skill'in gerçek bir işte nasıl çalıştığını görebilirsin.
+
+| Skill | Ne yapar? | Tetikleyen ifadeler |
+|-------|-----------|---------------------|
+| [**deploy-app**](./deploy-app)<br><sub>[Videoyu izle](https://youtu.be/dlkG5OSkubA)</sub> | Kendi web uygulamanı (Next.js, Node, statik site, Python) ya da hazır bir açık kaynak uygulamayı (WordPress, n8n, Evolution API, Ghost, Metabase, Uptime Kuma…) Hostinger VPS'ine kurup kendi alan adında **HTTPS** ile canlıya alır. SSH/panel bilmene gerek yok. | *"uygulamamı yayına al"*, *"siteyi canlıya çıkar"*, *"deploy et"*, *"wordpress kur"*, *"n8n kur"* |
+| [**hyperframes-studio**](./hyperframes-studio)<br><sub>[Videoyu izle](https://youtu.be/Bt9X1AUXk80)</sub> | Ham konuşma klibini + transcript'ini (ya da düz bir içeriği) alıp [HyperFrames](https://www.npmjs.com/package/hyperframes) ile bitmiş bir video üretir: yatay **hook** (16:9 intro), dikey **Shorts** (9:16, altyazılı) ya da animasyonlu **slidedeck** (16:9 sunum). Koyu tema, tek marka rengi, self-hosted Manrope + JetBrains Mono; hook/shorts **1080p · 60fps** MP4'e render edilir, deck HTML sunum olarak teslim edilir. İçinde tak-çalıştır starter template'ler gelir. | *"hook oluştur"*, *"intro yap"*, *"shorts oluştur"*, *"dikey video"*, *"slidedeck oluştur"*, *"sunum yap"* |
+| [**prd-yaz**](./prd-yaz)<br><sub>[Videoyu izle](https://youtu.be/pywfao8gZyo)</sub> | Seni adım adım sorgulayarak, dağınık bir fikri net bir PRD'ye (ürün gereksinim belgesine) dönüştürür ve `prd.md` dosyasına yazar. Yapay zeka ile kod yazmadan önce işi netleştirmenin temeli. | *"prd yaz"*, *"ürün gereksinim belgesi oluştur"*, *"yeni özellik planla"* |
+| [**seo-expert**](./seo-expert)<br><sub>[Videoyu izle](https://youtu.be/rpVjNvbUAGo)</sub> | Uçtan uca SEO içerik üretim hattı: trend analizi → derin araştırma → önce taslak (outline) onayı → bölüm bölüm yazım → 18 kontrollü kalite kapısı (puan < 70 ise 2 kez otomatik yeniden dener) → yayına hazır temiz semantik **HTML** çıktısı. Sadece bir konu vermen yeterli; Claude Desktop, Web ve Code'da script/veritabanı gerektirmeden çalışır. | *"blog yazısı yaz"*, *"SEO içeriği oluştur"*, *"araştır ve yaz"*, *"şu konu hakkında makale yaz"*, *"/seo-expert"* |
+| [**teklif-kutusu**](./teklif-kutusu)<br><sub>[Videoyu izle](https://youtu.be/DWMGfkFD5SI)</sub> | Google Tablolar'daki müşteri listende durumu **"Bekliyor"** olan ilk firma için uçtan uca teklif hazırlar: Google Dokümanlar şablonunun kopyasını doldurur, PDF'ini alır, ikisini ayın klasörüne koyar, PDF ekli **taslak** mail oluşturur (asla göndermez) ve listedeki satırı günceller. Dosya kimlikleri skill'de değil, senin `teklif-ayarlari.json` dosyanda. | *"teklif hazırla"*, *"sıradaki teklifi çıkar"*, *"bekleyen firmaya teklif yap"*, *"/teklif-kutusu"* |
+| [**fatura-kutusu**](./fatura-kutusu)<br><sub>[Videoyu izle](https://youtu.be/5-Fny8Zu1Kk)</sub> | **Hermes Agent** skill'i (sunucuda çalışır). Google Drive'daki bir klasöre attığın faturaları okur, üç kontrolden geçirir (tutar eşitliği, zorunlu alanlar, mükerrer), Google Sheets'e belge bağlantısıyla kaydeder, tutmayanı kaydetmeyip Telegram'dan sorar, ay sonunda özet gönderir. Kurulumu sohbetten kendisi yürütür; kontroller modelde değil script'te. | *"fatura kutusunu kur"*, *"belgeleri işle"*, *"otomatiğe al"* |
+| [**medya-tamamla**](./medya-tamamla)<br><sub>[Videoyu izle](https://youtu.be/ms3Iy31Ji2w)</sub> | Bir projeyi (oyun, web uygulaması, site) inceler, eksik **müzik**, **Türkçe seslendirme**, **görsel** ve **kısa videoyu** Google'ın [gemini-api](https://github.com/google-gemini/gemini-api-cli) aracıyla üretir. Önce her kalemi nerede kullanılacağı ve resmi fiyatla maliyetiyle listeleyip onay alır, üretimden önce stil, ses ve müzik kurallarını sorar. Ürettiklerini yine gemini-api ile denetler, projeye bağlar ve her çağrıyı `maliyet.md` dosyasına yazar. | *"projeye müzik ve seslendirme ekle"*, *"eksik medyayı tamamla"*, *"SVG ikonları gerçek görsellerle değiştir"*, *"/medya-tamamla"* |
+
+> 🎬 Yeni videolarda gösterdikçe bu liste büyüyecek.
+
+---
+
+## 🚀 Kurulum
+
+Bu repodaki **her skill bir klasördür** — kurulum, o klasörü skill dizinine kopyalamaktan ibaret. Claude Code, Codex, Antigravity gibi `SKILL.md` okuyan araçların hepsi klasör bekler.
+
+Tek istisna **Claude Desktop**: o klasör kabul etmez, tek dosyalık bir `.skill` paketi ister. Bu yüzden `hyperframes-studio` klasörünün zip'lenmiş hâli ayrıca [`dist/`](./dist) altında duruyor — aynı içerik, sadece paketlenmiş.
+
+| Nereye kuracaksın | Nasıl |
+|-------------------|-------|
+| Claude Code · Codex · Antigravity … | Skill klasörünü kopyala → **Yöntem 1–2** |
+| Claude Desktop | `dist/*.skill` paketini yükle → **Yöntem 3** |
+| Hermes Agent (sunucu) | Hermes'e depo linkini ver, gerisini o yapar → **Yöntem 4** |
+
+### Yöntem 1 — Repoyu klonla, istediğin skill'i kopyala
+
+```bash
+# Repoyu indir
+git clone https://github.com/eyaprak/skills.git
+
+# İstediğin skill'i kişisel skill klasörüne kopyala (örnek: deploy-app)
+# macOS / Linux:
+cp -r skills/deploy-app ~/.claude/skills/
+
+# Windows (PowerShell):
+Copy-Item -Recurse skills\deploy-app $HOME\.claude\skills\
+```
+
+### Yöntem 2 — Sadece tek bir skill istiyorsan
+
+İlgili klasörü olduğu gibi indirip `~/.claude/skills/<skill-adı>` konumuna yerleştir. Klasör adı ve iç yapısı aynen korunmalı — skill adı klasör adından okunuyor:
+
+```
+~/.claude/skills/
+└── deploy-app/
+    ├── SKILL.md
+    └── references/
+        ├── compose-dockerfile-templates.md
+        ├── deployment-playbook.md
+        ├── hostinger-mcp-tools.md
+        ├── prebuilt-apps.md
+        └── troubleshooting.md
+```
+
+Aynı mantık Codex, Antigravity gibi `SKILL.md` okuyan diğer araçlar için de geçerli: klasörü o aracın kendi skill dizinine kopyalaman yeterli, dönüştürme gerekmez.
+
+### Yöntem 3 — Claude Desktop: `.skill` paketini yükle
+
+Claude Desktop'ta klasör kopyalama işe yaramaz — Desktop bir skill'i tek dosyalık **`.skill` paketi** olarak ister. Paketler hazır duruyor:
+
+| Skill | `.skill` paketi |
+|-------|-----------------|
+| **hyperframes-studio** | [`dist/hyperframes-studio.skill`](./dist/hyperframes-studio.skill) |
+
+1. Yukarıdaki dosyaya tıkla, açılan sayfadan **Download raw file** ile indir (tüm repoyu indirmene gerek yok)
+2. Claude Desktop'ta skill yükleme ekranını aç ve indirdiğin `.skill` dosyasını ekle
+3. Skill listede göründükten sonra doğal dilde çağır (örn. *"hook oluştur"*)
+
+### Yöntem 4 — Hermes Agent: depo linkini ver, gerisini o yapsın
+
+`fatura-kutusu` bir Claude Code skill'i değil, [Hermes Agent](https://github.com/NousResearch/hermes-agent) skill'i; sunucuda çalışan Hermes'in `skills/productivity/` dizinine gider. Terminal gerekmez, Hermes'e tek mesaj yeter; talimat dosyasını okur, paketi kurar ve kurulum sihirbazını hemen başlatır:
+
+> Şu adresteki kurulum talimatını oku ve adımları sırayla uygula: https://raw.githubusercontent.com/eyaprak/skills/main/fatura-kutusu/INSTALL.md
+
+Kendin yapmak istersen sunucuda tek satır (yalnızca o klasörü çeker):
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/eyaprak/skills /tmp/eyaprak-skills && git -C /tmp/eyaprak-skills sparse-checkout set fatura-kutusu && cp -r /tmp/eyaprak-skills/fatura-kutusu "${HERMES_HOME:-/opt/data}/skills/productivity/" && rm -rf /tmp/eyaprak-skills
+```
+
+Kalan adımları (Google izni, Mistral anahtarı, klasörler ve tablo) Hermes sohbetten kendisi yürütür; ayrıntı [fatura-kutusu/README.md](./fatura-kutusu/README.md).
+
+### Kullanım
+
+Kurduktan sonra Claude Code'u aç ve doğal dilde isteğini yaz:
+
+```
+> uygulamamı yayına almak istiyorum
+```
+
+Claude doğru skill'i otomatik bulup devreye alır. Skill'in adıyla da çağırabilirsin (örn. `/deploy-app`).
+
+> 💡 Bazı skill'ler ek araçlara ihtiyaç duyar — `deploy-app` için **Hostinger MCP**, `hyperframes-studio` için **Node.js + npx** ve PATH'te **ffmpeg**, `teklif-kutusu` için **Node.js** ve Google hesabına bağlanmış **Google Workspace CLI** (`gws`), `medya-tamamla` için **gemini-api CLI** (anahtarı tanımlı), **Node.js** ve PATH'te **ffmpeg**. Her skill'in kendi `SKILL.md` dosyasında gereksinimleri ve adımları yazılıdır; kurmadan önce göz at.
+
+---
+
+## 📂 Repo yapısı
+
+Kökteki her klasör, olduğu gibi kopyalanabilir bir skill'dir. `dist/` ise bu klasörlerin Claude Desktop için paketlenmiş hâlini tutar — ayrı bir içerik değil, aynı klasörün zip'i.
+
+```
+.
+├── README.md                 ← buradasın
+├── deploy-app/               ← bir skill = bir klasör
+│   ├── SKILL.md              ← skill'in beyni: ne yapacağını anlatan talimatlar
+│   └── references/           ← Claude'un gerektiğinde okuduğu detay dosyaları
+├── hyperframes-studio/
+│   ├── README.md             ← skill'in kendi kurulum & gereksinim notları
+│   ├── SKILL.md
+│   ├── references/
+│   ├── scripts/              ← skill'in çağırdığı yardımcı script'ler
+│   └── assets/templates/     ← starter kompozisyonlar + self-hosted fontlar
+├── teklif-kutusu/
+│   ├── README.md             ← kurulum, liste sütunları, şablon boşlukları
+│   ├── SKILL.md
+│   ├── teklif-ayarlari.ornek.json   ← kendi Drive kimliklerinle dolduracağın kalıp
+│   └── scripts/              ← kayıt seçimi ve taslak mail üretimi (Node.js)
+├── fatura-kutusu/              ← Hermes Agent skill'i (sunucuda çalışır)
+│   ├── README.md             ← izleyici belgesi: tek mesaj, terminal yok
+│   ├── INSTALL.md            ← Hermes'in okuyup uyguladığı kurulum talimatı
+│   ├── SKILL.md              ← Hermes'in okuduğu aşamalar ve komutlar
+│   ├── scripts/fatura_kutusu.py      ← kontroller, Drive/Sheets/Telegram işleri burada
+│   └── references/
+├── medya-tamamla/
+│   ├── README.md             ← akış, gereksinimler, gemini-api kurulumu
+│   ├── SKILL.md
+│   ├── references/           ← üretimden önce sorulacak kurallar, liste biçimi, bağlama ilkeleri
+│   └── scripts/              ← çağrı kaydı, sıralı üretim, işleme ve maliyet hesabı (Node.js)
+└── dist/                     ← 📦 Claude Desktop için tek dosyalık paketler
+    └── hyperframes-studio.skill
+                              ← yukarıdaki klasörün zip'lenmiş hâli
+```
+
+Her yeni skill, kendi klasörü içinde bir `SKILL.md` ve (gerekirse) `references/` ile bu repoya eklenir. Klasör hâli her zaman kaynaktır; `dist/` altındaki paket ondan üretilir.
+
+---
+
+## 🤝 Katkı & İletişim
+
+- 🎥 **YouTube:** [@yprkemrullah](https://youtube.com/@yprkemrullah) — yeni skill'ler ve anlatımlar burada
+- 🐛 Bir sorun mu buldun, önerin mi var? **Issue** aç ya da **Pull Request** gönder.
+
+Skill'leri faydalı bulduysan kanala abone olup videolarda buluşalım. İyi kodlamalar! 🚀
+
+---
+
+<div align="center">
+<sub>Bu skill'ler <a href="https://docs.claude.com/en/docs/claude-code">Claude Code</a> ile kullanılmak üzere hazırlanmıştır.</sub>
+</div>

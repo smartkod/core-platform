@@ -1,0 +1,12 @@
+{{/* HTML body for the welcome message. Values are escaped by html/template,
+     which is why this engine is used for HTML and not text/template. */ -}}
+<!DOCTYPE html>
+<html>
+<body style="font-family: sans-serif; line-height: 1.5;">
+  <p>Hi {{.Name}},</p>
+  <p>Your account at <strong>{{.AppName}}</strong> is ready.</p>
+  <p style="color: #666; font-size: 13px;">
+    If you did not create this account, you can ignore this message.
+  </p>
+</body>
+</html>

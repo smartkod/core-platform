@@ -1,43 +1,36 @@
+// Command server is the reference binary for the platform itself.
+//
+// It runs at L1 (kernel + identity) so the engine can be exercised end to end
+// without an application on top. An application's own main.go is generated from
+// the same shape by corectl.
 package main
 
 import (
-"github.com/labstack/echo/v4"
-"go.uber.org/zap"
+	"log"
 
-"core-platform/core/config"
-"core-platform/core/database"
-"core-platform/core/logger"
+	"core-platform/contract/core"
+	"core-platform/mod/files"
+	"core-platform/mod/identity"
+	"core-platform/mod/notifications"
+	"core-platform/platform"
 )
 
+// version is stamped at build time: -ldflags "-X main.version=v0.1.0".
+var version = "0.1.0-dev"
+
 func main() {
-// Load config
-cfg := config.New()
-
-// Initialize logger
-log := logger.New(cfg.Logger.Level, cfg.Logger.Format)
-defer log.Sync()
-
-log.Info("Starting Core Platform")
-
-// Initialize database
-db, err := database.New(&cfg.Database, log)
-if err != nil {
-log.Fatal("Failed to connect to database", zap.Error(err))
-}
-defer db.Close()
-
-// Create router
-e := echo.New()
-
-// Health check
-e.GET("/health", func(c echo.Context) error {
-return c.JSON(200, map[string]string{
-"status":  "ok",
-"service": "Core Platform",
-"version": "1.0.0",
-})
-})
-
-// Start server
-e.Logger.Fatal(e.Start(":8081"))
+	if err := platform.Run(core.App{
+		Name:    "core-platform",
+		Version: version,
+		// The level is chosen here and nowhere else. Removing a line removes
+		// the module from the binary entirely (PRD.md 3.3).
+		Modules: []core.Module{
+			identity.New(),
+			files.New(),
+			notifications.New(),
+		},
+		ConfigPath: "config/config.yaml",
+	}); err != nil {
+		log.Fatal(err)
+	}
 }

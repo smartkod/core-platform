@@ -1,33 +1,43 @@
-﻿.PHONY: run build test clean docker-up docker-down mod-tidy
+﻿.PHONY: run build test fmt fmt-check vet lint check corectl docker-up docker-down tidy clean
+
+APP := core-platform
 
 run:
-go run ./cmd/server/main.go
+	go run ./cmd/server
 
 build:
-go build -o bin/core-platform ./cmd/server/main.go
+	go build -o bin/$(APP) ./cmd/server
+	go build -o bin/corectl ./cmd/corectl
+
+# The full gate. CI runs the same steps, so a green local run means green CI.
+check: fmt-check vet test
+
+fmt:
+	gofmt -w .
+
+fmt-check:
+	@files="$$(gofmt -l .)"; \
+	if [ -n "$$files" ]; then echo "gofmt needs to run on:"; echo "$$files"; exit 1; fi
+
+vet:
+	go vet ./...
+
+lint: vet
 
 test:
-go test ./... -v
+	go test ./...
 
-clean:
-rmdir /s /q bin 2>nul
-del /q core-platform.exe 2>nul
+corectl:
+	go run ./cmd/corectl $(ARGS)
 
 docker-up:
-docker-compose up -d
+	docker compose up -d --build
 
 docker-down:
-docker-compose down
+	docker compose down -v
 
-mod-tidy:
-go mod tidy
-go mod download
+tidy:
+	go mod tidy
 
-dev: mod-tidy docker-up run
-
-# Windows için özel komutlar
-run-win:
-go run ./cmd/server/main.go
-
-build-win:
-go build -o bin/core-platform.exe ./cmd/server/main.go
+clean:
+	rm -rf bin

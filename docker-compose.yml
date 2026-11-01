@@ -1,44 +1,56 @@
-﻿version: '3.8'
-
-services:
+﻿services:
   postgres:
     image: postgres:15-alpine
-    container_name: core-platform-postgres
+    # Docker Desktop's internal DNS occasionally fails while a network is being
+    # created, which kills a starting app with "network is unreachable". The
+    # retry policy lets the app recover on its own instead of staying dead.
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: core_platform
     ports:
-      - "5432:5432"
+      - "${DB_PORT_HOST:-55432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   app:
     build: .
-    container_name: core-platform-app
+    restart: unless-stopped
     ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "${APP_PORT:-8080}:8080"
     environment:
+      APP_ENV: development
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: core_platform
       DB_SSLMODE: disable
-      SERVER_PORT: 8080
-      SERVER_HOST: 0.0.0.0
       LOG_LEVEL: info
       LOG_FORMAT: json
+      # Development defaults so `docker compose up` works with no setup.
+      #
+      # PRODUCTION: delete these two lines and supply the secrets from the
+      # environment or a secret manager. Committing a default secret is how a
+      # staging key ends up signing production tokens.
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-0123456789abcdef0123456789abcdef}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-fedcba9876543210fedcba9876543210}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Uploads survive a container rebuild. Without this volume every uploaded
+    # file disappears the next time the image is rebuilt.
     volumes:
-      - ./:/app
+      - uploads:/app/data/uploads
 
 volumes:
-  postgres_data:
+  pgdata:
+  uploads:

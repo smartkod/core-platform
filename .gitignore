@@ -11,6 +11,8 @@ bin/
 # Environment
 .env
 .env.local
+.env.*
+!.env.example
 
 # IDE
 .vscode/
@@ -26,7 +28,18 @@ Thumbs.db
 *.log
 logs/
 
-# Go
+# Go workspace link (local only)
 go.work
 go.work.sum
-vendor/
+
+# Generated demo projects from corectl
+demo-l0/
+demo-l1/
+demo-l3/
+
+# Runtime data
+uploads/
+data/
+
+# Büyük adres verisi: diskte kalýr, repoya girmez
+data-kaynak/ptt_il_ilce_mahalle.json

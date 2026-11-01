@@ -1,0 +1,66 @@
+# CI for core-platform (L1 gates 15 and 16).
+#
+# -race runs here because the race detector needs cgo, and the CI runner
+# (Linux + gcc) has it; the Windows dev host does not.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Postgres is the real dependency of the integration tests: the identity
+    # and notifications suites skip silently without TEST_DATABASE_DSN, so an
+    # accidental missing service would turn the job green while testing nothing.
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ci_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_DSN: "host=localhost port=5432 user=postgres password=postgres dbname=ci_test sslmode=disable"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Format check
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "gofmt needed on:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Dependency boundaries (gate 15)
+        run: go run ./cmd/depcheck
+
+      - name: Test with race detector (gate 16)
+        run: go test -race -cover ./...
+
+      - name: Coverage summary
+        run: go test -cover ./mod/... | grep -o '[0-9.]*% of statements' || true
