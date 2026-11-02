@@ -277,6 +277,12 @@ func (o *Orders) Create(ctx context.Context, in econ.CreateOrderInput) (econ.Ord
 	if existing, found, err := o.store.OrderByIDempotencyKey(o.store.DB, in.IdempotencyKey); err != nil {
 		return econ.Order{}, err
 	} else if found {
+		// The key is globally unique, so a different user presenting it is
+		// either a mistake or an attempt to read somebody else's purchase.
+		// Replaying the order would reveal it, so refuse instead.
+		if existing.UserID != in.UserID {
+			return econ.Order{}, econ.ErrIdempotencyConflict
+		}
 		return o.withProduct(existing)
 	}
 

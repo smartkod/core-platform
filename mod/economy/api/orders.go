@@ -3,6 +3,7 @@ package api
 // orders.go holds the catalog, order, entitlement and webhook endpoints.
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -144,14 +145,18 @@ func (h *Handler) Webhook(c echo.Context) error {
 	if err := h.orders.HandleWebhook(
 		c.Request().Context(), c.Param("provider"), c.Request(),
 	); err != nil {
-		if err == econ.ErrSignatureInvalid {
+		// Adapters wrap the sentinel, so the check must be errors.Is; a plain
+		// == would turn a real signature failure into a 500.
+		if errors.Is(err, econ.ErrSignatureInvalid) {
 			return err
 		}
 		// Unknown/irrelevant events are acknowledged rather than retried, but
 		// a real processing failure is surfaced so the provider retries.
-		switch err {
-		case econ.ErrOrderNotFound, econ.ErrProviderNotFound,
-			econ.ErrProviderUnsupported, core.ErrValidation:
+		switch {
+		case errors.Is(err, econ.ErrOrderNotFound),
+			errors.Is(err, econ.ErrProviderNotFound),
+			errors.Is(err, econ.ErrProviderUnsupported),
+			errors.Is(err, core.ErrValidation):
 			return respond(c, http.StatusOK, map[string]any{"received": true, "applied": false})
 		}
 		return err
