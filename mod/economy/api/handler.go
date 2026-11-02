@@ -15,19 +15,33 @@ import (
 	"core-platform/platform/httpx"
 )
 
-// Handler serves the wallet and rewarded-ads endpoints.
+// Deps is the set of services the handler serves.
+type Deps struct {
+	Wallet       econ.Wallet
+	Ads          econ.Ads
+	Orders       econ.Orders
+	Entitlements econ.Entitlements
+}
+
+// Handler serves the economy endpoints.
 type Handler struct {
 	wallet econ.Wallet
 	ads    econ.Ads
+	orders econ.Orders
+	ents   econ.Entitlements
 }
 
 // NewHandler builds the handler.
-func NewHandler(wallet econ.Wallet, ads econ.Ads) *Handler {
-	return &Handler{wallet: wallet, ads: ads}
+func NewHandler(d Deps) *Handler {
+	return &Handler{wallet: d.Wallet, ads: d.Ads, orders: d.Orders, ents: d.Entitlements}
 }
 
 // Register mounts the routes. User routes require authentication; admin routes
 // additionally require the admin role (mirror of the identity module's split).
+//
+// The payment webhook is mounted outside the authenticated group by design: a
+// provider has no bearer token, and the adapter verifies its own signature
+// before anything is written (L2.md 3.7).
 func (h *Handler) Register(g *echo.Group, id core.Identity) {
 	authed := g.Group("/economy", id.Middleware())
 
@@ -44,6 +58,17 @@ func (h *Handler) Register(g *echo.Group, id core.Identity) {
 	authed.POST("/ads/view/:session_id/claim", h.ClaimView)
 	authed.POST("/ads/:id/click", h.RecordClick)
 
+	// Catalog, orders and entitlements.
+	authed.GET("/products", h.ListProducts)
+	authed.GET("/products/:id", h.GetProduct)
+	authed.POST("/orders", h.CreateOrder)
+	authed.GET("/orders", h.ListOrders)
+	authed.GET("/orders/:id", h.GetOrder)
+	authed.GET("/entitlements", h.ListEntitlements)
+
+	// Provider callback: no auth middleware, own signature check.
+	g.POST("/economy/payments/webhook/:provider", h.Webhook)
+
 	// Admin.
 	admin := g.Group("/economy/admin", id.Middleware(), id.RequireRole(core.RoleAdmin))
 	admin.GET("/ads", h.ListAds)
@@ -55,6 +80,12 @@ func (h *Handler) Register(g *echo.Group, id core.Identity) {
 	admin.PUT("/reward-settings", h.UpdateSettings)
 	admin.POST("/wallets/:user_id/credit", h.AdminCredit)
 	admin.POST("/wallets/:user_id/debit", h.AdminDebit)
+	admin.GET("/orders", h.AdminListOrders)
+	admin.POST("/orders/:id/confirm", h.AdminConfirmOrder)
+	admin.POST("/orders/:id/reject", h.AdminRejectOrder)
+	admin.POST("/products", h.AdminCreateProduct)
+	admin.PUT("/products/:id", h.AdminUpdateProduct)
+	admin.POST("/entitlements/:id/revoke", h.AdminRevokeEntitlement)
 }
 
 // bind decodes a JSON body into the validation sentinel on failure.

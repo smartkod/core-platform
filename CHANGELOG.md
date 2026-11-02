@@ -6,6 +6,44 @@ All notable changes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added - L2 economy: orders, payments and entitlements
+
+- `contract/economy/orders.go`: `Orders` (catalog, order state machine,
+  webhooks, admin confirm/reject) and `Entitlements` (list/has/revoke), plus
+  `Product`/`Order`/`Entitlement` types and the order status constants.
+- `contract/economy/payment.go`: the `PaymentProvider` adapter boundary
+  (`Name`, `Capabilities`, `CreateCheckout`, `ParseWebhook`, `Refund`) and its
+  normalised `ProviderEvent`. Adding PayTR/Stripe later is one package plus one
+  registration line; the wallet, order machine and entitlements do not change.
+- `mod/economy/provider`: the three L2 adapters — `token` (wallet settlement,
+  no gateway), `manual` (bank transfer + operator confirmation) and `test`
+  (signed webhook, for development; refused when `APP_ENV=production`).
+- Single order state machine (`created → pending → paid → fulfilled`,
+  `→ failed`, `→ expired`, `fulfilled → refunded`) where every transition is
+  `UPDATE ... WHERE status = <expected>`, so a stale writer cannot skip a step.
+- Path A (TOKEN product): debit + entitlement + `fulfilled` in one transaction;
+  insufficient balance leaves the ledger untouched and records a failed order.
+- Path B (fiat product): pending order with a random reference code, then a
+  verified webhook or an admin confirmation. `test` and `manual` both prove it.
+- Webhook rules: signature verified before the body is parsed (a forgery writes
+  nothing and answers 401), `(provider, event_id)` deduplicates a retried
+  delivery, and a provider-reported amount/currency that disagrees with the
+  order is refused (`PAYMENT_MISMATCH`).
+- Fulfillment is idempotent in the schema, not only in code: a partial unique
+  index allows one active entitlement per order and one `paid` payment per order
+  (`mod/economy/migrations/0002_orders_payments.sql`).
+- Entitlement activity is evaluated on read from `starts_at`/`ends_at`/
+  `revoked_at`, so an expired subscription stops granting access without a job,
+  while the row survives for support history.
+- Admin surface: catalog create/update, order list/confirm/reject, entitlement
+  revoke.
+- `economy` config block (`currencies`, `order_ttl`, `manual_instructions`);
+  the test webhook secret is environment-only.
+- Tests cover the token path, the insufficient-balance rollback, order
+  idempotency, client-amount rejection, cross-user 404, manual confirm-once,
+  webhook signature/duplicate/amount-mismatch/failure/expiry, subscription
+  windows, revocation and currency/provider pairing.
+
 ### Added - L2 economy: wallet ledger + rewarded ads
 
 - `contract/economy`: the public L2 surface (`Wallet`, `Ads`, sentinel errors,

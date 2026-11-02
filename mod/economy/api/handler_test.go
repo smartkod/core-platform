@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,7 @@ import (
 	econ "core-platform/contract/economy"
 	"core-platform/mod/economy/api"
 	"core-platform/mod/economy/migrations"
+	"core-platform/mod/economy/provider"
 	"core-platform/mod/economy/repository"
 	"core-platform/mod/economy/service"
 	"core-platform/platform/httpx"
@@ -107,13 +109,23 @@ func server(t *testing.T, db *gorm.DB, p *core.Principal) *echo.Echo {
 	store := repository.NewStore(db)
 	wallet := service.NewWallet(store, nil, nil)
 	ads := service.NewAds(wallet, store, nil)
-	h := api.NewHandler(wallet, ads)
+	providers := map[string]econ.PaymentProvider{
+		"token":  provider.Token{},
+		"manual": provider.Manual{Instructions: "IBAN TR00 test"},
+		"test":   provider.Test{Secret: testWebhookSecret},
+	}
+	orders := service.NewOrders(store, wallet, providers, nil, time.Hour)
+	ents := service.NewEntitlements(store, nil)
+	h := api.NewHandler(api.Deps{Wallet: wallet, Ads: ads, Orders: orders, Entitlements: ents})
 
 	e := echo.New()
 	e.HTTPErrorHandler = httpx.ErrorHandler(noopLogger{})
 	h.Register(e.Group("/api"), stubIdentity{p: p})
 	return e
 }
+
+// testWebhookSecret signs test-provider callbacks in these tests.
+const testWebhookSecret = "test-webhook-secret"
 
 func do(t *testing.T, e *echo.Echo, method, path, body string) (*httptest.ResponseRecorder, map[string]any) {
 	t.Helper()
@@ -225,6 +237,123 @@ func errorCode(out map[string]any) string {
 	}
 	code, _ := e["code"].(string)
 	return code
+}
+
+// doWithHeaders is do() plus extra request headers.
+func doWithHeaders(t *testing.T, e *echo.Echo, method, path, body string, headers map[string]string) *httptest.ResponseRecorder {
+	t.Helper()
+	req := httptest.NewRequest(method, path, strings.NewReader(body))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+	return rec
+}
+
+// TestWebhookIsPublicButSignatureChecked documents the transport contract: the
+// provider has no bearer token, so the route must not require auth, and the
+// only thing that authorises it is the adapter's signature check.
+func TestWebhookIsPublicButSignatureChecked(t *testing.T) {
+	db := apiDB(t)
+	// No principal at all: the stub identity sets none, so any route behind the
+	// auth middleware would answer 401.
+	e := server(t, db, nil)
+
+	rec := doWithHeaders(t, e, http.MethodPost, "/api/economy/payments/webhook/test",
+		`{"event_id":"x","status":"paid"}`, nil)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("unsigned webhook: got %d want 401 (it must be signature-checked, not auth-checked)", rec.Code)
+	}
+
+	// An unknown provider is acknowledged, not retried.
+	rec = doWithHeaders(t, e, http.MethodPost, "/api/economy/payments/webhook/nope", `{}`, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("unknown provider: got %d want 200", rec.Code)
+	}
+}
+
+// TestOrderRequiresIdempotencyKey covers the transport half of the rule: the
+// key may arrive as a header, and missing it is a 400.
+func TestOrderRequiresIdempotencyKey(t *testing.T) {
+	db := apiDB(t)
+	admin := &core.Principal{UserID: uuid.NewString(), Role: core.RoleAdmin}
+	adminSrv := server(t, db, admin)
+
+	code := "hdr-" + uuid.NewString()[:8]
+	rec, out := do(t, adminSrv, http.MethodPost, "/api/economy/admin/products",
+		`{"code":"`+code+`","name":"Header Pack","kind":"token_pack","currency":"TRY",
+		  "amount_minor":1000,"tokens":10,"active":true}`)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create product: %d %s", rec.Code, rec.Body.String())
+	}
+	data, _ := out["data"].(map[string]any)
+	productID, _ := data["id"].(string)
+	t.Cleanup(func() { db.Exec(`DELETE FROM products WHERE id = ?`, productID) })
+
+	user := &core.Principal{UserID: uuid.NewString(), Role: "user"}
+	userSrv := server(t, db, user)
+
+	// No header, no body key: refused before any order row exists.
+	rec, out = do(t, userSrv, http.MethodPost, "/api/economy/orders",
+		`{"product_id":"`+productID+`"}`)
+	if rec.Code != http.StatusBadRequest || errorCode(out) != "IDEMPOTENCY_KEY_REQUIRED" {
+		t.Fatalf("missing key: %d %s", rec.Code, rec.Body.String())
+	}
+
+	// Header form works, and the response carries the server price.
+	key := "hdr-" + uuid.NewString()
+	rec = doWithHeaders(t, userSrv, http.MethodPost, "/api/economy/orders",
+		`{"product_id":"`+productID+`","amount_minor":1}`,
+		map[string]string{"Idempotency-Key": key})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("order: %d %s", rec.Code, rec.Body.String())
+	}
+
+	var amount int64
+	db.Raw(`SELECT amount_minor FROM orders WHERE idempotency_key = ?`, key).Scan(&amount)
+	if amount != 1000 {
+		t.Fatalf("order stored amount %d; the body's amount_minor must be ignored", amount)
+	}
+}
+
+// TestUserCannotSeeAnotherUsersOrder is the 404-not-403 rule at the edge.
+func TestUserCannotSeeAnotherUsersOrder(t *testing.T) {
+	db := apiDB(t)
+	admin := &core.Principal{UserID: uuid.NewString(), Role: core.RoleAdmin}
+	adminSrv := server(t, db, admin)
+
+	code := "priv-" + uuid.NewString()[:8]
+	rec, out := do(t, adminSrv, http.MethodPost, "/api/economy/admin/products",
+		`{"code":"`+code+`","name":"Private","kind":"regular","currency":"TRY",
+		  "amount_minor":100,"entitlement":"private.x","active":true}`)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create product: %d", rec.Code)
+	}
+	data, _ := out["data"].(map[string]any)
+	productID, _ := data["id"].(string)
+	t.Cleanup(func() { db.Exec(`DELETE FROM products WHERE id = ?`, productID) })
+
+	owner := &core.Principal{UserID: uuid.NewString(), Role: "user"}
+	ownerSrv := server(t, db, owner)
+	key := "own-" + uuid.NewString()
+	doWithHeaders(t, ownerSrv, http.MethodPost, "/api/economy/orders",
+		`{"product_id":"`+productID+`"}`,
+		map[string]string{"Idempotency-Key": key})
+
+	var orderID string
+	db.Raw(`SELECT id FROM orders WHERE idempotency_key = ?`, key).Scan(&orderID)
+	if orderID == "" {
+		t.Fatal("order was not created")
+	}
+
+	other := &core.Principal{UserID: uuid.NewString(), Role: "user"}
+	otherSrv := server(t, db, other)
+	rec, out = do(t, otherSrv, http.MethodGet, "/api/economy/orders/"+orderID, "")
+	if rec.Code != http.StatusNotFound || errorCode(out) != "ORDER_NOT_FOUND" {
+		t.Fatalf("foreign order: %d %s (existence must not be revealed)", rec.Code, rec.Body.String())
+	}
 }
 
 // TestUsersCannotMintTokens is the regression guard for the most dangerous

@@ -49,6 +49,7 @@ const (
 	ReasonRefund        = "refund"
 	ReasonAdminCredit   = "admin_credit"
 	ReasonAdminDebit    = "admin_debit"
+	ReasonSpendFeature  = "spend_feature"
 	ReasonExpire        = "expire"
 )
 

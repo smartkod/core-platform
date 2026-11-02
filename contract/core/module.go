@@ -60,11 +60,14 @@ type Deps struct {
 }
 
 // Economy is the L2 money surface available to applications. It wires the
-// wallet and rewarded-ads contracts together so an application imports only
-// contract/core and contract/economy, never the economy module itself.
+// wallet, rewarded-ads and purchase contracts together so an application
+// imports only contract/core and contract/economy, never the economy module
+// itself.
 type Economy interface {
 	Wallet() econ.Wallet
 	Ads() econ.Ads
+	Orders() econ.Orders
+	Entitlements() econ.Entitlements
 }
 
 // ConfigView is the slice of configuration a module is allowed to read.

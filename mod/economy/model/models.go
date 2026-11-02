@@ -46,6 +46,66 @@ type Product struct {
 	UpdatedAt   time.Time `gorm:"not null"`
 }
 
+// Order is one purchase attempt. The status transitions are enforced by
+// conditional UPDATE ... WHERE status = <expected> in the repository.
+type Order struct {
+	ID             string    `gorm:"primaryKey;type:uuid"`
+	UserID         string    `gorm:"type:uuid;not null"`
+	ProductID      string    `gorm:"type:uuid;not null"`
+	AmountMinor    int64     `gorm:"not null"`
+	Currency       string    `gorm:"size:8;not null"`
+	Provider       string    `gorm:"size:40;not null"`
+	Status         string    `gorm:"size:16;not null"`
+	IdempotencyKey string    `gorm:"size:120;not null;uniqueIndex"`
+	ReferenceCode  string    `gorm:"size:40;not null;uniqueIndex"`
+	ExpiresAt      time.Time `gorm:"timestamptz;not null"`
+	CreatedAt      time.Time `gorm:"not null"`
+	UpdatedAt      time.Time `gorm:"not null"`
+}
+
+// Payment is one settlement attempt for an order. A paid order has exactly one
+// paid row (payments_order_paid_uniq).
+type Payment struct {
+	ID          string     `gorm:"primaryKey;type:uuid"`
+	OrderID     string     `gorm:"type:uuid;not null"`
+	Provider    string     `gorm:"size:40;not null"`
+	ProviderRef *string    `gorm:"size:120"`
+	Status      string     `gorm:"size:16;not null"`
+	AmountMinor int64      `gorm:"not null"`
+	Currency    string     `gorm:"size:8;not null"`
+	PaidAt      *time.Time `gorm:"timestamptz"`
+	FailureCode *string    `gorm:"size:40"`
+	RawPayload  []byte     `gorm:"type:jsonb"`
+	CreatedAt   time.Time  `gorm:"not null"`
+}
+
+// PaymentEvent is the webhook dedup ledger: (provider, event_id) is unique, so
+// a retried delivery is recognised before it can fulfill twice.
+type PaymentEvent struct {
+	ID          string    `gorm:"primaryKey;type:uuid"`
+	Provider    string    `gorm:"size:40;not null"`
+	EventID     string    `gorm:"size:120;not null"`
+	OrderID     string    `gorm:"type:uuid;not null"`
+	Type        string    `gorm:"size:40;not null"`
+	Payload     []byte    `gorm:"type:jsonb"`
+	ProcessedAt time.Time `gorm:"not null"`
+}
+
+// Entitlement is one granted right. order_id makes the grant idempotent: the
+// partial unique index allows at most one active row per order.
+type Entitlement struct {
+	ID        string     `gorm:"primaryKey;type:uuid"`
+	UserID    string     `gorm:"type:uuid;not null"`
+	ProductID *string    `gorm:"type:uuid"`
+	OrderID   *string    `gorm:"type:uuid"`
+	Code      string     `gorm:"size:80;not null"`
+	Source    string     `gorm:"size:40;not null"`
+	StartsAt  time.Time  `gorm:"timestamptz;not null"`
+	EndsAt    *time.Time `gorm:"timestamptz"`
+	RevokedAt *time.Time `gorm:"timestamptz"`
+	CreatedAt time.Time  `gorm:"not null"`
+}
+
 // Ad is one rewarded-ad creative.
 type Ad struct {
 	ID           string     `gorm:"primaryKey;type:uuid"`

@@ -41,6 +41,17 @@ files:
   max_size: 10MB
   signed_url_ttl: 15m
 
+# L2 economy. Currencies is the closed allow-list the wallet accepts; TOKEN is
+# the scaffold default. The test payment adapter exists for development only:
+# set ECONOMY_TEST_WEBHOOK_SECRET in the environment to enable it (it is ignored
+# when env is production).
+economy:
+  currencies: [TOKEN]
+  order_ttl: 30m
+  # Expiry/audit sweep. 0s disables it.
+  job_interval: 1m
+  manual_instructions: "Havale/EFT sonrası açıklamaya sipariş referans kodunu yazın."
+
 # AI (L3). The API key is read from AI_API_KEY only and never written here.
 ai:
   enabled: false

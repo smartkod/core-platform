@@ -54,6 +54,26 @@ func codeOf(err error) (string, int) {
 	case errors.Is(err, core.ErrEntitlementRequired):
 		return "ENTITLEMENT_REQUIRED", http.StatusPaymentRequired
 	// Economy sentinels (contract/economy). Same single mapping point.
+	case errors.Is(err, econ.ErrSignatureInvalid):
+		return "WEBHOOK_SIGNATURE_INVALID", http.StatusUnauthorized
+	case errors.Is(err, econ.ErrPaymentMismatch):
+		return "PAYMENT_MISMATCH", http.StatusUnprocessableEntity
+	case errors.Is(err, econ.ErrProductNotAvailable):
+		return "PRODUCT_NOT_AVAILABLE", http.StatusNotFound
+	case errors.Is(err, econ.ErrOrderNotFound):
+		return "ORDER_NOT_FOUND", http.StatusNotFound
+	case errors.Is(err, econ.ErrEntitlementNotFound):
+		return "ENTITLEMENT_NOT_FOUND", http.StatusNotFound
+	case errors.Is(err, econ.ErrProviderNotFound):
+		return "PROVIDER_NOT_FOUND", http.StatusNotFound
+	case errors.Is(err, econ.ErrProviderUnsupported):
+		return "PROVIDER_UNSUPPORTED", http.StatusNotImplemented
+	case errors.Is(err, econ.ErrOrderNotPayable):
+		return "ORDER_NOT_PAYABLE", http.StatusConflict
+	case errors.Is(err, econ.ErrIdempotencyRequired):
+		return "IDEMPOTENCY_KEY_REQUIRED", http.StatusBadRequest
+	case errors.Is(err, econ.ErrIdempotencyConflict):
+		return "IDEMPOTENCY_CONFLICT", http.StatusConflict
 	case errors.Is(err, econ.ErrRewardTooEarly):
 		return "REWARD_TOO_EARLY", http.StatusUnprocessableEntity
 	case errors.Is(err, econ.ErrRewardLimitReached):

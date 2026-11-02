@@ -26,6 +26,7 @@ type Config struct {
 	Security   Security
 	Identity   Identity
 	AI         AI
+	Economy    Economy
 	AppName    string
 	ConfigPath string
 	Modules    map[string]string
@@ -87,6 +88,25 @@ type Identity struct {
 	PasswordMin   int
 	// CookieSecure must be true in production; derived from Env when unset.
 	CookieSecure bool
+}
+
+// Economy holds the L2 money settings.
+//
+// TestWebhookSecret enables the development-only "test" payment adapter. The
+// module ignores it in production, so a leaked development secret cannot settle
+// a real order.
+type Economy struct {
+	// Currencies is the closed allow-list the wallet accepts.
+	Currencies []string
+	// OrderTTL is how long a pending order may be paid.
+	OrderTTL time.Duration
+	// JobInterval is how often the expiry/audit sweep runs. Zero disables the
+	// worker, which is what tests and one-shot commands want.
+	JobInterval time.Duration
+	// ManualInstructions is shown on a bank-transfer checkout.
+	ManualInstructions string
+	// TestWebhookSecret enables the test adapter when non-empty.
+	TestWebhookSecret string
 }
 
 // IsProduction reports whether production-only rules apply.
@@ -152,6 +172,12 @@ type fileShape struct {
 		RequestTimeout string `yaml:"request_timeout"`
 		MaxRetries     int    `yaml:"max_retries"`
 	} `yaml:"ai"`
+	Economy struct {
+		Currencies         []string `yaml:"currencies"`
+		OrderTTL           string   `yaml:"order_ttl"`
+		JobInterval        string   `yaml:"job_interval"`
+		ManualInstructions string   `yaml:"manual_instructions"`
+	} `yaml:"economy"`
 	Modules map[string]string `yaml:"modules"`
 }
 
@@ -218,6 +244,11 @@ func defaults(appName string) *Config {
 		AI: AI{
 			RequestTimeout: 60 * time.Second,
 			MaxRetries:     2,
+		},
+		Economy: Economy{
+			Currencies:  []string{"TOKEN"},
+			OrderTTL:    30 * time.Minute,
+			JobInterval: time.Minute,
 		},
 		Modules: map[string]string{},
 	}
@@ -287,6 +318,18 @@ func applyFile(c *Config, f *fileShape) {
 	if d, err := time.ParseDuration(f.Identity.RefreshTTL); err == nil && f.Identity.RefreshTTL != "" {
 		c.Identity.RefreshTTL = d
 	}
+	if len(f.Economy.Currencies) > 0 {
+		c.Economy.Currencies = f.Economy.Currencies
+	}
+	if d, err := time.ParseDuration(f.Economy.OrderTTL); err == nil && f.Economy.OrderTTL != "" {
+		c.Economy.OrderTTL = d
+	}
+	if d, err := time.ParseDuration(f.Economy.JobInterval); err == nil && f.Economy.JobInterval != "" {
+		c.Economy.JobInterval = d
+	}
+	if f.Economy.ManualInstructions != "" {
+		c.Economy.ManualInstructions = f.Economy.ManualInstructions
+	}
 	if f.Identity.PasswordMin != 0 {
 		c.Identity.PasswordMin = f.Identity.PasswordMin
 	}
@@ -354,6 +397,12 @@ func applyEnv(c *Config) {
 	str("JWT_REFRESH_SECRET", &c.Identity.RefreshSecret)
 	dur("JWT_ACCESS_TTL", &c.Identity.AccessTTL)
 	dur("JWT_REFRESH_TTL", &c.Identity.RefreshTTL)
+
+	// Economy: the test webhook secret is env-only so a development secret
+	// never lands in a tracked YAML file.
+	str("ECONOMY_TEST_WEBHOOK_SECRET", &c.Economy.TestWebhookSecret)
+	dur("ECONOMY_ORDER_TTL", &c.Economy.OrderTTL)
+	dur("ECONOMY_JOB_INTERVAL", &c.Economy.JobInterval)
 
 	// AI settings. The key is env-only by design; there is no YAML field for it,
 	// so it cannot be committed by accident.
