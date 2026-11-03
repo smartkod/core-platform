@@ -153,6 +153,7 @@ CI'da Postgres servisi tanımlıdır. Windows'ta cgo olmadığı için `-race`
 ## Belgeler
 
 - `PRD.md` — ürün gereksinimleri: kapsam, ilkeler, kabul kriterleri
+- `doc/FEATURES.md` — özellik listesi: modüller, kurallar, uç noktalar, araçlar
 - `doc/ARCHITECTURE.md` — sınırlar, veri sahipliği, yetki/tenant matrisi
 - `doc/ENGINE_CONTRACT.md` — bir sektör motorunun çekirdeğe nasıl bağlanacağı
 - `doc/ADR.md` — alınan kararlar ve gerekçeleri
