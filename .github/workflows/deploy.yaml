@@ -8,22 +8,24 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v4
+
+      # No secret is passed as a build argument. Configuration (JWT secrets,
+      # database credentials) is supplied at runtime by the environment, so it
+      # never lands in an image layer where anyone who pulls the image can read
+      # it. See PRD.md §8.1.
       - name: Build Docker image
         run: |
           docker build \
-            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            --build-arg OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-            --build-arg SUPABASE_KEY=${{ secrets.SUPABASE_KEY }} \
-            --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --build-arg COMMIT=${{ github.sha }} \
             -t core-platform:${{ github.sha }} .
-      
+
       - name: Push to Container Registry
         run: |
+          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login "${{ secrets.REGISTRY_URL }}" -u "${{ secrets.REGISTRY_USERNAME }}" --password-stdin
           docker tag core-platform:${{ github.sha }} ${{ secrets.REGISTRY_URL }}/core-platform:latest
+          docker tag core-platform:${{ github.sha }} ${{ secrets.REGISTRY_URL }}/core-platform:${{ github.ref_name }}
           docker push ${{ secrets.REGISTRY_URL }}/core-platform:latest
+          docker push ${{ secrets.REGISTRY_URL }}/core-platform:${{ github.ref_name }}

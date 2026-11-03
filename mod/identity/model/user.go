@@ -7,10 +7,11 @@ package model
 import "time"
 
 // User is a platform account. One user exists per application database; there
-// is no cross-application identity (PRD.md 2.2).
+// is no cross-application identity (PRD.md §5).
 type User struct {
 	ID              string     `gorm:"column:id;primaryKey"`
 	Email           string     `gorm:"column:email"`
+	Phone           string     `gorm:"column:phone"`
 	PasswordHash    string     `gorm:"column:password_hash"`
 	Name            string     `gorm:"column:name"`
 	Locale          string     `gorm:"column:locale"`
@@ -18,6 +19,8 @@ type User struct {
 	Role            string     `gorm:"column:role"`
 	Status          string     `gorm:"column:status"`
 	EmailVerifiedAt *time.Time `gorm:"column:email_verified_at"`
+	PhoneVerifiedAt *time.Time `gorm:"column:phone_verified_at"`
+	ClosedAt        *time.Time `gorm:"column:closed_at"`
 	LastLoginAt     *time.Time `gorm:"column:last_login_at"`
 	TokenVersion    int        `gorm:"column:token_version"`
 	CreatedAt       time.Time  `gorm:"column:created_at"`
@@ -30,11 +33,13 @@ func (User) TableName() string { return "users" }
 
 // Role and status values.
 const (
-	RoleUser  = "user"
-	RoleAdmin = "admin"
+	RoleUser      = "user"
+	RoleAdmin     = "admin"
+	RoleModerator = "moderator"
 
 	StatusActive    = "active"
 	StatusSuspended = "suspended"
+	StatusClosed    = "closed"
 	StatusDeleted   = "deleted"
 )
 

@@ -1,104 +1,135 @@
 # Core Platform
 
-Modüler, çok uygulamalı bir backend çekirdeği. Sekiz uygulama (fitscope,
-eduscope, astroscope, financescope, webscope, CodeScope, Mimariscope,
-maketscope) aynı altyapıyı buradan alır.
+Sektör bağımsız **hizmet katmanı çekirdeği**. Bir işletmenin kim olduğunu, neyi
+sunduğunu ve kimin neyi yapabileceğini tanımlar; randevu, sipariş, teklif, ders,
+ödeme veya lojistik gibi **hiçbir sektör işlemini çalıştırmaz**.
+
+Bu depo bir **Go backend kütüphanesidir**. `npm run dev` yoktur; tarayıcıda
+açılacak bir sayfa yoktur. Servis bir HTTP API sunar.
+
+## Katmanlar
+
+| Katman | İçerik | Amaç |
+|---|---|---|
+| **L0** | `platform/`, `contract/core` | Kernel: config, PostgreSQL, migration, HTTP zarfı, health, modül yöneticisi |
+| **L1** | `identity` · `authz` · `files` · `notifications` | Kimlik, yetki, dosya, bildirim |
+| **L2** | `organization` · `catalog` | İşletme profili + şube + üyelik; merkezi taksonomi + sunum kaydı |
+
+L2 bir işlem motoru değildir. Motorlar (randevu, sipariş, teklif, ödeme…)
+çekirdeğin **sürümlenmiş sözleşmeleri** üzerinden bağlanır:
+`doc/ENGINE_CONTRACT.md`.
 
 ## Hızlı başlangıç
-
-**Bu bir Go backend'dir.** `npm run dev` yoktur — `package.json` da yoktur.
-Tarayıcıda açılacak bir sayfa yok; servis bir HTTP API sunar.
 
 ```powershell
 .\scripts\run.ps1
 ```
 
-Betik boş portu bulur, konteynerleri başlatır, hazır olana kadar bekler ve
-URL'leri yazar. Durdurmak için `.\scripts\stop.ps1`.
-
-Elle yapmak isterseniz:
+Elle:
 
 ```bash
 docker compose up -d --build
+curl http://localhost:8080/healthz
 ```
 
-```powershell
-Invoke-WebRequest http://localhost:8080/healthz -UseBasicParsing
-```
-
-→ Ayrıntılı anlatım: **`references/NASIL-CALISIR.md`**
-→ Adım adım deneme: **`references/DENEME.md`**
+Ayrıntı: **`references/NASIL-CALISIR.md`**.
 
 ## Durum
 
 | Alan | Durum |
 |---|---|
-| **L0 — Çekirdek kernel** | ✅ çalışıyor |
-| **L1 — identity · files · notifications** | ✅ çalışıyor |
-| L1 — search | yardımcı paket, çekirdekte değil |
-| L2 — ekonomi | tasarım hazır, kod yok |
-| L3 — AI | tasarım hazır, kod yok |
+| L0 kernel | ✅ çalışıyor |
+| L1 identity · authz · files · notifications | ✅ çalışıyor |
+| L2 organization · catalog | ✅ çalışıyor |
+| Sektör motorları (randevu, sipariş, ödeme…) | ❌ bu depoda yok — bilinçli olarak |
 
-`gofmt`, `go build ./...`, `go vet ./...` ve `go test ./...` yeşil.
-Duman testi: **42/42 kontrol**.
+`gofmt`, `go build ./...`, `go vet ./...`, `go test ./...` ve
+`go run ./cmd/depcheck` yeşil.
 
-## Nasıl çalışır
-
-Çekirdek bir **kütüphanedir**, kopyalanan bir şablon değil. Her uygulama kendi
-git deposunda, kendi binary'si ve kendi veritabanıyla çalışır; çekirdeği
-sürümlenmiş bir Go modülü olarak tüketir.
+## Mimari
 
 ```
-core-platform/        ayrı depo, ayrı go.mod
-├── contract/core/    uygulamanın görebildiği tek arayüz
-├── platform/         L0 kernel
-├── cmd/corectl/      iskelet üretici
-└── references/       PRD.md, L0.md, ...
-
-<app>/                ayrı depo, ayrı go.mod
-├── cmd/server/       ~25 satır
-├── internal/modules/ uygulamaya özel
-└── migrations/
+core-platform/
+├── contract/core/     uygulamanın görebildiği tek arayüz
+├── platform/          L0 kernel (modül import etmez)
+├── mod/               çekirdek modülleri (birbirini import etmez)
+│   ├── identity/      hesap, oturum, token
+│   ├── authz/         rol + izin + kapsam
+│   ├── files/         yükleme ve erişim
+│   ├── notifications/ outbox + e-posta
+│   ├── organization/  işletme, şube, üyelik, bölge
+│   └── catalog/       taksonomi, sunum, varyant
+├── cmd/corectl/       iskelet üretici
+└── doc/               ARCHITECTURE, ENGINE_CONTRACT, ADR
 ```
 
-Sınırlar derleyiciyle korunur: uygulama yalnızca `contract/core` import eder;
-`platform` ve `mod` iç paketleri uygulamaya kapalıdır.
+Sınırlar derleyiciyle ve CI ile korunur:
 
-## Yeni uygulama
+- `platform/` hiçbir `mod/` paketini import edemez.
+- Modüller birbirini import edemez; `contract/core` üzerinden konuşur.
+- `contract/` ne `platform` ne `mod` import edebilir.
+
+`go run ./cmd/depcheck` bu üç kuralı denetler.
+
+### Yetki modeli
+
+Kullanıcıdaki `role` alanı **yalnızca platform rolüdür** (`user`, `admin`,
+`moderator`). İşletme kapsamlı yetki `mod/authz` üzerinden yürür:
+
+- **İzin**: `catalog.manage`, `org.member.manage`, `organization.publish`…
+- **Rol**: izin kümesi (`owner`, `manager`, `staff`, `member`, platform rolleri).
+- **Atama**: bir rolü, bir kullanıcıya, bir kapsamda verir
+  (`platform` · `organization` · `branch` · `self`).
+
+Varsayılan cevap **hayır**'dır. Kapsam kimliği istek gövdesinden değil, sunucuda
+yüklenen kayıttan/rota parametresinden alınır.
+
+### Veri sahipliği
+
+| Tablo | Sahip |
+|---|---|
+| `users`, `refresh_tokens`, `one_time_tokens` | identity |
+| `roles`, `permissions`, `role_permissions`, `role_assignments` | authz |
+| `files`, `file_objects` | files |
+| `notifications`, `notification_preferences` | notifications |
+| `organizations`, `branches`, `memberships`, `regions`, `service_areas` | organization |
+| `taxonomy_nodes`, `organization_categories`, `offerings`, `offering_variants` | catalog |
+
+Tüm modüller aynı PostgreSQL şemasını (`public`) paylaşır ama tabloları
+birbirine karışmaz. Bir motor kendi şemasını ve kendi `schema_migrations`
+geçmişini getirir.
+
+## Uygulama üretme
 
 ```bash
-cd core-platform
-go run ./cmd/corectl new fitscope --level=L0 --dir=../fitscope
+go run ./cmd/corectl new fitscope --level=L2 --dir=../fitscope
 cd ../fitscope
 docker compose up
 ```
 
-`corectl new` bağımlılıkları çözer, `vendor/` üretir ve Docker imajını ağ
-erişimi gerektirmeyecek şekilde hazırlar. Üretilen proje elle düzenleme
-olmadan derlenir ve çalışır.
-
-Diğer komutlar:
-
 ```bash
-corectl new <app> --level=L0|L1|L2|L3 [--only=identity,files]
+corectl new <app> --level=L0|L1|L2 [--only=identity,files]
 corectl add module <name>
 corectl add level <LN>
 corectl upgrade          # çekirdek sürümünü uygular, major'da durur
 corectl doctor           # config, modules.yaml ve migration kontrolü
 ```
 
-## Çekirdeği çalıştırma
+## Uç noktalar (özet)
 
-```bash
-cp .env.example .env      # gerekirse
-docker compose up         # app + postgres
-```
-
-| Endpoint | Anlam |
+| Yol | Anlam |
 |---|---|
 | `GET /healthz` | süreç ayakta (DB'ye bakmaz) |
 | `GET /readyz` | DB erişilebilir; değilse 503 |
 | `GET /version` | ad, sürüm, commit, derleme zamanı |
+| `POST /api/v1/auth/register` · `login` · `refresh` · `logout` | kimlik |
+| `GET /api/v1/me` | oturum sahibi |
+| `GET /api/v1/organizations` · `/organizations/by-slug/:slug` | herkese açık keşif |
+| `POST /api/v1/organizations` | işletme oluştur (sahip = oturum) |
+| `GET/POST /api/v1/organizations/:org_id/...` | şube, üye, hizmet alanı |
+| `GET /api/v1/taxonomy` · `/offerings` | herkese açık katalog |
+| `GET/POST /api/v1/organizations/:org_id/offerings` | işletme kataloğu |
+| `GET /api/v1/authz/me/permissions` | etkin izinler |
 
 ## Geliştirme
 
@@ -106,30 +137,27 @@ docker compose up         # app + postgres
 make check          # gofmt + vet + test (CI ile aynı)
 make test
 make run
+make depcheck
 ```
 
-Duman testi (çalışan bir örneğe karşı, 28 kontrol):
+Duman testi (çalışan bir örneğe karşı):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1 -BaseUrl http://localhost:18080
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1 -BaseUrl http://localhost:8080
 ```
 
-Adım adım deneme kılavuzu: **`references/DENEME.md`**.
-
-Testler `-race` olmadan çalışır çünkü Windows'ta C gcc yok; Linux CI'da
-`go test -race ./...` çalıştırılmalıdır.
+Testler `TEST_DATABASE_DSN` yoksa veritabanı gerektiren senaryoları atlar;
+CI'da Postgres servisi tanımlıdır. Windows'ta cgo olmadığı için `-race`
+çalışmaz; Linux CI'da çalıştırılır.
 
 ## Belgeler
 
-- `references/PRD.md` — şemsiye: problem, seviyeler, sınırlar, semver, yol haritası
-- `references/L0.md` — çekirdek kernel gereksinimleri ve kabul kriterleri
-- `references/L1.md` — kimlik + dosya + bildirim (`identity` uygulandı)
-- `references/L2.md` · `references/L3.md` — ekonomi ve AI tasarımı
-- `references/NASIL-CALISIR.md` — çalıştırma komutları ve sık sorunlar
-- `references/DENEME.md` — kendi ortamında deneme kılavuzu
-- `doc/GELISTIRME-PLANI.md` — depo kurtarma öncesi durum tespiti (tarihsel)
-
-Seviye belgeleri (`L1.md`, `L2.md`, `L3.md`) koduyla birlikte yazılır.
+- `PRD.md` — ürün gereksinimleri: kapsam, ilkeler, kabul kriterleri
+- `doc/ARCHITECTURE.md` — sınırlar, veri sahipliği, yetki/tenant matrisi
+- `doc/ENGINE_CONTRACT.md` — bir sektör motorunun çekirdeğe nasıl bağlanacağı
+- `doc/ADR.md` — alınan kararlar ve gerekçeleri
+- `references/L0.md` — kernel gereksinimleri
+- `references/NASIL-CALISIR.md` — çalıştırma ve sorun giderme
 
 ## Lisans
 

@@ -53,7 +53,7 @@ func (r *Tokens) Revoke(ctx context.Context, id, replacedBy string) error {
 // RevokeFamily revokes every token in a family.
 //
 // This is what a detected reuse triggers: the stolen token and every token
-// derived from the same login stop working together (L1.md 3.1).
+// derived from the same login stop working together (PRD.md §6.1).
 func (r *Tokens) RevokeFamily(ctx context.Context, familyID string) error {
 	now := time.Now().UTC()
 	return r.db.WithContext(ctx).Model(&model.RefreshToken{}).

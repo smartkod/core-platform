@@ -1,72 +1,41 @@
-﻿# ============================================
-# 📌 config.example.yaml - SADECE ÖRNEK
-# 🔐 GERÇEK DEĞERLERİ .env DOSYASINDA TUT!
-# ============================================
+﻿# Core Platform — config example
+#
+# Copy the values you need into config/config.yaml or the environment.
+# Secrets belong in .env (never committed), not in this file.
+
+env: development
 
 server:
   host: 0.0.0.0
   port: 8080
 
-database:
+db:
   host: localhost
   port: 5432
   user: postgres
-  password: your-database-password-here
+  password: ""
   name: core_platform
   sslmode: disable
+  max_open_conns: 25
+  slow_query: 200ms
 
-logger:
+http:
+  body_limit: 8M
+  request_timeout: 30s
+  shutdown_timeout: 10s
+
+log:
   level: info
   format: json
 
-jwt:
-  secret: your-jwt-secret-here
-  expiry: 86400
-  refresh_secret: your-refresh-secret-here
-  refresh_expiry: 604800
+security:
+  # Required in production. Comma-separated origins; "*" is rejected.
+  allowed_origins: []
 
-external:
-  openai:
-    api_key: your-openai-api-key-here
-    base_url: https://api.openai.com/v1
-  anthropic:
-    api_key: your-anthropic-api-key-here
-  gemini:
-    api_key: your-gemini-api-key-here
-  supabase:
-    url: your-supabase-url-here
-    key: your-supabase-key-here
-  cloudflare:
-    api_token: your-cloudflare-token-here
-    account_id: your-account-id-here
-  aws:
-    access_key_id: your-aws-access-key
-    secret_access_key: your-aws-secret-key
-    region: us-east-1
-    s3_bucket: your-bucket-name
-
-redis:
-  host: localhost
-  port: 6379
-  password: your-redis-password-here
-
-modules:
-  config_path: config/modules.yaml
-  states:
-    database: ENABLED
-    logger: ENABLED
-    config: ENABLED
-    module_manager: ENABLED
-    health: ENABLED
-    api: ENABLED
-    security: ENABLED
-    auth: ENABLED
-    users: ENABLED
-    wallet: DISABLED
-    payments: DISABLED
-
-features:
-  openapi: true
-  csrf: false
-  cors: true
-  rate_limit: true
+identity:
+  access_ttl: 15m
+  refresh_ttl: 168h
+  password_min_length: 10
+  cookie_secure: false
+  # access_secret / refresh_secret are env-only in practice:
+  # JWT_ACCESS_SECRET and JWT_REFRESH_SECRET.

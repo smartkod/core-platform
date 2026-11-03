@@ -1,18 +1,24 @@
 // Command server is the reference binary for the platform itself.
 //
-// It runs at L2 (kernel + identity + files + notifications + economy) so the
-// engine can be exercised end to end without an application on top. An
+// It runs the full core (kernel + identity + organization + catalog) so every
+// capability can be exercised end to end without an application on top. An
 // application's own main.go is generated from the same shape by corectl.
+//
+// Note what is absent: no booking, order, quote, lesson or payment module. The
+// core describes who a business is and what it publishes; it never runs a
+// sector transaction (PRD.md §3).
 package main
 
 import (
 	"log"
 
 	"core-platform/contract/core"
-	"core-platform/mod/economy"
+	"core-platform/mod/authz"
+	"core-platform/mod/catalog"
 	"core-platform/mod/files"
 	"core-platform/mod/identity"
 	"core-platform/mod/notifications"
+	"core-platform/mod/organization"
 	"core-platform/platform"
 )
 
@@ -24,12 +30,14 @@ func main() {
 		Name:    "core-platform",
 		Version: version,
 		// The level is chosen here and nowhere else. Removing a line removes
-		// the module from the binary entirely (PRD.md 3.3).
+		// the module from the binary entirely.
 		Modules: []core.Module{
 			identity.New(),
+			authz.New(),
 			files.New(),
 			notifications.New(),
-			economy.New(),
+			organization.New(),
+			catalog.New(),
 		},
 		ConfigPath: "config/config.yaml",
 	}); err != nil {

@@ -20,7 +20,7 @@ func Add(args []string) error {
 		return addModule(args[1])
 	case "level":
 		if len(args) < 2 {
-			return fmt.Errorf("add level: expected L1, L2 or L3")
+			return fmt.Errorf("add level: expected L1 or L2")
 		}
 		return addLevel(args[1])
 	default:

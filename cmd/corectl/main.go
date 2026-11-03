@@ -1,7 +1,7 @@
 // Command corectl scaffolds and maintains applications built on the platform.
 //
 // It exists so starting a new application is one command instead of a manual
-// copy of auth, config, migrations and Docker files. See PRD.md 5.
+// copy of auth, config, migrations and Docker files. See PRD.md §6
 package main
 
 import (
@@ -47,7 +47,7 @@ func usage() {
 	fmt.Print(`corectl — scaffold applications on the core platform
 
 Usage:
-  corectl new <app> --level=L0|L1|L2|L3 [--only=mod,mod] [--dir=path]
+  corectl new <app> --level=L0|L1|L2 [--only=mod,mod] [--dir=path]
   corectl add module <name>
   corectl add level <LN>
   corectl doctor
@@ -55,12 +55,11 @@ Usage:
 
 Levels:
   L0  kernel only (config, db, migrations, modules, http, health)
-  L1  L0 + identity, files, notifications
-  L2  L1 + economy (wallet, orders, entitlements)
-  L3  L1 + ai (gateway, quota, cache, prompts)
+  L1  L0 + identity, authz, files, notifications
+  L2  L1 + organization, catalog (the service layer)
 
 Examples:
   corectl new fitscope --level=L1 --only=identity,files
-  corectl new eduscope --level=L1
+  corectl new eduscope --level=L2
 `)
 }

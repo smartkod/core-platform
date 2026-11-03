@@ -214,7 +214,7 @@ func (a *Auth) openSession(ctx context.Context, u *model.User, in LoginInput) (*
 // Rotation is mandatory: the presented token is revoked and a new one issued in
 // the same family. If a token that was already revoked is presented again, the
 // entire family is revoked, because that pattern means the token leaked
-// (L1.md 3.1).
+// (PRD.md §6.1).
 func (a *Auth) Refresh(ctx context.Context, in RefreshInput) (*Session, error) {
 	hash := HashToken(in.RefreshToken)
 	row, err := a.tokens.ByHash(ctx, hash)

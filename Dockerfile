@@ -27,7 +27,7 @@ COPY config /app/config
 RUN mkdir -p /app/data/uploads && chown -R 10001:10001 /app/data
 
 # Never copy .env or .env.example into the image: configuration comes from the
-# environment at runtime (L0.md 4.9).
+# environment at runtime.
 USER 10001
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \

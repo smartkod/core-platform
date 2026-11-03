@@ -27,35 +27,10 @@ log:
 security:
   allowed_origins: []
 
-# L1 identity. Secrets may come from here or from JWT_ACCESS_SECRET /
+# Identity. Secrets may come from here or from JWT_ACCESS_SECRET /
 # JWT_REFRESH_SECRET. Production refuses to start without them.
 identity:
   access_ttl: 15m
   refresh_ttl: 168h
   password_min_length: 10
   cookie_secure: false
-
-files:
-  driver: local
-  local_root: data/uploads
-  max_size: 10MB
-  signed_url_ttl: 15m
-
-# L2 economy. Currencies is the closed allow-list the wallet accepts; TOKEN is
-# the scaffold default. The test payment adapter exists for development only:
-# set ECONOMY_TEST_WEBHOOK_SECRET in the environment to enable it (it is ignored
-# when env is production).
-economy:
-  currencies: [TOKEN]
-  order_ttl: 30m
-  # Expiry/audit sweep. 0s disables it.
-  job_interval: 1m
-  manual_instructions: "Havale/EFT sonrası açıklamaya sipariş referans kodunu yazın."
-
-# AI (L3). The API key is read from AI_API_KEY only and never written here.
-ai:
-  enabled: false
-  base_url: https://api.example.com/v1
-  default_model:
-  request_timeout: 60s
-  max_retries: 2

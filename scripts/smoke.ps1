@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-    End-to-end smoke test for the core platform L0 + L1 identity.
+    End-to-end smoke test for the core platform: kernel, identity, authorization,
+    organization and catalog.
 
 .DESCRIPTION
     Exercises the behaviour that matters and reports PASS/FAIL per check.
@@ -399,6 +400,89 @@ Check "another user's inbox is separate" {
     $ol = Json POST "$script:base/auth/login" @{} (@{ email = $otherEmail; password = $password } | ConvertTo-Json)
     $r = Json GET "$script:base/notifications" @{ Authorization = "Bearer $($ol.data.access_token)" }
     $r.data.total -eq 0
+}
+
+# ---------------------------------------------------------------- organization
+Write-Host ""
+Write-Host "Organization + authorization" -ForegroundColor Yellow
+
+$ol = Json POST "$script:base/auth/login" @{} (@{ email = $email; password = $password } | ConvertTo-Json)
+$oh = @{ Authorization = "Bearer $($ol.data.access_token)" }
+$slug = "smoke-org-$stamp"
+
+$org = Json POST "$script:base/organizations" $oh (@{ name = "Smoke Co"; slug = $slug } | ConvertTo-Json)
+$script:orgId = $org.data.id
+
+Check "creating an organization returns 201" {
+    $org.success -eq $true -and [bool]$script:orgId
+}
+
+Check "the creator receives the owner permission" {
+    if (-not $script:orgId) { return $false }
+    $r = Json GET "$script:base/authz/me/permissions?scope=organization&scope_id=$($script:orgId)" $oh
+    $r.data.permissions -contains "organization.manage"
+}
+
+Check "the owner can read the organization" {
+    if (-not $script:orgId) { return $false }
+    $r = Json GET "$script:base/organizations/$($script:orgId)" $oh
+    $r.data.id -eq $script:orgId
+}
+
+Check "an outsider cannot read the organization" {
+    if (-not $script:orgId) { return $false }
+    $otherEmail = "outsider-$stamp@example.com"
+    Json POST "$script:base/auth/register" @{} (@{ email = $otherEmail; password = $password } | ConvertTo-Json) | Out-Null
+    $xl = Json POST "$script:base/auth/login" @{} (@{ email = $otherEmail; password = $password } | ConvertTo-Json)
+    (Status GET "$script:base/organizations/$($script:orgId)" @{ Authorization = "Bearer $($xl.data.access_token)" }) -eq 403
+}
+
+Check "a draft organization is not public" {
+    (Status GET "$script:base/organizations/by-slug/$slug") -eq 404
+}
+
+Check "the owner can add a branch" {
+    if (-not $script:orgId) { return $false }
+    $b = Json POST "$script:base/organizations/$($script:orgId)/branches" $oh (@{ name = "Main"; city = "Istanbul" } | ConvertTo-Json)
+    $script:branchId = $b.data.id
+    $b.success -eq $true -and [bool]$script:branchId
+}
+
+Check "a draft cannot jump straight to active" {
+    if (-not $script:orgId) { return $false }
+    (Status POST "$script:base/admin/organizations/$($script:orgId)/status" $oh (@{ status = "active" } | ConvertTo-Json)) -eq 403
+}
+
+Check "the owner can invite a member" {
+    if (-not $script:orgId) { return $false }
+    $m = Json POST "$script:base/organizations/$($script:orgId)/members" $oh (@{ email = "invitee-$stamp@example.com"; role_key = "staff" } | ConvertTo-Json)
+    $m.success -eq $true -and $m.data.status -eq "invited"
+}
+
+Check "the owner can remove a branch" {
+    if (-not $script:orgId -or -not $script:branchId) { return $false }
+    (Status DELETE "$script:base/organizations/$($script:orgId)/branches/$($script:branchId)" $oh) -eq 204
+}
+
+# ---------------------------------------------------------------- catalog
+Write-Host ""
+Write-Host "Catalog" -ForegroundColor Yellow
+
+Check "unknown offering returns 404" {
+    (Status GET "$script:base/offerings/00000000-0000-0000-0000-000000000000") -eq 404
+}
+
+Check "catalog requires authentication on tenant routes" {
+    if (-not $script:orgId) { return $false }
+    (Status GET "$script:base/organizations/$($script:orgId)/offerings") -eq 401
+}
+
+Check "an outsider cannot list tenant offerings" {
+    if (-not $script:orgId) { return $false }
+    $otherEmail = "catalog-outsider-$stamp@example.com"
+    Json POST "$script:base/auth/register" @{} (@{ email = $otherEmail; password = $password } | ConvertTo-Json) | Out-Null
+    $xl = Json POST "$script:base/auth/login" @{} (@{ email = $otherEmail; password = $password } | ConvertTo-Json)
+    (Status GET "$script:base/organizations/$($script:orgId)/offerings" @{ Authorization = "Bearer $($xl.data.access_token)" }) -eq 403
 }
 
 # ---------------------------------------------------------------- summary

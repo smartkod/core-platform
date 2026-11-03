@@ -30,7 +30,7 @@ func NewIdentity(tokens *service.Tokens, users *repository.Users) *Identity {
 // Order matters: the Authorization header is checked first and, if present,
 // cookies are ignored entirely. Accepting a valid Bearer token alongside a
 // stale cookie would let one request be authenticated as two different users
-// depending on which check ran first (L1.md 3.1).
+// depending on which check ran first (PRD.md §6.1).
 func (i *Identity) Middleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -50,6 +50,48 @@ func (i *Identity) Middleware() echo.MiddlewareFunc {
 			}
 			// A token minted before a password change carries an old version and
 			// must stop working even though its signature is still valid.
+			if claims.Ver != u.TokenVersion {
+				return core.ErrUnauthorized
+			}
+			if u.Status != model.StatusActive {
+				return core.ErrForbidden
+			}
+
+			c.Set(core.ContextUserKey, &core.Principal{
+				UserID:    u.ID,
+				Email:     u.Email,
+				Role:      u.Role,
+				Scopes:    claims.Scope,
+				TokenID:   claims.ID,
+				SessionID: claims.SID,
+			})
+			return next(c)
+		}
+	}
+}
+
+// OptionalMiddleware attaches the principal when credentials are present and
+// lets anonymous requests through.
+//
+// A malformed or expired token is not treated as anonymous: silently dropping a
+// bad credential would make a broken client look like a signed-out user, and
+// would hide a revoked token from the caller.
+func (i *Identity) OptionalMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			raw := accessToken(c)
+			if raw == "" {
+				return next(c)
+			}
+
+			claims, err := i.tokens.ParseAccess(raw)
+			if err != nil {
+				return core.ErrUnauthorized
+			}
+			u, err := i.users.ByID(c.Request().Context(), claims.Subject)
+			if err != nil {
+				return core.ErrUnauthorized
+			}
 			if claims.Ver != u.TokenVersion {
 				return core.ErrUnauthorized
 			}

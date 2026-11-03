@@ -164,7 +164,7 @@ func timeUntil(t time.Time) int64 {
 //
 // Bearer requests are immune by design: a token that is not a cookie cannot be
 // attached by a cross-site form post, and requiring a CSRF header from API
-// clients would break them for no security gain (L1.md 3.1).
+// clients would break them for no security gain (PRD.md §6.1).
 //
 // Requests with no access cookie also pass: CSRF guards a browser's ambient
 // credentials, and a fresh client (login, register, password flows) has none,

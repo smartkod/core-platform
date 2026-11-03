@@ -80,6 +80,7 @@ func (r *Users) SoftDelete(ctx context.Context, userID string) error {
 		Where("id = ?", userID).
 		Updates(map[string]any{
 			"deleted_at":    now,
+			"closed_at":     now,
 			"status":        model.StatusDeleted,
 			"token_version": gorm.Expr("token_version + 1"),
 		}).Error

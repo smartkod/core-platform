@@ -80,6 +80,14 @@ func Run(app core.App) error {
 	}
 
 	// 5. Module start, with reverse-order rollback on failure.
+	//
+	// The resolver runs before each start so a module receives the providers
+	// built by the modules before it. Without this an organization or catalog
+	// module would see a nil authorizer and refuse to boot, even though authz is
+	// declared as its dependency.
+	mgr.SetProviderResolver(func(d core.Deps) core.Deps {
+		return wireProviders(d, app.Modules, mgr)
+	})
 	if err := mgr.Start(ctx, deps); err != nil {
 		return err
 	}
@@ -199,12 +207,19 @@ func buildServer(
 // unequal to nil while every method call on it panics.
 func wireProviders(deps core.Deps, mods []core.Module, mgr *module.Manager) core.Deps {
 	for _, mod := range mods {
-		if !mgr.IsEnabled(mod.Name()) {
+		if !mgr.IsEnabled(mod.Name()) || !mgr.Started(mod.Name()) {
+			// An unstarted module's accessor returns a typed nil pointer; the
+			// nil check below would not catch it, so it must be excluded here.
 			continue
 		}
 		if p, ok := mod.(core.IdentityProvider); ok && deps.Identity == nil {
 			if id := p.Identity(); id != nil {
 				deps.Identity = id
+			}
+		}
+		if p, ok := mod.(core.UserProvider); ok && deps.Users == nil {
+			if u := p.Users(); u != nil {
+				deps.Users = u
 			}
 		}
 		if p, ok := mod.(core.FileProvider); ok && deps.Files == nil {
@@ -217,9 +232,19 @@ func wireProviders(deps core.Deps, mods []core.Module, mgr *module.Manager) core
 				deps.Notifications = n
 			}
 		}
-		if p, ok := mod.(core.EconomyProvider); ok && deps.Economy == nil {
-			if e := p.Economy(); e != nil {
-				deps.Economy = e
+		if p, ok := mod.(core.AuthorizerProvider); ok && deps.Authorizer == nil {
+			if a := p.Authorizer(); a != nil {
+				deps.Authorizer = a
+			}
+		}
+		if p, ok := mod.(core.OrganizationProvider); ok && deps.Organizations == nil {
+			if o := p.Organizations(); o != nil {
+				deps.Organizations = o
+			}
+		}
+		if p, ok := mod.(core.CatalogProvider); ok && deps.Catalog == nil {
+			if c := p.Catalog(); c != nil {
+				deps.Catalog = c
 			}
 		}
 	}

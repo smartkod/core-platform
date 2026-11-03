@@ -36,7 +36,7 @@ type Config struct {
 	MaxDelay    time.Duration
 }
 
-// DefaultConfig returns the values described in L1.md 3.3.
+// DefaultConfig returns the values described in PRD.md §6.5.
 func DefaultConfig() Config {
 	return Config{
 		MaxAttempts: 5,

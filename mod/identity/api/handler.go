@@ -231,6 +231,7 @@ func (h *Handler) handleUpdateMe(c echo.Context) error {
 		Name      *string `json:"name"`
 		Locale    *string `json:"locale"`
 		AvatarURL *string `json:"avatar_url"`
+		Phone     *string `json:"phone"`
 	}
 	if err := bind(c, &in); err != nil {
 		return err
@@ -248,6 +249,13 @@ func (h *Handler) handleUpdateMe(c echo.Context) error {
 	}
 	if in.AvatarURL != nil {
 		u.AvatarURL = *in.AvatarURL
+	}
+	if in.Phone != nil {
+		u.Phone = truncateString(*in.Phone, 32)
+		// A changed number is unverified until it is proven again.
+		if u.Phone == "" {
+			u.PhoneVerifiedAt = nil
+		}
 	}
 	if err := h.users.Update(c.Request().Context(), u); err != nil {
 		return err
@@ -325,12 +333,14 @@ func userView(u *model.User) map[string]any {
 	return map[string]any{
 		"id":             u.ID,
 		"email":          u.Email,
+		"phone":          u.Phone,
 		"name":           u.Name,
 		"locale":         u.Locale,
 		"avatar_url":     u.AvatarURL,
 		"role":           u.Role,
 		"status":         u.Status,
 		"email_verified": u.EmailVerifiedAt != nil,
+		"phone_verified": u.PhoneVerifiedAt != nil,
 		"created_at":     u.CreatedAt,
 	}
 }

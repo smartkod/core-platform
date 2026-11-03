@@ -1,7 +1,7 @@
-// Package identity implements accounts, sessions and authorization.
+// Package identity implements accounts and sessions.
 //
-// It is the first L1 module: everything else (files, notifications, economy,
-// ai) depends on knowing who the caller is.
+// It is the first L1 module: authorization, files, notifications, organization
+// and catalog all depend on knowing who the caller is.
 package identity
 
 import (
@@ -49,7 +49,7 @@ type Config struct {
 	Mailer service.Mailer
 }
 
-// DefaultConfig returns the values described in L1.md 3.5.
+// DefaultConfig returns the values described in PRD.md §8.1.
 func DefaultConfig() Config {
 	return Config{
 		AccessTTL:          15 * time.Minute,
@@ -213,6 +213,14 @@ func (m *Module) Stop(context.Context) error { return nil }
 // Identity exposes the middleware so the composition root can hand it to other
 // modules through core.Deps in a later revision.
 func (m *Module) Identity() core.Identity { return m.identity }
+
+// Users implements core.UserProvider, the read-only account projection.
+func (m *Module) Users() core.UserStore {
+	if m.identity == nil {
+		return nil
+	}
+	return m.identity
+}
 
 // NewUUID is exported for tests that need to predict an identifier.
 func NewUUID() string { return uuid.New() }

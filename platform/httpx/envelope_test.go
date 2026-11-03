@@ -53,7 +53,8 @@ func TestSentinelMapping(t *testing.T) {
 		{core.ErrRateLimited, "RATE_LIMITED", http.StatusTooManyRequests},
 		{core.ErrNotImplemented, "NOT_IMPLEMENTED", http.StatusNotImplemented},
 		{core.ErrProviderFailure, "PROVIDER_ERROR", http.StatusBadGateway},
-		{core.ErrInsufficientBalance, "INSUFFICIENT_BALANCE", http.StatusPaymentRequired},
+		{core.ErrInvalidState, "INVALID_STATE", http.StatusConflict},
+		{core.ErrNotMember, "NOT_A_MEMBER", http.StatusForbidden},
 	}
 
 	for _, tc := range cases {

@@ -108,17 +108,14 @@ Veya tüm akışı tek komutla:
 powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1 -BaseUrl http://localhost:18080
 ```
 
-### AI sağlayıcı kontrolü
+### İşletme ve katalog kontrolü
 
-`.env` içindeki `AI_*` ayarlarının gerçekten çalıştığını tek istekle doğrular.
-Sunucuyu başlatmak gerekmez; aynı istemci kodunu kullanır.
+Duman betiği kimlik akışının ardından işletme oluşturma, sahiplik yetkisi,
+tenant izolasyonu (403/404), şube ve davet akışını da doğrular:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\ai-check.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1 -BaseUrl http://localhost:18080
 ```
-
-Beklenen: `OK` satırı, yanıt, token kullanımı ve gecikme. Anahtar hiçbir zaman
-ekrana yazılmaz, yalnızca uzunluğu gösterilir.
 
 Durdur:
 
@@ -223,11 +220,12 @@ docker run --rm alpine nslookup postgres
 | HTTP API (Go) | ✅ |
 | PostgreSQL şeması + migration | ✅ |
 | Kayıt / giriş / token yenileme / çıkış | ✅ |
-| Yetkilendirme (RBAC) | ✅ |
-| Dosya yükleme | ⬜ yazılmadı |
-| Bildirim | ⬜ yazılmadı |
-| Cüzdan / ödeme | ⬜ yazılmadı |
-| AI | ⬜ yazılmadı |
+| Yetkilendirme (rol + izin + kapsam) | ✅ |
+| Dosya yükleme | ✅ |
+| Bildirim (outbox + e-posta) | ✅ |
+| İşletme, şube, üyelik | ✅ |
+| Taksonomi ve katalog | ✅ |
+| Sektör motorları (randevu, sipariş, ödeme) | ⬜ ayrı depo — `doc/ENGINE_CONTRACT.md` |
 | **Web arayüzü** | ⬜ **yok** — bu backend |
 
 Web arayüzü istersen ayrı bir depoda yazılır; bu çekirdeğe `fetch` ile bağlanır.

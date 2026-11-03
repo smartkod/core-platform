@@ -1,7 +1,6 @@
 package platform
 
 import (
-	"strings"
 	"time"
 
 	"core-platform/contract/core"
@@ -27,12 +26,6 @@ func (v configView) String(key string) string {
 		return "core-platform"
 	case "app.name":
 		return v.c.AppName
-	case "economy.manual_instructions":
-		return v.c.Economy.ManualInstructions
-	case "economy.test_webhook_secret":
-		return v.c.Economy.TestWebhookSecret
-	case "economy.currencies":
-		return strings.Join(v.c.Economy.Currencies, ",")
 	}
 	return ""
 }
@@ -53,10 +46,6 @@ func (v configView) Duration(key string) time.Duration {
 		return v.c.Identity.RefreshTTL
 	case "http.request_timeout":
 		return v.c.HTTP.RequestTimeout
-	case "economy.order_ttl":
-		return v.c.Economy.OrderTTL
-	case "economy.job_interval":
-		return v.c.Economy.JobInterval
 	}
 	return 0
 }

@@ -12,7 +12,7 @@ import (
 //
 // It refuses to continue when the core reports a breaking change, because a
 // silent major upgrade is how eight applications end up on eight incompatible
-// versions (PRD.md 4.3).
+// versions (PRD.md §8.4).
 func Upgrade(args []string) error {
 	dir := "."
 	dryRun := false

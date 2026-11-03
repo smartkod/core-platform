@@ -15,7 +15,7 @@ require {{.CoreModulePath}} v{{.CoreVersion}}
 {{- if .CoreReplacePath}}
 
 // Local development. Remove this block (or delete go.work) before releasing;
-// see PRD.md 4.3.
+// see PRD.md §8.4.
 replace {{.CoreModulePath}} => {{.CoreReplacePath}}
 {{- end}}
 `,
@@ -305,8 +305,8 @@ func (m *Module) RegisterRoutes(g *echo.Group, _ core.Deps) {
 	})
 }
 
-func (m *Module) Start(context.Context) error { return nil }
-func (m *Module) Stop(context.Context) error  { return nil }
+func (m *Module) Start(context.Context, core.Deps) error { return nil }
+func (m *Module) Stop(context.Context) error             { return nil }
 `,
 
 	"internal/modules/example/module_test.go": `package example

@@ -8,13 +8,18 @@ package levels
 import "fmt"
 
 // Level is a platform tier an application can start at.
+//
+// V1 has three levels. There is no AI level: a model provider is an adapter an
+// application adds itself, not a platform tier.
 type Level string
 
 const (
+	// L0 is the kernel: configuration, HTTP, migrations, logging. No modules.
 	L0 Level = "L0"
+	// L1 is identity and the supporting infrastructure modules.
 	L1 Level = "L1"
+	// L2 is the service layer: organization and catalogue.
 	L2 Level = "L2"
-	L3 Level = "L3"
 )
 
 // Module describes one optional module a level can include.
@@ -28,22 +33,23 @@ type Module struct {
 
 // available lists every module the scaffold knows about, in start order.
 //
-// Core (L0) modules are always present and are not listed here.
+// Kernel (L0) itself is always present and is not listed here.
 var available = []Module{
 	{Name: "identity", Level: L1},
+	{Name: "authz", Level: L1, Requires: []string{"identity"}},
 	{Name: "files", Level: L1, Requires: []string{"identity"}},
 	{Name: "notifications", Level: L1, Requires: []string{"identity"}},
-	{Name: "economy", Level: L2, Requires: []string{"identity"}},
-	{Name: "ai", Level: L3, Requires: []string{"identity"}},
+	{Name: "organization", Level: L2, Requires: []string{"identity", "authz"}},
+	{Name: "catalog", Level: L2, Requires: []string{"identity", "authz", "organization"}},
 }
 
 // Parse validates a level string.
 func Parse(s string) (Level, error) {
 	switch Level(s) {
-	case L0, L1, L2, L3:
+	case L0, L1, L2:
 		return Level(s), nil
 	}
-	return "", fmt.Errorf("unknown level %q (want L0, L1, L2 or L3)", s)
+	return "", fmt.Errorf("unknown level %q (want L0, L1 or L2)", s)
 }
 
 // rank orders levels so "does this level include that one" is answerable.
@@ -53,7 +59,7 @@ func rank(l Level) int {
 		return 0
 	case L1:
 		return 1
-	case L2, L3:
+	case L2:
 		return 2
 	}
 	return -1
@@ -62,8 +68,8 @@ func rank(l Level) int {
 // ModulesFor returns the modules a level includes, filtered by only when it is
 // non-empty.
 //
-// L2 and L3 are siblings: both start from L1, so choosing L2 does not include
-// AI and choosing L3 does not include the economy.
+// Levels are cumulative: L2 includes everything in L1, because the service
+// layer is meaningless without identity and authorization.
 func ModulesFor(l Level, only []string) ([]Module, error) {
 	if l == L0 {
 		if len(only) > 0 {
@@ -72,19 +78,9 @@ func ModulesFor(l Level, only []string) ([]Module, error) {
 		return nil, nil
 	}
 
-	// Sibling levels contribute their own module on top of L1.
-	base := l
-	extra := Level("")
-	switch l {
-	case L2:
-		base, extra = L1, L2
-	case L3:
-		base, extra = L1, L3
-	}
-
 	var out []Module
 	for _, m := range available {
-		if rank(m.Level) <= rank(base) || (extra != "" && m.Level == extra) {
+		if rank(m.Level) <= rank(l) {
 			out = append(out, m)
 		}
 	}

@@ -1,4 +1,4 @@
-﻿.PHONY: run build test fmt fmt-check vet lint check corectl docker-up docker-down tidy clean
+﻿.PHONY: run build test fmt fmt-check vet lint depcheck check corectl docker-up docker-down tidy clean
 
 APP := core-platform
 
@@ -10,7 +10,7 @@ build:
 	go build -o bin/corectl ./cmd/corectl
 
 # The full gate. CI runs the same steps, so a green local run means green CI.
-check: fmt-check vet test
+check: fmt-check vet depcheck test
 
 fmt:
 	gofmt -w .
@@ -23,6 +23,11 @@ vet:
 	go vet ./...
 
 lint: vet
+
+# Enforces the module boundary: platform imports no module, modules import no
+# module, contract imports neither.
+depcheck:
+	go run ./cmd/depcheck
 
 test:
 	go test ./...

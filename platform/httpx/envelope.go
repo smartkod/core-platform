@@ -10,7 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"core-platform/contract/core"
-	econ "core-platform/contract/economy"
 )
 
 // ErrorBody is the error object inside the envelope.
@@ -37,10 +36,14 @@ func codeOf(err error) (string, int) {
 		return "UNAUTHORIZED", http.StatusUnauthorized
 	case errors.Is(err, core.ErrForbidden):
 		return "FORBIDDEN", http.StatusForbidden
+	case errors.Is(err, core.ErrNotMember):
+		return "NOT_A_MEMBER", http.StatusForbidden
 	case errors.Is(err, core.ErrNotFound):
 		return "NOT_FOUND", http.StatusNotFound
 	case errors.Is(err, core.ErrValidation):
 		return "VALIDATION_ERROR", http.StatusUnprocessableEntity
+	case errors.Is(err, core.ErrInvalidState):
+		return "INVALID_STATE", http.StatusConflict
 	case errors.Is(err, core.ErrConflict):
 		return "CONFLICT", http.StatusConflict
 	case errors.Is(err, core.ErrRateLimited):
@@ -49,45 +52,6 @@ func codeOf(err error) (string, int) {
 		return "NOT_IMPLEMENTED", http.StatusNotImplemented
 	case errors.Is(err, core.ErrProviderFailure):
 		return "PROVIDER_ERROR", http.StatusBadGateway
-	case errors.Is(err, core.ErrInsufficientBalance):
-		return "INSUFFICIENT_BALANCE", http.StatusPaymentRequired
-	case errors.Is(err, core.ErrEntitlementRequired):
-		return "ENTITLEMENT_REQUIRED", http.StatusPaymentRequired
-	// Economy sentinels (contract/economy). Same single mapping point.
-	case errors.Is(err, econ.ErrSignatureInvalid):
-		return "WEBHOOK_SIGNATURE_INVALID", http.StatusUnauthorized
-	case errors.Is(err, econ.ErrPaymentMismatch):
-		return "PAYMENT_MISMATCH", http.StatusUnprocessableEntity
-	case errors.Is(err, econ.ErrProductNotAvailable):
-		return "PRODUCT_NOT_AVAILABLE", http.StatusNotFound
-	case errors.Is(err, econ.ErrOrderNotFound):
-		return "ORDER_NOT_FOUND", http.StatusNotFound
-	case errors.Is(err, econ.ErrEntitlementNotFound):
-		return "ENTITLEMENT_NOT_FOUND", http.StatusNotFound
-	case errors.Is(err, econ.ErrProviderNotFound):
-		return "PROVIDER_NOT_FOUND", http.StatusNotFound
-	case errors.Is(err, econ.ErrProviderUnsupported):
-		return "PROVIDER_UNSUPPORTED", http.StatusNotImplemented
-	case errors.Is(err, econ.ErrOrderNotPayable):
-		return "ORDER_NOT_PAYABLE", http.StatusConflict
-	case errors.Is(err, econ.ErrIdempotencyRequired):
-		return "IDEMPOTENCY_KEY_REQUIRED", http.StatusBadRequest
-	case errors.Is(err, econ.ErrIdempotencyConflict):
-		return "IDEMPOTENCY_CONFLICT", http.StatusConflict
-	case errors.Is(err, econ.ErrRewardTooEarly):
-		return "REWARD_TOO_EARLY", http.StatusUnprocessableEntity
-	case errors.Is(err, econ.ErrRewardLimitReached):
-		return "REWARD_LIMIT_REACHED", http.StatusTooManyRequests
-	case errors.Is(err, econ.ErrAdNotAvailable):
-		return "AD_NOT_AVAILABLE", http.StatusNotFound
-	case errors.Is(err, econ.ErrSessionNotOpen):
-		return "SESSION_NOT_OPEN", http.StatusConflict
-	case errors.Is(err, econ.ErrDuplicateEntry):
-		return "DUPLICATE_ENTRY", http.StatusConflict
-	case errors.Is(err, econ.ErrUnknownCurrency),
-		errors.Is(err, econ.ErrAdInvalid),
-		errors.Is(err, econ.ErrInvalidAmount):
-		return "VALIDATION_ERROR", http.StatusUnprocessableEntity
 	}
 	return "INTERNAL", http.StatusInternalServerError
 }
@@ -147,6 +111,28 @@ func RespondOK(c echo.Context, status int, data any) error {
 	}{
 		Success:   true,
 		Data:      data,
+		RequestID: RequestIDFrom(c),
+	})
+}
+
+// Page is the success envelope for a paginated list.
+type Page struct {
+	Success   bool   `json:"success"`
+	Data      any    `json:"data"`
+	Total     int64  `json:"total"`
+	Limit     int    `json:"limit"`
+	Offset    int    `json:"offset"`
+	RequestID string `json:"request_id"`
+}
+
+// RespondList writes a paginated list with the shared envelope.
+func RespondList(c echo.Context, data any, total int64, limit, offset int) error {
+	return c.JSON(http.StatusOK, Page{
+		Success:   true,
+		Data:      data,
+		Total:     total,
+		Limit:     limit,
+		Offset:    offset,
 		RequestID: RequestIDFrom(c),
 	})
 }

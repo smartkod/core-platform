@@ -19,7 +19,7 @@ type Params struct {
 	AppName string
 	// ModulePath is the Go module path, e.g. "fitscope" or "github.com/me/fitscope".
 	ModulePath string
-	// Level is L0..L3.
+	// Level is L0..L2.
 	Level string
 	// Modules are the chosen module names, in start order.
 	Modules []string

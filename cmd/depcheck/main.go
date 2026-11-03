@@ -1,17 +1,21 @@
-// Command depcheck enforces the module dependency boundaries from PRD.md 4.1.
+// Command depcheck enforces the module dependency boundaries from PRD.md §8.4.
 //
-// It exists because the boundary is the whole point of the architecture: an L1
-// application must not be able to import the L2 or L3 modules, and the kernel
-// must never import a module. A code review cannot guarantee that; a CI step can.
+// It exists because the boundary is the whole point of the architecture: the
+// kernel must never import a module, modules must reach each other only through
+// contract/core, and the contract must stay free of implementation packages.
+// A code review cannot guarantee that; a CI step can.
 //
 // The rules are expressed as data so they read as a statement of intent rather
 // than as branching logic:
 //
-//	platform/**            must not import any module
-//	mod/identity/**        must not import a higher-level module
-//	mod/files/**           must not import a higher-level module
-//	mod/notifications/**   must not import a higher-level module
-//	contract/**            must not import platform or modules
+//	platform/**              must not import any module
+//	mod/identity/**          must not import another module
+//	mod/authz/**             must not import another module
+//	mod/files/**             must not import another module
+//	mod/notifications/**     must not import another module
+//	mod/organization/**      must not import another module
+//	mod/catalog/**           must not import another module
+//	contract/**              must not import platform or modules
 //
 // Usage:
 //
@@ -27,8 +31,8 @@ import (
 	"strings"
 )
 
-// handler is one rule.
-type handler struct {
+// rule is one policy entry.
+type rule struct {
 	// name is what the rule protects, used in the failure message.
 	name string
 	// prefixes are the package prefixes the rule applies to.
@@ -42,36 +46,25 @@ type handler struct {
 // modulePrefix is the module path of this repository.
 const modulePrefix = "core-platform"
 
-// rules is the complete policy.
-func rules() []handler {
-	l1Modules := []string{
-		modulePrefix + "/mod/files",
-		modulePrefix + "/mod/identity",
-		modulePrefix + "/mod/notifications",
-	}
-	higherLevel := []string{
-		modulePrefix + "/mod/economy",
-		modulePrefix + "/mod/ai",
-	}
+// coreModules are the modules that make up the core platform itself. None of
+// them may import another module: they cooperate through contract/core only.
+var coreModules = []string{
+	modulePrefix + "/mod/identity",
+	modulePrefix + "/mod/authz",
+	modulePrefix + "/mod/files",
+	modulePrefix + "/mod/notifications",
+	modulePrefix + "/mod/organization",
+	modulePrefix + "/mod/catalog",
+}
 
-	return []handler{
+// rules is the complete policy.
+func rules() []rule {
+	rs := []rule{
 		{
 			name:      "kernel must not import modules",
 			prefixes:  []string{modulePrefix + "/platform"},
 			forbidden: []string{modulePrefix + "/mod/"},
 			reason:    "the kernel is the foundation; importing a module would invert the dependency direction",
-		},
-		{
-			name:      "L1 modules must not import L2 or L3 modules",
-			prefixes:  l1Modules,
-			forbidden: higherLevel,
-			reason:    "an L1-only application must build without economy or ai; this is what makes level reuse possible",
-		},
-		{
-			name:      "L1 modules must not import each other's internals",
-			prefixes:  []string{modulePrefix + "/mod/files", modulePrefix + "/mod/notifications"},
-			forbidden: []string{modulePrefix + "/mod/identity/"},
-			reason:    "modules talk through contract/core, never by importing another module's packages",
 		},
 		{
 			name:      "contract must stay dependency-free",
@@ -80,6 +73,25 @@ func rules() []handler {
 			reason:    "contract is the only package an application imports; it must not drag the implementation with it",
 		},
 	}
+
+	// Every module may use its own subpackages, but must not reach into
+	// another module. Listing the siblings explicitly (rather than banning all
+	// of mod/) keeps that distinction checkable per module.
+	for _, m := range coreModules {
+		var siblings []string
+		for _, other := range coreModules {
+			if other != m {
+				siblings = append(siblings, other)
+			}
+		}
+		rs = append(rs, rule{
+			name:      "modules must not import each other",
+			prefixes:  []string{m},
+			forbidden: siblings,
+			reason:    "modules talk through contract/core, never by importing another module's packages",
+		})
+	}
+	return rs
 }
 
 // pkgImports is one entry of `go list -json` output.
@@ -105,24 +117,22 @@ func run() error {
 	}
 
 	var violations []string
-	for _, rule := range rules() {
+	for _, r := range rules() {
 		for _, pkg := range pkgs {
-			if pkg.Standard || !matchesAny(pkg.ImportPath, rule.prefixes) {
+			if pkg.Standard || !matchesAny(pkg.ImportPath, r.prefixes) {
 				continue
 			}
 			for _, imp := range pkg.Imports {
-				if !matchesAny(imp, rule.forbidden) {
+				if !matchesAny(imp, r.forbidden) {
 					continue
 				}
-				// A package importing itself by prefix is not a violation; this
-				// only matters for a rule whose prefixes overlap its forbidden
-				// list, which none do today, but the check keeps it honest.
+				// A package importing itself by prefix is not a violation.
 				if strings.HasPrefix(imp, pkg.ImportPath) {
 					continue
 				}
 				violations = append(violations, fmt.Sprintf(
 					"%s\n    imports %s\n    rule: %s\n    why:  %s",
-					pkg.ImportPath, imp, rule.name, rule.reason))
+					pkg.ImportPath, imp, r.name, r.reason))
 			}
 		}
 	}
@@ -159,7 +169,7 @@ func listPackages() ([]pkgImports, error) {
 
 func matchesAny(path string, prefixes []string) bool {
 	for _, p := range prefixes {
-		if path == p || strings.HasPrefix(path, p+"/") || strings.HasPrefix(path, p) {
+		if path == p || strings.HasPrefix(path, p+"/") {
 			return true
 		}
 	}

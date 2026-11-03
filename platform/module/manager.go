@@ -37,6 +37,10 @@ type Manager struct {
 	byName  map[string]core.Module
 	status  map[string]Status
 	enabled map[string]bool // nil means "all enabled"
+	// resolve refreshes cross-module services between starts. It is how a
+	// module that depends on another receives the provider that the other
+	// module just built, without either package importing the other.
+	resolve func(core.Deps) core.Deps
 }
 
 // New builds a manager and validates the dependency graph up front.
@@ -116,6 +120,21 @@ func (m *Manager) Migrate(ctx context.Context, deps core.Deps) error {
 	return nil
 }
 
+// SetProviderResolver installs the cross-module service refresher.
+//
+// It is called before Start and after every module has started, so a resolver
+// must only return services whose module is in StatusStarted. Otherwise a typed
+// nil pointer would be wrapped in a non-nil interface and the dependency check
+// downstream would pass while the first request panics.
+func (m *Manager) SetProviderResolver(fn func(core.Deps) core.Deps) {
+	m.resolve = fn
+}
+
+// Started reports whether a module has finished Start.
+func (m *Manager) Started(name string) bool {
+	return m.status[name] == StatusStarted
+}
+
 // Start launches every enabled module, rolling back in reverse order on error.
 func (m *Manager) Start(ctx context.Context, deps core.Deps) error {
 	started := make([]core.Module, 0, len(m.order))
@@ -123,6 +142,9 @@ func (m *Manager) Start(ctx context.Context, deps core.Deps) error {
 	for _, mod := range m.order {
 		if !m.IsEnabled(mod.Name()) {
 			continue
+		}
+		if m.resolve != nil {
+			deps = m.resolve(deps)
 		}
 		if err := mod.Start(ctx, deps); err != nil {
 			m.status[mod.Name()] = StatusFailed

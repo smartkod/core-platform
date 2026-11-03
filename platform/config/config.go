@@ -25,8 +25,6 @@ type Config struct {
 	Log        Log
 	Security   Security
 	Identity   Identity
-	AI         AI
-	Economy    Economy
 	AppName    string
 	ConfigPath string
 	Modules    map[string]string
@@ -63,23 +61,10 @@ type Security struct {
 	AllowedOrigins []string
 }
 
-// AI holds the model-provider settings.
-//
-// The API key is read from the environment only. Keeping it out of the YAML file
-// is deliberate: the YAML is tracked in git, the environment is not.
-type AI struct {
-	Enabled        bool
-	BaseURL        string
-	APIKey         string
-	DefaultModel   string
-	RequestTimeout time.Duration
-	MaxRetries     int
-}
-
 // Identity holds the authentication settings.
 //
 // Secrets live here so a single fail-fast check can refuse to boot a
-// production process without them (L0.md 4.3, L1.md 3.5).
+// production process without them (L0.md 4.3, PRD.md §8.1).
 type Identity struct {
 	AccessSecret  string
 	RefreshSecret string
@@ -88,25 +73,6 @@ type Identity struct {
 	PasswordMin   int
 	// CookieSecure must be true in production; derived from Env when unset.
 	CookieSecure bool
-}
-
-// Economy holds the L2 money settings.
-//
-// TestWebhookSecret enables the development-only "test" payment adapter. The
-// module ignores it in production, so a leaked development secret cannot settle
-// a real order.
-type Economy struct {
-	// Currencies is the closed allow-list the wallet accepts.
-	Currencies []string
-	// OrderTTL is how long a pending order may be paid.
-	OrderTTL time.Duration
-	// JobInterval is how often the expiry/audit sweep runs. Zero disables the
-	// worker, which is what tests and one-shot commands want.
-	JobInterval time.Duration
-	// ManualInstructions is shown on a bank-transfer checkout.
-	ManualInstructions string
-	// TestWebhookSecret enables the test adapter when non-empty.
-	TestWebhookSecret string
 }
 
 // IsProduction reports whether production-only rules apply.
@@ -165,19 +131,6 @@ type fileShape struct {
 		PasswordMin   int    `yaml:"password_min_length"`
 		CookieSecure  *bool  `yaml:"cookie_secure"`
 	} `yaml:"identity"`
-	AI struct {
-		Enabled        bool   `yaml:"enabled"`
-		BaseURL        string `yaml:"base_url"`
-		DefaultModel   string `yaml:"default_model"`
-		RequestTimeout string `yaml:"request_timeout"`
-		MaxRetries     int    `yaml:"max_retries"`
-	} `yaml:"ai"`
-	Economy struct {
-		Currencies         []string `yaml:"currencies"`
-		OrderTTL           string   `yaml:"order_ttl"`
-		JobInterval        string   `yaml:"job_interval"`
-		ManualInstructions string   `yaml:"manual_instructions"`
-	} `yaml:"economy"`
 	Modules map[string]string `yaml:"modules"`
 }
 
@@ -240,15 +193,6 @@ func defaults(appName string) *Config {
 			AccessTTL:   15 * time.Minute,
 			RefreshTTL:  7 * 24 * time.Hour,
 			PasswordMin: 10,
-		},
-		AI: AI{
-			RequestTimeout: 60 * time.Second,
-			MaxRetries:     2,
-		},
-		Economy: Economy{
-			Currencies:  []string{"TOKEN"},
-			OrderTTL:    30 * time.Minute,
-			JobInterval: time.Minute,
 		},
 		Modules: map[string]string{},
 	}
@@ -318,38 +262,11 @@ func applyFile(c *Config, f *fileShape) {
 	if d, err := time.ParseDuration(f.Identity.RefreshTTL); err == nil && f.Identity.RefreshTTL != "" {
 		c.Identity.RefreshTTL = d
 	}
-	if len(f.Economy.Currencies) > 0 {
-		c.Economy.Currencies = f.Economy.Currencies
-	}
-	if d, err := time.ParseDuration(f.Economy.OrderTTL); err == nil && f.Economy.OrderTTL != "" {
-		c.Economy.OrderTTL = d
-	}
-	if d, err := time.ParseDuration(f.Economy.JobInterval); err == nil && f.Economy.JobInterval != "" {
-		c.Economy.JobInterval = d
-	}
-	if f.Economy.ManualInstructions != "" {
-		c.Economy.ManualInstructions = f.Economy.ManualInstructions
-	}
 	if f.Identity.PasswordMin != 0 {
 		c.Identity.PasswordMin = f.Identity.PasswordMin
 	}
 	if f.Identity.CookieSecure != nil {
 		c.Identity.CookieSecure = *f.Identity.CookieSecure
-	}
-	if f.AI.Enabled {
-		c.AI.Enabled = true
-	}
-	if f.AI.BaseURL != "" {
-		c.AI.BaseURL = f.AI.BaseURL
-	}
-	if f.AI.DefaultModel != "" {
-		c.AI.DefaultModel = f.AI.DefaultModel
-	}
-	if d, err := time.ParseDuration(f.AI.RequestTimeout); err == nil && f.AI.RequestTimeout != "" {
-		c.AI.RequestTimeout = d
-	}
-	if f.AI.MaxRetries != 0 {
-		c.AI.MaxRetries = f.AI.MaxRetries
 	}
 	for k, v := range f.Modules {
 		c.Modules[strings.ToUpper(strings.TrimSpace(k))] = strings.ToUpper(strings.TrimSpace(v))
@@ -397,23 +314,6 @@ func applyEnv(c *Config) {
 	str("JWT_REFRESH_SECRET", &c.Identity.RefreshSecret)
 	dur("JWT_ACCESS_TTL", &c.Identity.AccessTTL)
 	dur("JWT_REFRESH_TTL", &c.Identity.RefreshTTL)
-
-	// Economy: the test webhook secret is env-only so a development secret
-	// never lands in a tracked YAML file.
-	str("ECONOMY_TEST_WEBHOOK_SECRET", &c.Economy.TestWebhookSecret)
-	dur("ECONOMY_ORDER_TTL", &c.Economy.OrderTTL)
-	dur("ECONOMY_JOB_INTERVAL", &c.Economy.JobInterval)
-
-	// AI settings. The key is env-only by design; there is no YAML field for it,
-	// so it cannot be committed by accident.
-	if v, ok := os.LookupEnv("AI_ENABLED"); ok {
-		c.AI.Enabled = v == "true" || v == "1"
-	}
-	str("AI_BASE_URL", &c.AI.BaseURL)
-	str("AI_API_KEY", &c.AI.APIKey)
-	str("AI_DEFAULT_MODEL", &c.AI.DefaultModel)
-	dur("AI_REQUEST_TIMEOUT", &c.AI.RequestTimeout)
-	num("AI_MAX_RETRIES", &c.AI.MaxRetries)
 
 	if v, ok := os.LookupEnv("CORS_ALLOWED_ORIGINS"); ok {
 		var out []string
@@ -490,14 +390,6 @@ func validate(c *Config) error {
 	}
 	if len(c.Identity.AccessSecret) < 32 {
 		return fmt.Errorf("config: JWT_ACCESS_SECRET must be at least 32 characters")
-	}
-	// An enabled AI provider with no key would fail on the first user request;
-	// failing at boot makes the misconfiguration obvious instead.
-	if c.AI.Enabled && c.AI.APIKey == "" {
-		return fmt.Errorf("config: AI_ENABLED is true but AI_API_KEY is empty")
-	}
-	if c.AI.Enabled && c.AI.BaseURL == "" {
-		return fmt.Errorf("config: AI_ENABLED is true but AI_BASE_URL is empty")
 	}
 	return nil
 }

@@ -9,6 +9,14 @@ type IdentityProvider interface {
 	Identity() Identity
 }
 
+// UserProvider is implemented by the identity module.
+//
+// Deps.Users is the read-only account projection engines use to display a
+// person's name; it cannot change an account.
+type UserProvider interface {
+	Users() UserStore
+}
+
 // FileProvider is implemented by the files module.
 //
 // It exists so other modules can request the storage service through Deps
@@ -23,11 +31,20 @@ type StorageProvider interface {
 	Storage() Storage
 }
 
-// EconomyProvider is implemented by the economy module (L2).
+// AuthorizerProvider is implemented by the authorization module.
 //
-// The bootstrap fills Deps.Economy from whichever module satisfies this, so
-// an application calls Wallet()/Ads() through contract/economy and never
-// imports the module package.
-type EconomyProvider interface {
-	Economy() Economy
+// The bootstrap fills Deps.Authorizer from it, so organization, catalog and
+// application modules check permissions without importing mod/authz.
+type AuthorizerProvider interface {
+	Authorizer() Authorizer
+}
+
+// OrganizationProvider is implemented by the organization module.
+type OrganizationProvider interface {
+	Organizations() Organizations
+}
+
+// CatalogProvider is implemented by the catalog module.
+type CatalogProvider interface {
+	Catalog() Catalog
 }

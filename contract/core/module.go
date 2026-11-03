@@ -6,8 +6,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-
-	econ "core-platform/contract/economy"
 )
 
 // Module is the contract every platform module and application module
@@ -37,7 +35,12 @@ type Module interface {
 // Deps is the set of core services a module may use.
 //
 // Adding a field is a minor version change; removing or changing one is major
-// (see PRD.md 4.2).
+// (see PRD.md §8.4).
+//
+// Every service below is optional: it is populated by the bootstrap only when
+// a module that provides it is compiled into the binary and enabled. A module
+// that requires one must check for nil in Start and fail loudly rather than
+// serve a half-working surface.
 type Deps struct {
 	Logger Logger
 	Clock  Clock
@@ -48,26 +51,23 @@ type Deps struct {
 	// rather than importing the identity module, which is what keeps modules
 	// independent of one another.
 	Identity Identity
+	// Users is the read-only account projection. An engine uses it to show a
+	// name, never to mutate an account.
+	Users UserStore
 	// Files is populated by the bootstrap when the files module is present.
 	Files Files
 	// Notifications is populated by the bootstrap when the notifications module
 	// is present.
 	Notifications Notifications
-	// Economy is populated by the bootstrap when an economy module is present.
-	// It is an optional L2 service: applications that do not use tokens never
-	// see it, and it stays nil here otherwise.
-	Economy Economy
-}
-
-// Economy is the L2 money surface available to applications. It wires the
-// wallet, rewarded-ads and purchase contracts together so an application
-// imports only contract/core and contract/economy, never the economy module
-// itself.
-type Economy interface {
-	Wallet() econ.Wallet
-	Ads() econ.Ads
-	Orders() econ.Orders
-	Entitlements() econ.Entitlements
+	// Authorizer is the authorization service (role + permission + scope).
+	// It is the only way a module may ask "may this actor do this here".
+	Authorizer Authorizer
+	// Organizations owns business profiles, branches, memberships and service
+	// areas.
+	Organizations Organizations
+	// Catalog owns the central taxonomy and the sector-independent offering
+	// record.
+	Catalog Catalog
 }
 
 // ConfigView is the slice of configuration a module is allowed to read.
