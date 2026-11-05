@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>core-platform · API konsolu</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a21;
+    --panel-2: #1c222b;
+    --line: #262d38;
+    --text: #e6e9ef;
+    --muted: #8b95a5;
+    --accent: #5b9dff;
+    --green: #2fbf71;
+    --amber: #d9a227;
+    --red: #e05561;
+    --purple: #a06cf2;
+    --mono: ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid; grid-template-rows: auto 1fr;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  .brand { font-weight: 650; letter-spacing: .2px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.off { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .brand small { color: var(--muted); font-weight: 400; }
+  .spacer { flex: 1; }
+  .who { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+  .who b { color: var(--text); font-weight: 500; }
+  main { display: grid; grid-template-columns: 340px 1fr; min-height: 0; }
+  nav { border-right: 1px solid var(--line); overflow: auto; padding: 10px; background: #12151b; }
+  nav input[type="search"] {
+    width: 100%; margin-bottom: 10px; padding: 7px 10px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit;
+  }
+  nav input[type="search"]:focus { outline: none; border-color: var(--accent); }
+  .group-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .9px; color: var(--muted);
+    margin: 14px 6px 6px;
+  }
+  .ep {
+    display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    padding: 6px 8px; border-radius: 7px; border: 1px solid transparent;
+    background: none; color: var(--text); cursor: pointer; font: inherit;
+  }
+  .ep:hover { background: var(--panel-2); }
+  .ep[aria-current="true"] { background: #1f2a3b; border-color: #2f4f7d; }
+  .ep .p { font-family: var(--mono); font-size: 12px; color: #c3cbd8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .m { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; min-width: 48px; text-align: center; }
+  .m.GET { color: #7ee0a8; background: #14301f; }
+  .m.POST { color: #8fbfff; background: #16263d; }
+  .m.PUT { color: #f0c674; background: #33290f; }
+  .m.PATCH { color: #d3a7ff; background: #2a1c3d; }
+  .m.DELETE { color: #ff9aa2; background: #3a171b; }
+  section { overflow: auto; padding: 18px 22px 60px; min-width: 0; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  h1 { font-size: 15px; margin: 0; font-family: var(--mono); font-weight: 600; word-break: break-all; }
+  .desc { color: var(--muted); margin: 6px 0 18px; font-size: 13px; }
+  fieldset { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 14px; margin: 0 0 14px; }
+  legend { font-size: 11px; text-transform: uppercase; letter-spacing: .9px; color: var(--muted); padding: 0 6px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  input[type="text"], input[type="password"], input[type="email"], textarea, select {
+    width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+    background: #10141a; color: var(--text); font-family: var(--mono); font-size: 12.5px;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  textarea { min-height: 150px; resize: vertical; line-height: 1.6; }
+  button {
+    font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid #2f4f7d;
+    background: #1d3557; color: #dbe7ff; cursor: pointer; font-weight: 550;
+  }
+  button:hover { background: #24446f; }
+  button:disabled { opacity: .5; cursor: default; }
+  button.ghost { background: transparent; border-color: var(--line); color: var(--muted); font-weight: 400; }
+  button.ghost:hover { background: var(--panel-2); color: var(--text); }
+  button.send { background: var(--accent); border-color: var(--accent); color: #06101f; }
+  button.send:hover { filter: brightness(1.1); }
+  .status { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--line); }
+  .status.ok { color: #7ee0a8; border-color: #245c3a; background: #12271a; }
+  .status.err { color: #ff9aa2; border-color: #6b2a31; background: #2a1417; }
+  pre {
+    margin: 0; padding: 14px; border-radius: 10px; background: #0b0e13; border: 1px solid var(--line);
+    overflow: auto; max-height: 46vh; font-family: var(--mono); font-size: 12.5px; line-height: 1.55;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .empty { color: var(--muted); padding: 40px 0; text-align: center; }
+  .login { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .login input { width: 190px; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .hint code { font-family: var(--mono); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+  .toast {
+    position: fixed; right: 18px; bottom: 18px; padding: 10px 14px; border-radius: 8px;
+    background: #22303f; border: 1px solid #31506f; color: #dbe7ff; font-size: 13px;
+    opacity: 0; transform: translateY(8px); transition: .18s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="dot" id="apiDot"></span>core-platform <small>API konsolu</small></div>
+  <div class="login" id="loginBox">
+    <input type="email" id="email" placeholder="e-posta" autocomplete="username" />
+    <input type="password" id="password" placeholder="şifre" autocomplete="current-password" />
+    <button id="loginBtn">Giriş yap</button>
+    <button class="ghost" id="registerBtn">Kayıt ol</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="who" id="who">oturum yok</div>
+  <button class="ghost" id="logoutBtn" hidden>Çıkış</button>
+</header>
+
+<main>
+  <nav>
+    <input type="search" id="search" placeholder="Endpoint ara… (örn. grants)" />
+    <div id="list"></div>
+  </nav>
+  <section id="stage">
+    <div class="empty">Soldan bir endpoint seç.</div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = ""; // same origin; the console proxies /api/* to the API
+const TOKEN_KEY = "cp.access";
+const REFRESH_KEY = "cp.refresh";
+const USER_KEY = "cp.user";
+
+const state = {
+  selected: null,
+  values: {},   // input values keyed by endpoint key
+  body: {},
+  filter: "",
+  lastToken: localStorage.getItem(TOKEN_KEY) || "",
+  refreshToken: localStorage.getItem(REFRESH_KEY) || "",
+  user: JSON.parse(localStorage.getItem(USER_KEY) || "null"),
+};
+
+/* ---------------------------------------------------------------- endpoints */
+/* `params` are the :tokens in the path, `query` are optional query strings,   */
+/* `body` is a ready-to-edit sample, `multipart` switches to a file upload.     */
+const ENDPOINTS = [
+  { g: "Kimlik", m: "POST", p: "/api/v1/auth/register", d: "Yeni hesap açar (201). Şifre politikası uygulanır.",
+    body: { email: "user@example.com", password: "Sifre123!Sifre", name: "Test Kullanıcı", locale: "tr" } },
+  { g: "Kimlik", m: "POST", p: "/api/v1/auth/login", d: "Giriş yapar, access_token ve refresh_token döner.", noauth: true,
+    body: { email: "user@example.com", password: "Sifre123!Sifre" } },
+  { g: "Kimlik", m: "POST", p: "/api/v1/auth/refresh", d: "Refresh token ile yeni access token alır.", noauth: true,
+    body: { refresh_token: "" } },
+  { g: "Kimlik", m: "POST", p: "/api/v1/auth/logout", d: "Oturumu kapatır (204)." },
+  { g: "Kimlik", m: "GET", p: "/api/v1/me", d: "Oturumdaki kullanıcı." },
+  { g: "Kimlik", m: "PATCH", p: "/api/v1/me", d: "Profili günceller (gönderilmeyen alan değişmez).",
+    body: { name: "Yeni Ad", locale: "tr", phone: "+905000000000", avatar_url: "" } },
+  { g: "Kimlik", m: "DELETE", p: "/api/v1/me", d: "Kendi hesabını kapatır (yumuşak silme)." },
+
+  { g: "Dosyalar", m: "POST", p: "/api/v1/files", d: "Dosya yükler (multipart/form-data, alan adı: file).", multipart: true },
+  { g: "Dosyalar", m: "GET", p: "/api/v1/files", d: "Kendi dosyalarını listeler.", query: ["limit", "offset"] },
+  { g: "Dosyalar", m: "GET", p: "/api/v1/files/:id", d: "Dosya meta verisi." },
+  { g: "Dosyalar", m: "GET", p: "/api/v1/files/:id/download", d: "İndirme bağlantısı / içerik." },
+  { g: "Dosyalar", m: "DELETE", p: "/api/v1/files/:id", d: "Dosyayı siler." },
+
+  { g: "Yetkilendirme", m: "GET", p: "/api/v1/authz/me/assignments", d: "Kendi rol atamaların." },
+  { g: "Yetkilendirme", m: "GET", p: "/api/v1/authz/me/permissions", d: "Kendi izinlerin; scope=platform|organization.", query: ["scope"] },
+
+  { g: "Organizasyon", m: "GET", p: "/api/v1/organizations", d: "Yayındaki organizasyonlar (herkese açık).", query: ["q", "region_id", "limit", "offset"] },
+  { g: "Organizasyon", m: "POST", p: "/api/v1/organizations", d: "Organizasyon oluşturur; sahibi oturumdaki kullanıcı olur.",
+    body: { name: "Örnek İşletme", slug: "ornek-isletme", description: "", region_id: "" } },
+  { g: "Organizasyon", m: "GET", p: "/api/v1/organizations/:org_id", d: "Organizasyon detayı." },
+  { g: "Organizasyon", m: "GET", p: "/api/v1/organizations/:org_id/branches", d: "Şubeler." },
+  { g: "Organizasyon", m: "POST", p: "/api/v1/organizations/:org_id/branches", d: "Şube ekler.",
+    body: { name: "Merkez", address: "Adres", city: "İstanbul", district: "Kadıköy", phone: "+902121234567", latitude: 41.0, longitude: 29.0 } },
+  { g: "Organizasyon", m: "DELETE", p: "/api/v1/organizations/:org_id/branches/:branch_id", d: "Şubeyi siler." },
+  { g: "Organizasyon", m: "GET", p: "/api/v1/organizations/:org_id/members", d: "Üyeler." },
+  { g: "Organizasyon", m: "POST", p: "/api/v1/organizations/:org_id/members", d: "Üye davet eder.",
+    body: { email: "uye@example.com", roles: ["member"] } },
+  { g: "Organizasyon", m: "DELETE", p: "/api/v1/organizations/:org_id/members/:membership_id", d: "Üyeyi çıkarır." },
+  { g: "Organizasyon", m: "GET", p: "/api/v1/organizations/:org_id/service-areas", d: "Hizmet bölgeleri." },
+  { g: "Organizasyon", m: "POST", p: "/api/v1/organizations/:org_id/service-areas", d: "Hizmet bölgesi ekler.",
+    body: { region_id: "", radius_km: 10 } },
+  { g: "Organizasyon", m: "DELETE", p: "/api/v1/organizations/:org_id/service-areas/:area_id", d: "Hizmet bölgesini siler." },
+
+  { g: "Katalog", m: "GET", p: "/api/v1/organizations/:org_id/offerings", d: "Organizasyonun teklifleri.", query: ["limit", "offset"] },
+  { g: "Katalog", m: "POST", p: "/api/v1/organizations/:org_id/offerings", d: "Teklif oluşturur.",
+    body: { title: "Örnek Hizmet", description: "", price: 1000, currency: "TRY", duration_min: 60 } },
+  { g: "Katalog", m: "DELETE", p: "/api/v1/organizations/:org_id/offerings/:offering_id", d: "Teklifi siler." },
+  { g: "Katalog", m: "DELETE", p: "/api/v1/organizations/:org_id/offerings/:offering_id/variants/:variant_id", d: "Teklif varyantını siler." },
+  { g: "Katalog", m: "GET", p: "/api/v1/taxonomy", d: "Taksonomi (herkese açık).", query: ["parent_id"] },
+  { g: "Katalog", m: "GET", p: "/api/v1/offerings", d: "Yayındaki teklifler (herkese açık).", query: ["q", "category_id", "region_id", "limit", "offset"] },
+
+  { g: "Yönetim (admin)", m: "GET", p: "/api/v1/admin/users", d: "Kullanıcı listesi. role=admin gerekir.", query: ["limit", "offset", "q", "status"] },
+  { g: "Yönetim (admin)", m: "DELETE", p: "/api/v1/admin/users/:id", d: "Kullanıcıyı kapatır (role=admin)." },
+  { g: "Yönetim (admin)", m: "GET", p: "/api/v1/authz/admin/roles", d: "Rol tanımları (role=admin)." },
+  { g: "Yönetim (admin)", m: "GET", p: "/api/v1/authz/admin/users/:user_id/assignments", d: "Bir kullanıcının atamaları (role=admin)." },
+  { g: "Yönetim (admin)", m: "DELETE", p: "/api/v1/authz/admin/grants/:id", d: "Yetki atamasını geri alır (role=admin)." },
+
+  { g: "Sistem", m: "GET", p: "/healthz", d: "Sağlık kontrolü." },
+  { g: "Sistem", m: "GET", p: "/readyz", d: "Hazır olma kontrolü (DB dahil)." },
+  { g: "Sistem", m: "GET", p: "/version", d: "Sürüm bilgisi." },
+];
+
+const keyOf = (e) => e.m + " " + e.p;
+const paramsOf = (p) => (p.match(/:([a-zA-Z_]+)/g) || []).map((s) => s.slice(1));
+
+/* ------------------------------------------------------------------- helpers */
+const $ = (id) => document.getElementById(id);
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function setSession(token, refresh, user) {
+  state.lastToken = token || "";
+  state.refreshToken = refresh || state.refreshToken;
+  state.user = user || state.user;
+  if (token) localStorage.setItem(TOKEN_KEY, token); else localStorage.removeItem(TOKEN_KEY);
+  if (state.refreshToken) localStorage.setItem(REFRESH_KEY, state.refreshToken);
+  if (state.user) localStorage.setItem(USER_KEY, JSON.stringify(state.user));
+  renderWho();
+}
+
+function renderWho() {
+  const who = $("who");
+  const out = $("logoutBtn");
+  if (state.user) {
+    who.innerHTML = "oturum: <b>" + escapeHTML(state.user.email || state.user.id || "?") + "</b>" +
+      (state.user.role ? " · " + escapeHTML(state.user.role) : "");
+    out.hidden = false;
+    $("loginBox").hidden = true;
+  } else {
+    who.textContent = "oturum yok";
+    out.hidden = true;
+    $("loginBox").hidden = false;
+  }
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function renderList() {
+  const f = state.filter.toLowerCase();
+  const groups = new Map();
+  for (const e of ENDPOINTS) {
+    const k = keyOf(e);
+    if (f && !(k + " " + (e.d || "")).toLowerCase().includes(f)) continue;
+    if (!groups.has(e.g)) groups.set(e.g, []);
+    groups.get(e.g).push(e);
+  }
+  const list = $("list");
+  list.innerHTML = "";
+  if (!groups.size) {
+    list.innerHTML = '<div class="empty">Eşleşme yok.</div>';
+    return;
+  }
+  for (const [group, eps] of groups) {
+    const title = document.createElement("div");
+    title.className = "group-title";
+    title.textContent = group;
+    list.appendChild(title);
+    for (const e of eps) {
+      const b = document.createElement("button");
+      b.className = "ep";
+      b.setAttribute("aria-current", state.selected === keyOf(e) ? "true" : "false");
+      b.innerHTML = '<span class="m ' + e.m + '">' + e.m + '</span><span class="p">' +
+        escapeHTML(e.p) + "</span>";
+      b.onclick = () => select(e);
+      list.appendChild(b);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------- render */
+function select(e) {
+  state.selected = keyOf(e);
+  renderList();
+  const v = state.values[state.selected] || (state.values[state.selected] = {});
+  const params = paramsOf(e.p);
+  const bodyText = state.body[state.selected] ?? (e.body ? JSON.stringify(e.body, null, 2) : "");
+
+  const stage = $("stage");
+  stage.innerHTML = "";
+
+  const head = document.createElement("div");
+  head.className = "row";
+  head.innerHTML = '<span class="m ' + e.m + '">' + e.m + "</span><h1>" + escapeHTML(e.p) + "</h1>";
+  stage.appendChild(head);
+
+  const desc = document.createElement("p");
+  desc.className = "desc";
+  desc.textContent = e.d || "";
+  stage.appendChild(desc);
+
+  if (params.length) {
+    const fs = document.createElement("fieldset");
+    fs.innerHTML = '<legend>Yol parametreleri</legend><div class="fields"></div>';
+    const fields = fs.querySelector(".fields");
+    for (const p of params) {
+      fields.appendChild(field(p, v[p] || "", (val) => (v[p] = val)));
+    }
+    stage.appendChild(fs);
+  }
+
+  if (e.query) {
+    const fs = document.createElement("fieldset");
+    fs.innerHTML = '<legend>Opsiyonel sorgu parametreleri</legend><div class="fields"></div>';
+    const fields = fs.querySelector(".fields");
+    for (const q of e.query) {
+      fields.appendChild(field(q, v["?" + q] || "", (val) => (v["?" + q] = val)));
+    }
+    stage.appendChild(fs);
+  }
+
+  let fileInput = null;
+  if (e.multipart) {
+    const fs = document.createElement("fieldset");
+    fs.innerHTML = '<legend>Dosya</legend>';
+    fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fs.appendChild(fileInput);
+    stage.appendChild(fs);
+  }
+
+  let bodyArea = null;
+  if (e.body !== undefined || ["POST", "PUT", "PATCH"].includes(e.m)) {
+    const fs = document.createElement("fieldset");
+    fs.innerHTML = '<legend>İstek gövdesi (JSON)</legend>';
+    bodyArea = document.createElement("textarea");
+    bodyArea.spellcheck = false;
+    bodyArea.value = bodyText;
+    bodyArea.oninput = () => (state.body[state.selected] = bodyArea.value);
+    fs.appendChild(bodyArea);
+    stage.appendChild(fs);
+  }
+
+  const bar = document.createElement("div");
+  bar.className = "row";
+  bar.innerHTML = '<button class="send" id="send">Gönder</button>' +
+    '<button class="ghost" id="clear">Temizle</button>' +
+    '<span class="hint">Bearer token otomatik eklenir.</span>';
+  stage.appendChild(bar);
+
+  const out = document.createElement("fieldset");
+  out.innerHTML = '<legend>Yanıt</legend><div id="resp"><div class="empty">Henüz istek yok.</div></div>';
+  stage.appendChild(out);
+
+  $("clear").onclick = () => {
+    state.values[state.selected] = {};
+    state.body[state.selected] = e.body ? JSON.stringify(e.body, null, 2) : "";
+    select(e);
+  };
+  $("send").onclick = () => send(e, v, bodyArea, fileInput);
+
+  if (params.length) stage.querySelector("input").focus();
+}
+
+function field(name, value, onChange) {
+  const wrap = document.createElement("div");
+  const label = document.createElement("label");
+  label.textContent = name;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = value;
+  input.placeholder = name;
+  input.oninput = () => onChange(input.value);
+  wrap.append(label, input);
+  return wrap;
+}
+
+/* --------------------------------------------------------------------- http */
+async function request(method, url, opts = {}) {
+  const headers = Object.assign({}, opts.headers);
+  if (state.lastToken && !opts.noauth) headers["Authorization"] = "Bearer " + state.lastToken;
+  const started = performance.now();
+  const res = await fetch(BASE + url, Object.assign({}, opts, { method, headers }));
+  const ms = Math.round(performance.now() - started);
+  const text = await res.text();
+  let json = null;
+  try { json = text ? JSON.parse(text) : null; } catch { /* not JSON */ }
+  return { res, ms, text, json };
+}
+
+async function send(e, v, bodyArea, fileInput) {
+  let url = e.p.replace(/:([a-zA-Z_]+)/g, (m, name) => {
+    const val = (v[name] || "").trim();
+    if (!val) throw new Error("Eksik yol parametresi: " + name);
+    return encodeURIComponent(val);
+  });
+
+  const qs = new URLSearchParams();
+  for (const q of e.query || []) {
+    const val = (v["?" + q] || "").trim();
+    if (val) qs.set(q, val);
+  }
+  if ([...qs].length) url += "?" + qs.toString();
+
+  const opts = {};
+  if (e.multipart) {
+    const file = fileInput && fileInput.files[0];
+    if (!file) return toast("Önce bir dosya seç.");
+    const fd = new FormData();
+    fd.append("file", file);
+    opts.body = fd;
+  } else if (bodyArea) {
+    const raw = bodyArea.value.trim();
+    if (raw) {
+      try { JSON.parse(raw); } catch (err) { return toast("Geçersiz JSON: " + err.message); }
+      opts.body = raw;
+      opts.headers = { "Content-Type": "application/json" };
+    }
+  }
+
+  const btn = $("send");
+  btn.disabled = true;
+  $("resp").innerHTML = '<div class="empty">gönderiliyor…</div>';
+
+  try {
+    let r;
+    try {
+      r = await request(e.m, url, opts);
+    } catch (err) {
+      throw err;
+    }
+
+    // One transparent retry: an expired access token should not look like a
+    // broken endpoint while a valid refresh token is sitting in storage.
+    if (r.res.status === 401 && state.refreshToken && !e.noauth) {
+      const refreshed = await refresh();
+      if (refreshed) r = await request(e.m, url, opts);
+    }
+
+    showResponse(r);
+    if (e.p.endsWith("/auth/login") && r.res.ok && r.json && r.json.data) {
+      setSession(r.json.data.access_token, r.json.data.refresh_token, r.json.data.user);
+      toast("Giriş yapıldı: " + (r.json.data.user?.email || ""));
+    }
+    if (e.p.endsWith("/auth/logout") && r.res.ok) {
+      setSession("", "", null);
+      localStorage.removeItem(REFRESH_KEY);
+      state.refreshToken = "";
+      toast("Çıkış yapıldı.");
+    }
+    if (e.p.endsWith("/me") && e.m === "DELETE" && r.res.ok) {
+      setSession("", "", null);
+    }
+  } catch (err) {
+    $("resp").innerHTML = '<div class="empty">' + escapeHTML(err.message) + "</div>";
+    toast(err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showResponse(r) {
+  const ok = r.res.ok;
+  const head = document.createElement("div");
+  head.className = "row";
+  head.style.marginBottom = "10px";
+  head.innerHTML =
+    '<span class="status ' + (ok ? "ok" : "err") + '">' + r.res.status + " " + escapeHTML(r.res.statusText || "") + "</span>" +
+    '<span class="hint">' + r.ms + " ms · " + (r.text ? r.text.length : 0) + " bayt</span>" +
+    '<button class="ghost" id="copy">Kopyala</button>';
+  const pre = document.createElement("pre");
+  pre.textContent = r.json ? JSON.stringify(r.json, null, 2) : (r.text || "(boş yanıt)");
+
+  const box = $("resp");
+  box.innerHTML = "";
+  box.append(head, pre);
+  $("copy").onclick = async () => {
+    try { await navigator.clipboard.writeText(pre.textContent); toast("Kopyalandı"); }
+    catch { toast("Kopyalanamadı"); }
+  };
+}
+
+async function refresh() {
+  if (!state.refreshToken) return false;
+  try {
+    const r = await request("POST", "/api/v1/auth/refresh", {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: state.refreshToken }),
+      noauth: true,
+    });
+    if (!r.res.ok || !r.json || !r.json.data) return false;
+    setSession(r.json.data.access_token, r.json.data.refresh_token || state.refreshToken, r.json.data.user);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/* ------------------------------------------------------------------- wiring */
+$("search").oninput = (ev) => { state.filter = ev.target.value; renderList(); };
+
+$("loginBtn").onclick = async () => {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  if (!email || !password) return toast("E-posta ve şifre gerekli.");
+  try {
+    const r = await request("POST", "/api/v1/auth/login", {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      noauth: true,
+    });
+    if (!r.res.ok || !r.json || !r.json.data) {
+      toast("Giriş başarısız (" + r.res.status + ")");
+      return;
+    }
+    setSession(r.json.data.access_token, r.json.data.refresh_token, r.json.data.user);
+    toast("Hoş geldin " + (r.json.data.user?.email || ""));
+  } catch (err) {
+    toast("API'ye ulaşılamadı: " + err.message);
+  }
+};
+
+$("registerBtn").onclick = async () => {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  if (!email || !password) return toast("E-posta ve şifre gerekli.");
+  const r = await request("POST", "/api/v1/auth/register", {
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+    noauth: true,
+  });
+  toast(r.res.ok ? "Kayıt alındı, şimdi giriş yapabilirsin." : "Kayıt başarısız (" + r.res.status + ")");
+};
+
+$("logoutBtn").onclick = async () => {
+  await request("POST", "/api/v1/auth/logout", {
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: state.refreshToken }),
+  }).catch(() => {});
+  setSession("", "", null);
+  state.refreshToken = "";
+  localStorage.removeItem(REFRESH_KEY);
+  toast("Çıkış yapıldı.");
+};
+
+// The header dot is an honest health indicator, not decoration.
+async function ping() {
+  const dot = $("apiDot");
+  try {
+    const r = await fetch("/healthz", { cache: "no-store" });
+    dot.classList.toggle("off", !r.ok);
+    dot.title = r.ok ? "API ayakta" : "API yanıt vermiyor";
+  } catch {
+    dot.classList.add("off");
+    dot.title = "API'ye ulaşılamıyor";
+  }
+}
+
+renderWho();
+renderList();
+ping();
+setInterval(ping, 15000);
+</script>
+</body>
+</html>

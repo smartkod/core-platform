@@ -25,7 +25,10 @@ log:
   format: json
 
 security:
-  allowed_origins: []
+  # Origins allowed to call the API from a browser. Add the web UI's origin;
+  # required in production and "*" is rejected there.
+  allowed_origins:
+    - http://localhost:3000
 
 # Identity. Secrets may come from here or from JWT_ACCESS_SECRET /
 # JWT_REFRESH_SECRET. Production refuses to start without them.

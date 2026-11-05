@@ -29,8 +29,10 @@ log:
   format: json
 
 security:
-  # Required in production. Comma-separated origins; "*" is rejected.
-  allowed_origins: []
+  # Origins allowed to call the API from a browser. Add the web UI's origin;
+  # required in production and "*" is rejected there.
+  allowed_origins:
+    - http://localhost:3000
 
 identity:
   access_ttl: 15m
