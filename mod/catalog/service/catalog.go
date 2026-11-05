@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -13,6 +14,15 @@ import (
 	"core-platform/mod/catalog/repository"
 	"core-platform/platform/uuid"
 )
+
+// maxLen rejects a value that would not fit its column, so an over-long string
+// is a 422 rather than a driver error surfaced as a 500.
+func maxLen(field, value string, limit int) error {
+	if len([]rune(value)) > limit {
+		return core.Invalid(field, fmt.Sprintf("must be at most %d characters", limit))
+	}
+	return nil
+}
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,138}[a-z0-9]$`)
 
@@ -210,9 +220,15 @@ func (c *Catalog) CreateOffering(ctx context.Context, in core.OfferingInput) (*c
 	if name == "" {
 		return nil, core.Invalid("name", "a name is required")
 	}
+	if err := maxLen("name", name, 200); err != nil {
+		return nil, err
+	}
 	slug := strings.ToLower(strings.TrimSpace(in.Slug))
 	if slug == "" {
 		return nil, core.Invalid("slug", "a slug is required")
+	}
+	if err := maxLen("slug", slug, 140); err != nil {
+		return nil, err
 	}
 	if !slugPattern.MatchString(slug) {
 		return nil, core.Invalid("slug", "use lowercase letters, digits and hyphens")
@@ -230,6 +246,15 @@ func (c *Catalog) CreateOffering(ctx context.Context, in core.OfferingInput) (*c
 	}
 	if taken {
 		return nil, core.ErrConflict
+	}
+	if err := maxLen("summary", in.Summary, 300); err != nil {
+		return nil, err
+	}
+	if err := maxLen("locale", in.Locale, 10); err != nil {
+		return nil, err
+	}
+	if err := maxLen("price_currency", in.PriceCurrency, 3); err != nil {
+		return nil, err
 	}
 
 	media, err := encodeMedia(in.MediaRefs)
@@ -286,10 +311,17 @@ func (c *Catalog) UpdateOffering(ctx context.Context, in core.OfferingInput) (*c
 	}
 
 	if in.Name != "" {
-		rec.Name = strings.TrimSpace(in.Name)
+		name := strings.TrimSpace(in.Name)
+		if err := maxLen("name", name, 200); err != nil {
+			return nil, err
+		}
+		rec.Name = name
 	}
 	if in.Slug != "" {
 		slug := strings.ToLower(strings.TrimSpace(in.Slug))
+		if err := maxLen("slug", slug, 140); err != nil {
+			return nil, err
+		}
 		if !slugPattern.MatchString(slug) {
 			return nil, core.Invalid("slug", "use lowercase letters, digits and hyphens")
 		}
@@ -309,6 +341,9 @@ func (c *Catalog) UpdateOffering(ctx context.Context, in core.OfferingInput) (*c
 		rec.TaxonomyID = in.TaxonomyID
 	}
 	if in.Summary != "" {
+		if err := maxLen("summary", in.Summary, 300); err != nil {
+			return nil, err
+		}
 		rec.Summary = in.Summary
 	}
 	if in.Description != "" {
@@ -522,10 +557,17 @@ func (c *Catalog) Variants(ctx context.Context, offeringID string) ([]core.Offer
 }
 
 // DeleteVariant removes a variant.
-func (c *Catalog) DeleteVariant(ctx context.Context, id, actorID string) error {
+// DeleteVariant removes a variant, proving first that it belongs to the
+// offering named in the route. Without that comparison an attacker who is
+// allowed to edit one offering could delete a variant of any other by guessing
+// its id.
+func (c *Catalog) DeleteVariant(ctx context.Context, offeringID, id, actorID string) error {
 	rec, err := c.store.Variant(ctx, id)
 	if err != nil {
 		return err
+	}
+	if offeringID != "" && rec.OfferingID != offeringID {
+		return core.ErrNotFound
 	}
 	return c.store.DeleteVariant(ctx, rec.ID, rec.OfferingID)
 }

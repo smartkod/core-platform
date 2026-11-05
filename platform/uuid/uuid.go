@@ -52,3 +52,28 @@ func encode(b [16]byte) string {
 	hex.Encode(out[24:36], b[10:16])
 	return string(out[:])
 }
+
+// IsValid reports whether s is a canonical 8-4-4-4-12 UUID.
+//
+// It exists so a handler can reject a malformed identifier as a validation
+// error instead of passing it to PostgreSQL, where an invalid uuid literal is a
+// driver error and surfaces as a 500.
+func IsValid(s string) bool {
+	if len(s) != 36 {
+		return false
+	}
+	for i, r := range s {
+		switch i {
+		case 8, 13, 18, 23:
+			if r != '-' {
+				return false
+			}
+		default:
+			isHex := (r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')
+			if !isHex {
+				return false
+			}
+		}
+	}
+	return true
+}

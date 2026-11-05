@@ -99,9 +99,9 @@ func newHarness(t *testing.T) *harness {
 	e.Use(httpx.RequestID())
 
 	// Group middleware only sticks to routes registered after the Use call, so
-	// CSRFProtect comes first — exactly as module.go wires production.
+	// CSRFProtect comes first â€” exactly as module.go wires production.
 	g := e.Group("/api/v1")
-	g.Use(api.CSRFProtect())
+	g.Use(api.CSRFProtect([]byte("test-csrf-secret")))
 	handler.Register(g, identity, limiters)
 
 	return &harness{echo: e, db: db, users: users}
@@ -412,12 +412,12 @@ func TestUpdateMeChangesName(t *testing.T) {
 	auth := map[string]string{echo.HeaderAuthorization: "Bearer " + access}
 
 	rec, doc := h.do(t, http.MethodPatch, "/api/v1/me",
-		map[string]string{"name": "Yeni İsim"}, auth)
+		map[string]string{"name": "Yeni Ä°sim"}, auth)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("patch status = %d: %v", rec.Code, doc)
 	}
 	data, _ := doc["data"].(map[string]any)
-	if data["name"] != "Yeni İsim" {
+	if data["name"] != "Yeni Ä°sim" {
 		t.Errorf("name = %v, want the updated value", data["name"])
 	}
 
@@ -427,7 +427,7 @@ func TestUpdateMeChangesName(t *testing.T) {
 		t.Fatalf("get status = %d", rec.Code)
 	}
 	data, _ = doc["data"].(map[string]any)
-	if data["name"] != "Yeni İsim" {
+	if data["name"] != "Yeni Ä°sim" {
 		t.Errorf("name after re-read = %v", data["name"])
 	}
 }

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     End-to-end smoke test for the core platform: kernel, identity, authorization,
     organization and catalog.
@@ -12,14 +12,14 @@
     instance behaves correctly after a deploy.
 
 .PARAMETER BaseUrl
-    Base URL of the running instance. Default: http://localhost:18080
+    Base URL of the running instance. Default: http://127.0.0.1:18080
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1
     powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1 -BaseUrl http://localhost:8080
 #>
 param(
-    [string]$BaseUrl = "http://localhost:18080"
+    [string]$BaseUrl = "http://127.0.0.1:18080"
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,9 +28,29 @@ $script:passed = 0
 $script:failed = 0
 $script:base = "$BaseUrl/api/v1"
 
+# Each request carries a distinct synthetic client address.
+#
+# The suite creates a dozen accounts from one machine within a few seconds.
+# Production should refuse that from a single address (that is exactly what the
+# signup limiter now does), so the script would throttle itself and fail on
+# setup rather than on the behaviour it is testing. Varying the address is a
+# test-fixture decision, not a security claim: the limiter key really is
+# caller-influenced, and that is reported as finding B4 in
+# doc/security/AUDIT-2026-11.md.
+$script:addrSeq = 0
+function Merge-TestAddress {
+    param([hashtable]$Headers)
+
+    if (-not $Headers) { $Headers = @{} }
+    if (-not $Headers.ContainsKey("X-Forwarded-For")) {
+        $script:addrSeq++
+        $Headers["X-Forwarded-For"] = "198.51.100.$((($script:addrSeq - 1) % 200) + 10)"
+    }
+    return $Headers
+}
+
 function Check {
     param([string]$Name, [scriptblock]$Body)
-
     try {
         $result = & $Body
         if ($result -eq $true -or $null -eq $result) {
@@ -48,11 +68,11 @@ function Check {
 
 # Invoke-WebRequest throws on non-2xx; this returns the status instead so a
 # test can assert on 401/403/422 without a try/catch everywhere.
-function Status {
-    param([string]$Method, [string]$Url, [hashtable]$Headers = @{}, [string]$Body = "")
+function Status {    param([string]$Method, [string]$Url, [hashtable]$Headers = @{}, [string]$Body = "")
 
     try {
         $params = @{ Uri = $Url; Method = $Method; UseBasicParsing = $true; TimeoutSec = 15 }
+        $Headers = Merge-TestAddress $Headers
         if ($Headers.Count -gt 0) { $params.Headers = $Headers }
         if ($Body) { $params.Body = $Body; $params.ContentType = "application/json" }
         $r = Invoke-WebRequest @params
@@ -67,6 +87,7 @@ function Json {
     param([string]$Method, [string]$Url, [hashtable]$Headers = @{}, [string]$Body = "")
 
     $params = @{ Uri = $Url; Method = $Method; UseBasicParsing = $true; TimeoutSec = 15 }
+    $Headers = Merge-TestAddress $Headers
     if ($Headers.Count -gt 0) { $params.Headers = $Headers }
     if ($Body) { $params.Body = $Body; $params.ContentType = "application/json" }
 

@@ -10,6 +10,7 @@ import (
 	"core-platform/contract/core"
 	"core-platform/mod/catalog/service"
 	"core-platform/platform/httpx"
+	"core-platform/platform/uuid"
 )
 
 // Handler serves the catalog endpoints.
@@ -72,7 +73,14 @@ func (h *Handler) Register(g *echo.Group, id core.Identity, public echo.Middlewa
 // --- Public discovery ----------------------------------------------------
 
 func (h *Handler) taxonomy(c echo.Context) error {
-	list, err := h.svc.TaxonomyChildren(c.Request().Context(), c.QueryParam("parent_id"))
+	parentID := c.QueryParam("parent_id")
+	if parentID != "" && !uuid.IsValid(parentID) {
+		// A malformed id is a client mistake, not a server fault. Rejecting it
+		// here keeps an invalid uuid literal out of the query, where the driver
+		// would turn it into a 500 and a noisy log line.
+		return core.Invalid("parent_id", "expected a UUID")
+	}
+	list, err := h.svc.TaxonomyChildren(c.Request().Context(), parentID)
 	if err != nil {
 		return err
 	}
@@ -191,6 +199,13 @@ func (h *Handler) updateOffering(c echo.Context) error {
 
 func (h *Handler) deleteOffering(c echo.Context) error {
 	p := core.UserFrom(c)
+	// The offering id is caller-supplied, so the tenant in the path proves
+	// nothing on its own. assertOfferingInOrg resolves the offering and
+	// compares it to :org_id; without it a member of organization A could
+	// delete organization B's draft by naming their own tenant in the path.
+	if err := h.assertOfferingInOrg(c, c.Param("offering_id")); err != nil {
+		return err
+	}
 	if err := h.svc.DeleteOffering(c.Request().Context(), c.Param("offering_id"), p.UserID); err != nil {
 		return err
 	}
@@ -260,7 +275,12 @@ func (h *Handler) deleteVariant(c echo.Context) error {
 	if err := h.assertOfferingInOrg(c, c.Param("offering_id")); err != nil {
 		return err
 	}
-	if err := h.svc.DeleteVariant(c.Request().Context(), c.Param("variant_id"), p.UserID); err != nil {
+	// The offering check alone is not enough: the variant id is independent
+	// of it. Passing the offering through to the service lets it reject a
+	// variant that belongs to a different offering (and therefore possibly a
+	// different tenant).
+	if err := h.svc.DeleteVariant(c.Request().Context(),
+		c.Param("offering_id"), c.Param("variant_id"), p.UserID); err != nil {
 		return err
 	}
 	return c.NoContent(http.StatusNoContent)

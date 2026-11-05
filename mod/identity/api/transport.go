@@ -1,9 +1,6 @@
 package api
 
 import (
-	"crypto/rand"
-	"crypto/subtle"
-	"encoding/base64"
 	"net/http"
 	"strconv"
 	"time"
@@ -92,6 +89,10 @@ func (h *Handler) refreshFromRequest(c echo.Context) string {
 
 // setCookies writes the HttpOnly pair used by browser clients, plus a
 // readable CSRF token for the double-submit check.
+//
+// The CSRF token is signed with the user's own session, and every rotation of
+// the access token rotates it: the pair is written together, so they can never
+// drift apart.
 func (h *Handler) setCookies(c echo.Context, s *service.Session) {
 	c.SetCookie(&http.Cookie{
 		Name:     AccessCookieName,
@@ -115,11 +116,11 @@ func (h *Handler) setCookies(c echo.Context, s *service.Session) {
 	})
 
 	// The CSRF cookie is deliberately readable by JavaScript: the client copies
-	// it into the X-CSRF-Token header, and an attacker on another origin can
-	// neither read it nor set the header.
+	// it into the X-CSRF-Token header. The value is signed with the access
+	// token, so a token planted by another host is useless here.
 	c.SetCookie(&http.Cookie{
 		Name:     CSRFCookieName,
-		Value:    csrfToken(),
+		Value:    httpx.IssueCSRFToken(h.csrfSecret(), s.Access.Token),
 		Path:     "/",
 		MaxAge:   int(timeUntil(s.RefreshExpires)),
 		Secure:   h.cfg.CookieSecure,
@@ -142,12 +143,11 @@ func (h *Handler) clearCookies(c echo.Context) {
 	}
 }
 
-func csrfToken() string {
-	buf := make([]byte, 24)
-	if _, err := rand.Read(buf); err != nil {
-		return ""
-	}
-	return base64.RawURLEncoding.EncodeToString(buf)
+// csrfSecret is the key that signs CSRF tokens. It reuses the refresh secret
+// rather than introducing another one: the purpose is domain separation from
+// anything a client can see, not a distinct key hierarchy.
+func (h *Handler) csrfSecret() []byte {
+	return []byte(h.cfg.RefreshSecret)
 }
 
 // timeUntil returns whole seconds from now until t, never negative.
@@ -157,45 +157,4 @@ func timeUntil(t time.Time) int64 {
 		return 0
 	}
 	return int64(d.Seconds())
-}
-
-// CSRFProtect enforces the double-submit check for cookie-authenticated
-// requests only.
-//
-// Bearer requests are immune by design: a token that is not a cookie cannot be
-// attached by a cross-site form post, and requiring a CSRF header from API
-// clients would break them for no security gain (PRD.md §6.1).
-//
-// Requests with no access cookie also pass: CSRF guards a browser's ambient
-// credentials, and a fresh client (login, register, password flows) has none,
-// so there is nothing a cross-site form post could hijack.
-func CSRFProtect() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			method := c.Request().Method
-			if method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions {
-				return next(c)
-			}
-
-			// Bearer mode: no CSRF requirement.
-			if c.Request().Header.Get("Authorization") != "" {
-				return next(c)
-			}
-
-			// Anonymous mode: no cookie credential, nothing to forge.
-			if _, err := c.Cookie(AccessCookieName); err != nil {
-				return next(c)
-			}
-
-			ck, err := c.Cookie(CSRFCookieName)
-			if err != nil || ck.Value == "" {
-				return core.ErrForbidden
-			}
-			header := c.Request().Header.Get(CSRFHeaderName)
-			if subtle.ConstantTimeCompare([]byte(header), []byte(ck.Value)) != 1 {
-				return core.ErrForbidden
-			}
-			return next(c)
-		}
-	}
 }

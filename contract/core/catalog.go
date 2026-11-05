@@ -197,5 +197,5 @@ type Catalog interface {
 	CreateVariant(ctx context.Context, in VariantInput) (*OfferingVariant, error)
 	UpdateVariant(ctx context.Context, in VariantInput) (*OfferingVariant, error)
 	Variants(ctx context.Context, offeringID string) ([]OfferingVariant, error)
-	DeleteVariant(ctx context.Context, id, actorID string) error
+	DeleteVariant(ctx context.Context, offeringID, id, actorID string) error
 }

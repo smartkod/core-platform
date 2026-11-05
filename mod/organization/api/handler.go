@@ -207,6 +207,19 @@ func (h *Handler) transferOwnership(c echo.Context) error {
 	if err := c.Bind(&in); err != nil {
 		return core.ErrValidation
 	}
+
+	// `organization.manage` is not enough: a manager holds it, so allowing the
+	// action on that permission alone would let a manager name themselves and
+	// become owner. Ownership transfer is reserved for the current owner and
+	// for a platform administrator (PRD.md §9 K1).
+	org, err := h.svc.ByID(c.Request().Context(), c.Param("org_id"))
+	if err != nil {
+		return err
+	}
+	if p.Role != core.RoleAdmin && org.OwnerID != p.UserID {
+		return core.ErrForbidden
+	}
+
 	if err := h.svc.TransferOwnership(c.Request().Context(), c.Param("org_id"), in.NewOwnerID, p.UserID); err != nil {
 		return err
 	}
@@ -338,6 +351,19 @@ func (h *Handler) updateMember(c echo.Context) error {
 	}
 	if err := c.Bind(&in); err != nil {
 		return core.ErrValidation
+	}
+
+	// The route names the tenant, but the membership id is attacker-chosen.
+	// Resolving the membership first and comparing its tenant to the path is
+	// what stops one organization's owner from re-roling another's staff:
+	// without this line the service would happily update the membership under
+	// its own organization_id.
+	current, err := h.svc.Membership(c.Request().Context(), c.Param("membership_id"))
+	if err != nil {
+		return err
+	}
+	if current.OrganizationID != c.Param("org_id") {
+		return core.ErrNotFound
 	}
 
 	m, err := h.svc.UpdateMemberRole(c.Request().Context(), c.Param("membership_id"), in.RoleKey, p.UserID)

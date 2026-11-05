@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -118,6 +119,9 @@ func (s *Organizations) Update(ctx context.Context, in core.UpdateOrganizationIn
 		if name == "" {
 			return nil, core.Invalid("name", "a name is required")
 		}
+		if err := maxLen("name", name, 160); err != nil {
+			return nil, err
+		}
 		rec.Name = name
 	}
 	if in.Description != nil {
@@ -127,15 +131,26 @@ func (s *Organizations) Update(ctx context.Context, in core.UpdateOrganizationIn
 		rec.LogoURL = *in.LogoURL
 	}
 	if in.Email != nil {
-		rec.Email = strings.TrimSpace(*in.Email)
+		email := strings.TrimSpace(*in.Email)
+		if err := maxLen("email", email, 254); err != nil {
+			return nil, err
+		}
+		rec.Email = email
 	}
 	if in.Phone != nil {
-		rec.Phone = strings.TrimSpace(*in.Phone)
+		phone := strings.TrimSpace(*in.Phone)
+		if err := maxLen("phone", phone, 32); err != nil {
+			return nil, err
+		}
+		rec.Phone = phone
 	}
 	if in.Website != nil {
 		rec.Website = strings.TrimSpace(*in.Website)
 	}
 	if in.Locale != nil {
+		if err := maxLen("locale", *in.Locale, 10); err != nil {
+			return nil, err
+		}
 		rec.Locale = *in.Locale
 	}
 
@@ -207,6 +222,13 @@ func (s *Organizations) TransferOwnership(ctx context.Context, id, newOwnerID, a
 	if org.OwnerID == newOwnerID {
 		return nil
 	}
+	// Defence in depth for the one escalation the route guard cannot see: the
+	// caller naming themselves. The handler already limits this endpoint to
+	// the current owner or a platform admin; this keeps the service safe if a
+	// future caller forgets that rule.
+	if actorID != org.OwnerID && actorID == newOwnerID {
+		return core.ErrForbidden
+	}
 
 	m, err := s.store.MembershipFor(ctx, id, newOwnerID)
 	if err != nil {
@@ -256,6 +278,18 @@ func (s *Organizations) TransferOwnership(ctx context.Context, id, newOwnerID, a
 	return nil
 }
 
+// maxLen rejects a value that would not fit its column.
+//
+// Without this the database rejects an over-long string with a driver error,
+// which the envelope reports as a 500: the caller learns nothing and the log
+// fills with stack traces for what is plainly a bad request.
+func maxLen(field, value string, limit int) error {
+	if len([]rune(value)) > limit {
+		return core.Invalid(field, fmt.Sprintf("must be at most %d characters", limit))
+	}
+	return nil
+}
+
 // --- Branches ------------------------------------------------------------
 
 // CreateBranch adds a branch.
@@ -265,6 +299,9 @@ func (s *Organizations) CreateBranch(ctx context.Context, in core.BranchInput) (
 	}
 	if strings.TrimSpace(in.Name) == "" {
 		return nil, core.Invalid("name", "a name is required")
+	}
+	if err := validateBranchInput(in); err != nil {
+		return nil, err
 	}
 	if in.Type == "" {
 		in.Type = core.BranchTypePhysical
@@ -310,6 +347,9 @@ func (s *Organizations) UpdateBranch(ctx context.Context, in core.BranchInput) (
 	if in.OrganizationID != "" && in.OrganizationID != rec.OrganizationID {
 		return nil, core.ErrNotFound
 	}
+	if err := validateBranchInput(in); err != nil {
+		return nil, err
+	}
 	if in.Name != "" {
 		rec.Name = strings.TrimSpace(in.Name)
 	}
@@ -336,6 +376,28 @@ func (s *Organizations) UpdateBranch(ctx context.Context, in core.BranchInput) (
 		return nil, err
 	}
 	return toCoreBranch(rec), nil
+}
+
+// validateBranchInput bounds every string that maps to a varchar column.
+func validateBranchInput(in core.BranchInput) error {
+	checks := []struct {
+		field string
+		value string
+		limit int
+	}{
+		{"name", strings.TrimSpace(in.Name), 160},
+		{"country", in.Country, 2},
+		{"city", in.City, 120},
+		{"district", in.District, 120},
+		{"postal_code", in.PostalCode, 20},
+		{"phone", in.Phone, 32},
+	}
+	for _, c := range checks {
+		if err := maxLen(c.field, c.value, c.limit); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Branches lists an organization's branches.

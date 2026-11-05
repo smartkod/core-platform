@@ -15,6 +15,7 @@ import (
 	"core-platform/mod/identity/model"
 	"core-platform/mod/identity/repository"
 	"core-platform/mod/identity/service"
+	"core-platform/platform/httpx"
 )
 
 // Handler serves the identity endpoints.
@@ -33,14 +34,22 @@ type HandlerConfig struct {
 	AccessTTL time.Duration
 	// CookiePath scopes the refresh cookie to the auth endpoints.
 	CookiePath string
+	// RefreshSecret signs the CSRF token together with the session. Reusing the
+	// refresh secret keeps the key count at two without weakening anything: the
+	// CSRF signature never leaves the server, and a leaked refresh secret
+	// already means the session is lost.
+	RefreshSecret string
 }
 
 // AccessCookieName and RefreshCookieName are the web transport names.
 const (
-	AccessCookieName  = "access"
-	RefreshCookieName = "refresh"
-	CSRFHeaderName    = "X-CSRF-Token"
-	CSRFCookieName    = "csrf"
+	AccessCookieName  = httpx.CookieAccess
+	RefreshCookieName = httpx.CookieRefresh
+	// CSRFHeaderName is shared with the CORS allow-list. Keeping one constant
+	// is what stops the browser preflight and the middleware check from
+	// disagreeing about the header's spelling.
+	CSRFHeaderName = httpx.CSVHeaderCSRF
+	CSRFCookieName = httpx.CookieCSRF
 )
 
 // NewHandler builds the handler.
@@ -58,12 +67,12 @@ func NewHandler(svc *service.Auth, users *repository.Users, cfg HandlerConfig) *
 func (h *Handler) Register(g *echo.Group, id core.Identity, rl RateLimiters) {
 	// Public. These are the brute-force targets, so they carry explicit limits.
 	auth := g.Group("/auth")
-	auth.POST("/register", h.handleRegister, rl.Login)
+	auth.POST("/register", h.handleRegister, rl.Signup)
 	auth.POST("/login", h.handleLogin, rl.Login)
 	auth.POST("/refresh", h.handleRefresh, rl.Refresh)
 	auth.POST("/logout", h.handleLogout)
-	auth.POST("/forgot-password", h.handleForgotPassword, rl.Login)
-	auth.POST("/reset-password", h.handleResetPassword, rl.Login)
+	auth.POST("/forgot-password", h.handleForgotPassword, rl.Signup)
+	auth.POST("/reset-password", h.handleResetPassword, rl.Signup)
 	auth.POST("/verify-email", h.handleVerifyEmail)
 
 	// Authenticated.

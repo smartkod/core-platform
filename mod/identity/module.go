@@ -176,8 +176,9 @@ func (m *Module) Start(ctx context.Context, d core.Deps) error {
 
 	m.identity = api.NewIdentity(tokens, users)
 	m.handler = api.NewHandler(auth, users, api.HandlerConfig{
-		CookieSecure: cfg.CookieSecure,
-		AccessTTL:    cfg.AccessTTL,
+		CookieSecure:  cfg.CookieSecure,
+		AccessTTL:     cfg.AccessTTL,
+		RefreshSecret: cfg.RefreshSecret,
 	})
 	m.limiter = security.NewRateLimiter(cfg.LoginLimit, cfg.LoginWindow)
 
@@ -197,12 +198,10 @@ func (m *Module) RegisterRoutes(g *echo.Group, _ core.Deps) {
 		panic("identity: RegisterRoutes called before Start")
 	}
 
-	// CSRF double-submit applies to every identity route, and Echo group
-	// middleware only sticks to routes registered after the Use call, so it
-	// comes first. The middleware itself passes anonymous requests through,
-	// which is what keeps login and register working.
-	g.Use(api.CSRFProtect())
-
+	// CSRF protection is installed globally by the composition root
+	// (platform/run.go), because a cookie-authenticated write to any module's
+	// route needs the same check — not only the identity routes. Keeping it
+	// here would leave organization and catalogue writes unprotected.
 	limiters := api.NewRateLimiters(m.limiter, m.limiter)
 	m.handler.Register(g, m.identity, limiters)
 }

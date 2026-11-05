@@ -6,6 +6,7 @@ package platform
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"net/http"
@@ -156,6 +157,23 @@ func buildServer(
 	e.RouteNotFound("", httpx.NotFound)
 	e.RouteNotFound("/*", httpx.NotFound)
 
+	// The CSRF signature needs a key. Production already refuses to boot
+	// without one; in development an ephemeral key keeps the cookie flow
+	// working without inventing a committed secret. A restart only invalidates
+	// existing browser sessions, which is acceptable outside production.
+	csrfSecret := []byte(cfg.Identity.RefreshSecret)
+	if len(csrfSecret) == 0 {
+		if cfg.IsProduction() {
+			return nil, fmt.Errorf("platform: a token secret is required to sign CSRF tokens")
+		}
+		ephemeral := make([]byte, 32)
+		if _, err := rand.Read(ephemeral); err != nil {
+			return nil, fmt.Errorf("platform: cannot generate a CSRF key: %w", err)
+		}
+		csrfSecret = ephemeral
+		log.Warn("no token secret configured; using an ephemeral CSRF key (development only)")
+	}
+
 	// The chain is global so health and version responses carry the same
 	// request id and security headers as business endpoints (L0.md 4.4).
 	// Auth is added per route group by the identity module, never here.
@@ -166,6 +184,16 @@ func buildServer(
 		httpx.BodyLimit(cfg.HTTP.BodyLimit),
 		httpx.SecureHeaders(),
 		httpx.CORS(cfg.Security.AllowedOrigins),
+		// CSRF is global because cookie authentication is global: the identity
+		// middleware accepts the access cookie on every route, so every route
+		// needs the matching check. Bearer clients and anonymous requests pass
+		// through untouched.
+		httpx.CSRFProtect(httpx.CSRFConfig{
+			Secret:       csrfSecret,
+			AccessCookie: httpx.CookieAccess,
+			CSRFCookie:   httpx.CookieCSRF,
+			HeaderName:   httpx.CSVHeaderCSRF,
+		}),
 	)
 
 	h := health.New(app.Name, app.Version, Commit, BuildTime)
@@ -180,6 +208,18 @@ func buildServer(
 		}
 		mod.RegisterRoutes(v1.Group(""), deps)
 	}
+
+	// Re-assert the API's 404 handler after every module has registered.
+	//
+	// Creating a group with middleware makes echo install a catch-all not-found
+	// route *with that middleware* under the group prefix. The identity
+	// middleware then answers 401 for an unknown path, which tells a client
+	// "you must sign in" about a route that does not exist — and lets an
+	// unauthenticated caller enumerate which API prefixes exist. Registering a
+	// plain handler last replaces those catch-alls, so a missing route is a
+	// 404 envelope whether or not the caller sent a token.
+	e.RouteNotFound("/api/v1", httpx.NotFound)
+	e.RouteNotFound("/api/v1/*", httpx.NotFound)
 
 	// Registered after every module so the route table is complete. It is a
 	// developer convenience, so it is omitted in production where an attacker

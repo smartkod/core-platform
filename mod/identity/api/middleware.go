@@ -164,6 +164,12 @@ func accessToken(c echo.Context) string {
 type RateLimiters struct {
 	Login   echo.MiddlewareFunc
 	Refresh echo.MiddlewareFunc
+	// Signup guards account creation, password reset requests and the reset
+	// itself. Unlike Login it never refunds: those endpoints create state
+	// (an account, an e-mail) on success, so a successful call is exactly the
+	// thing an abuser wants to repeat. Refunding them would make the limit
+	// apply only to failures, which is no limit at all.
+	Signup echo.MiddlewareFunc
 }
 
 // Limiter is the rate-limiter contract the identity middleware needs.
@@ -181,11 +187,32 @@ type Limiter interface {
 // many accounts and stops a single account from being hammered from many
 // addresses, without letting one attacker lock out every user at once.
 //
-// A successful request refunds its own budget. Brute force still stops after
-// the limit, but a legitimate user (or everyone behind one NAT) never gets
-// locked out by their own successful logins.
+// A successful login refunds its own budget. Brute force still stops after the
+// limit, but a legitimate user (or everyone behind one NAT) never gets locked
+// out by their own successful logins.
 func NewRateLimiters(login, refresh Limiter) RateLimiters {
+	// signup consumes the same window but never refunds.
+	signup := func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			ipKey := "signup:ip:" + c.RealIP()
+			email := peekEmail(c)
+			emailKey := ""
+			if email != "" {
+				emailKey = "signup:email:" + email
+			}
+
+			if !login.Allow(ipKey) {
+				return core.ErrRateLimited
+			}
+			if emailKey != "" && !login.Allow(emailKey) {
+				return core.ErrRateLimited
+			}
+			return next(c)
+		}
+	}
+
 	return RateLimiters{
+		Signup: signup,
 		Login: func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
 				ipKey := "login:ip:" + c.RealIP()
