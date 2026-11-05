@@ -27,7 +27,16 @@ func NewHandler(svc *service.Organizations, authz core.Authorizer, public echo.M
 }
 
 // Register mounts the routes.
-func (h *Handler) Register(g *echo.Group, id core.Identity) {
+//
+// write, when set, is applied to creation endpoints only: a per-account cap on
+// how many rows one caller may add per window. Editing is not throttled because
+// it is already bounded by the object being edited.
+func (h *Handler) Register(g *echo.Group, id core.Identity, write echo.MiddlewareFunc) {
+	writeOnly := []echo.MiddlewareFunc{}
+	if write != nil {
+		writeOnly = append(writeOnly, write)
+	}
+
 	if h.public != nil {
 		g.GET("/organizations", h.list, h.public)
 		g.GET("/organizations/by-slug/:slug", h.bySlug, h.public)
@@ -41,7 +50,7 @@ func (h *Handler) Register(g *echo.Group, id core.Identity) {
 
 	// Creating an organization is the one action that has no tenant yet; the
 	// owner is taken from the session.
-	authed.POST("/organizations", h.create)
+	authed.POST("/organizations", h.create, writeOnly...)
 	authed.POST("/invitations/:id/accept", h.acceptInvitation)
 
 	// Tenant-scoped routes. The authorizer reads :org_id from the path, so a
@@ -53,17 +62,20 @@ func (h *Handler) Register(g *echo.Group, id core.Identity) {
 		h.authz.Require(core.ActionOrganizationManage, core.ScopeOrganization))
 
 	org.GET("/branches", h.branches, h.authz.Require(core.ActionOrganizationRead, core.ScopeOrganization))
-	org.POST("/branches", h.createBranch, h.authz.Require(core.ActionBranchManage, core.ScopeOrganization))
+	org.POST("/branches", h.createBranch,
+		append([]echo.MiddlewareFunc{h.authz.Require(core.ActionBranchManage, core.ScopeOrganization)}, writeOnly...)...)
 	org.PUT("/branches/:branch_id", h.updateBranch, h.authz.Require(core.ActionBranchManage, core.ScopeOrganization))
 	org.DELETE("/branches/:branch_id", h.deleteBranch, h.authz.Require(core.ActionBranchManage, core.ScopeOrganization))
 
 	org.GET("/members", h.members, h.authz.Require(core.ActionOrganizationRead, core.ScopeOrganization))
-	org.POST("/members", h.invite, h.authz.Require(core.ActionMemberManage, core.ScopeOrganization))
+	org.POST("/members", h.invite,
+		append([]echo.MiddlewareFunc{h.authz.Require(core.ActionMemberManage, core.ScopeOrganization)}, writeOnly...)...)
 	org.PATCH("/members/:membership_id", h.updateMember, h.authz.Require(core.ActionMemberManage, core.ScopeOrganization))
 	org.DELETE("/members/:membership_id", h.removeMember, h.authz.Require(core.ActionMemberManage, core.ScopeOrganization))
 
 	org.GET("/service-areas", h.serviceAreas, h.authz.Require(core.ActionOrganizationRead, core.ScopeOrganization))
-	org.POST("/service-areas", h.addServiceArea, h.authz.Require(core.ActionOrganizationManage, core.ScopeOrganization))
+	org.POST("/service-areas", h.addServiceArea,
+		append([]echo.MiddlewareFunc{h.authz.Require(core.ActionOrganizationManage, core.ScopeOrganization)}, writeOnly...)...)
 	org.DELETE("/service-areas/:area_id", h.removeServiceArea, h.authz.Require(core.ActionOrganizationManage, core.ScopeOrganization))
 
 	// Platform-only publishing decision.

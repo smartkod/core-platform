@@ -149,7 +149,7 @@ func (m *Module) RegisterRoutes(g *echo.Group, d core.Deps) {
 	if d.Identity == nil {
 		panic("files: no identity in dependencies; file routes cannot be public")
 	}
-	m.handler.Register(g, d.Identity)
+	m.handler.Register(g, d.Identity, d.WriteLimiter)
 }
 
 // Stop releases resources. Local disk needs none.

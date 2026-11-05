@@ -2,7 +2,6 @@ package security_test
 
 import (
 	"net/http"
-	"strings"
 	"testing"
 )
 
@@ -135,35 +134,53 @@ func TestForwardedForDoesNotBreakPerAccountLimit(t *testing.T) {
 	}
 }
 
-// TestResourceCreationNotThrottled records the current state of write endpoints
-// outside identity. It is written to fail loudly if the behaviour is a genuine
-// problem, and currently reports it as a finding rather than silently passing.
-func TestResourceCreationNotThrottled(t *testing.T) {
+// TestResourceCreationIsLimitedPerUser proves the creation cap applies to the
+// live server and is keyed on the account rather than the address.
+//
+// Two things are asserted: a burst of creations eventually returns 429, and a
+// second account is unaffected. Without the second half, a global counter would
+// also pass, and one tenant could starve every other.
+func TestResourceCreationIsLimitedPerUser(t *testing.T) {
 	base := baseURL(t)
-	email := "create-" + unique(t) + "@audit.example"
+	stamp := unique(t)
 
-	c := newClient(t, base)
-	c.register(email, password())
-	c.login(email, password())
+	alice := newClient(t, base)
+	alice.register("quota-a-"+stamp+"@audit.example", password())
+	alice.login("quota-a-"+stamp+"@audit.example", password())
 
-	org := c.createOrg("Flood Org", "flood-"+unique(t))
+	bob := newClient(t, base)
+	bob.register("quota-b-"+stamp+"@audit.example", password())
+	bob.login("quota-b-"+stamp+"@audit.example", password())
+
+	// A fresh organization per client, created before the burst so the
+	// organization itself does not consume the branch budget.
+	orgA := alice.createOrg("Quota A", "quota-a-"+stamp)
+	orgB := bob.createOrg("Quota B", "quota-b-"+stamp)
 
 	limited := false
-	for i := 0; i < 40; i++ {
-		status, _, _ := c.do(http.MethodPost, "/api/v1/organizations/"+org+"/branches",
-			map[string]any{"name": "flood-" + itoa(i), "type": "physical"}, nil)
+	for i := 0; i < 120; i++ {
+		status, _, _ := alice.do(http.MethodPost,
+			"/api/v1/organizations/"+orgA+"/branches",
+			map[string]any{"name": "burst-" + itoa(i), "type": "physical"}, nil)
 		if status == http.StatusTooManyRequests {
 			limited = true
 			break
 		}
+		if !isSuccess(status) {
+			t.Fatalf("branch %d: status %d", i, status)
+		}
 	}
 	if !limited {
-		t.Logf("FINDING: tenant resource creation is not rate limited (40 branches created in a burst)")
+		t.Fatal("120 branches were created in one burst: resource creation is not rate limited")
 	}
 
-	// Clean up by removing the organization's branches is not exposed; the
-	// audit uses a throwaway organization, so no cleanup is needed.
-	_ = strings.TrimSpace("")
+	// The other account must be untouched by the first one's exhaustion.
+	status, _, body := bob.do(http.MethodPost, "/api/v1/organizations/"+orgB+"/branches",
+		map[string]any{"name": "bob-branch", "type": "physical"}, nil)
+	if !isSuccess(status) {
+		t.Fatalf("a second account was blocked by the first account's burst: status %d (body: %s)",
+			status, truncate(body))
+	}
 }
 
 func itoa(i int) string {

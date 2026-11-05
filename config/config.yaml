@@ -42,6 +42,13 @@ security:
   trusted_proxies:
     - 127.0.0.1/32
     - ::1/128
+  # How many resources one account may create per window.
+  #
+  # Keyed on the user, not the address: rotating IPs must not reset it and a
+  # shared office network must not exhaust it for everyone. Only creation is
+  # counted; edits are bounded by the object being edited.
+  write_limit: 30
+  write_window: 1h
 
 # Identity. Secrets may come from here or from JWT_ACCESS_SECRET /
 # JWT_REFRESH_SECRET. Production refuses to start without them.

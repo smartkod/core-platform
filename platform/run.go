@@ -27,6 +27,7 @@ import (
 	"core-platform/platform/logger"
 	"core-platform/platform/migrate"
 	"core-platform/platform/module"
+	"core-platform/platform/security"
 )
 
 // Build metadata, stamped with -ldflags at release time.
@@ -63,6 +64,14 @@ func Run(app core.App) error {
 	defer func() { _ = database.Close(db) }()
 
 	deps := core.Deps{Logger: log, Clock: clock.Real{}, DB: db, Config: configView{c: cfg}}
+
+	// One limiter for every module, so the quota is per account and not per
+	// module: four modules each with their own 30/hour would be 120/hour.
+	writeLimiter := security.NewRateLimiter(
+		cfg.Security.WriteLimit,
+		cfg.Security.WriteWindow,
+	)
+	deps.WriteLimiter = security.PerUser(writeLimiter, "resource")
 
 	// 4. Modules: validate the graph before touching any schema, so a bad
 	// dependency fails before a partially migrated database is left behind.

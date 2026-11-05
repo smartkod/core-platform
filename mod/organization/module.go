@@ -80,7 +80,7 @@ func (m *Module) RegisterRoutes(g *echo.Group, d core.Deps) {
 	if d.Identity == nil {
 		panic("organization: no identity in dependencies")
 	}
-	m.handler.Register(g, d.Identity)
+	m.handler.Register(g, d.Identity, d.WriteLimiter)
 }
 
 // Stop releases resources.

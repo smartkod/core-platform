@@ -48,9 +48,13 @@ func NewHandler(files core.Files, cfg Config) *Handler {
 // Register mounts the file routes. Every route requires authentication; a
 // module that must serve public files should expose a separate, explicitly
 // public route rather than relaxing this group.
-func (h *Handler) Register(g *echo.Group, id core.Identity) {
+func (h *Handler) Register(g *echo.Group, id core.Identity, write echo.MiddlewareFunc) {
 	authed := g.Group("/files", id.Middleware())
-	authed.POST("", h.Upload)
+	upload := []echo.MiddlewareFunc{}
+	if write != nil {
+		upload = append(upload, write)
+	}
+	authed.POST("", h.Upload, upload...)
 	authed.GET("", h.List)
 	authed.GET("/:id", h.Get)
 	authed.GET("/:id/download", h.Download)

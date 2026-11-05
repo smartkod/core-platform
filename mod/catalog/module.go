@@ -80,7 +80,7 @@ func (m *Module) RegisterRoutes(g *echo.Group, d core.Deps) {
 	if d.Identity != nil {
 		public = d.Identity.OptionalMiddleware()
 	}
-	m.handler.Register(g, d.Identity, public)
+	m.handler.Register(g, d.Identity, public, d.WriteLimiter)
 }
 
 // Stop releases resources.

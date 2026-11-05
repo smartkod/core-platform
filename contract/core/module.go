@@ -68,6 +68,14 @@ type Deps struct {
 	// Catalog owns the central taxonomy and the sector-independent offering
 	// record.
 	Catalog Catalog
+	// WriteLimiter bounds resource creation per account. It is a middleware
+	// rather than a service because every module that creates rows should apply
+	// the same policy, and a module must not build its own limiter: separate
+	// limiters would multiply the quota by the number of modules.
+	//
+	// Nil means "not configured", and a module then applies no limit. The
+	// bootstrap always sets it, so nil only happens in tests.
+	WriteLimiter echo.MiddlewareFunc
 }
 
 // ConfigView is the slice of configuration a module is allowed to read.

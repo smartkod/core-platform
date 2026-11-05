@@ -68,6 +68,15 @@ type Security struct {
 	// rate-limit budget with every request. Set it only when a reverse proxy
 	// you control sits in front of the API.
 	TrustedProxies []string
+	// WriteLimit and WriteWindow bound how many resources one account may
+	// create per window.
+	//
+	// The limit is per user, not per address, because creating a branch or an
+	// offering is an account action: rotating IPs must not reset it, and a
+	// shared office network must not exhaust it for everyone. Only creation is
+	// counted; ordinary edits are already bounded by the object they modify.
+	WriteLimit  int
+	WriteWindow time.Duration
 }
 
 // Identity holds the authentication settings.
@@ -132,6 +141,8 @@ type fileShape struct {
 	Security struct {
 		AllowedOrigins []string `yaml:"allowed_origins"`
 		TrustedProxies []string `yaml:"trusted_proxies"`
+		WriteLimit     int      `yaml:"write_limit"`
+		WriteWindow    string   `yaml:"write_window"`
 	} `yaml:"security"`
 	Identity struct {
 		AccessSecret  string `yaml:"access_secret"`
@@ -199,6 +210,12 @@ func defaults(appName string) *Config {
 			ShutdownTimeout: 10 * time.Second,
 		},
 		Log: Log{Level: "info", Format: "json"},
+		Security: Security{
+			// 30 creations per hour is generous for onboarding and still
+			// stops a script from filling a tenant with rows.
+			WriteLimit:  30,
+			WriteWindow: time.Hour,
+		},
 		Identity: Identity{
 			AccessTTL:   15 * time.Minute,
 			RefreshTTL:  7 * 24 * time.Hour,
@@ -262,6 +279,14 @@ func applyFile(c *Config, f *fileShape) {
 	}
 	if len(f.Security.TrustedProxies) > 0 {
 		c.Security.TrustedProxies = f.Security.TrustedProxies
+	}
+	if f.Security.WriteLimit > 0 {
+		c.Security.WriteLimit = f.Security.WriteLimit
+	}
+	if f.Security.WriteWindow != "" {
+		if d, err := time.ParseDuration(f.Security.WriteWindow); err == nil {
+			c.Security.WriteWindow = d
+		}
 	}
 	if f.Identity.AccessSecret != "" {
 		c.Identity.AccessSecret = f.Identity.AccessSecret
@@ -348,6 +373,8 @@ func applyEnv(c *Config) {
 		}
 		c.Security.TrustedProxies = out
 	}
+	num("WRITE_RATE_LIMIT", &c.Security.WriteLimit)
+	dur("WRITE_RATE_WINDOW", &c.Security.WriteWindow)
 }
 
 // loadModulesFile reads modules.yaml from the same directory as the main

@@ -25,7 +25,12 @@ func NewHandler(svc *service.Catalog, authz core.Authorizer) *Handler {
 }
 
 // Register mounts the routes.
-func (h *Handler) Register(g *echo.Group, id core.Identity, public echo.MiddlewareFunc) {
+func (h *Handler) Register(g *echo.Group, id core.Identity, public, write echo.MiddlewareFunc) {
+	writeOnly := []echo.MiddlewareFunc{}
+	if write != nil {
+		writeOnly = append(writeOnly, write)
+	}
+
 	// Public discovery.
 	if public != nil {
 		g.GET("/taxonomy", h.taxonomy, public)
@@ -50,10 +55,10 @@ func (h *Handler) Register(g *echo.Group, id core.Identity, public echo.Middlewa
 
 	manage := authed.Group("/organizations/:org_id",
 		h.authz.Require(core.ActionCatalogManage, core.ScopeOrganization))
-	manage.POST("/offerings", h.createOffering)
+	manage.POST("/offerings", h.createOffering, writeOnly...)
 	manage.PUT("/offerings/:offering_id", h.updateOffering)
 	manage.DELETE("/offerings/:offering_id", h.deleteOffering)
-	manage.POST("/offerings/:offering_id/variants", h.createVariant)
+	manage.POST("/offerings/:offering_id/variants", h.createVariant, writeOnly...)
 	manage.PUT("/offerings/:offering_id/variants/:variant_id", h.updateVariant)
 	manage.DELETE("/offerings/:offering_id/variants/:variant_id", h.deleteVariant)
 	manage.PUT("/categories", h.setOrganizationCategories)
@@ -65,7 +70,7 @@ func (h *Handler) Register(g *echo.Group, id core.Identity, public echo.Middlewa
 	// Platform taxonomy management.
 	admin := authed.Group("/admin/taxonomy", id.RequireRole(core.RoleAdmin))
 	admin.POST("", h.createTaxonomy,
-		h.authz.Require(core.ActionTaxonomyManage, core.ScopePlatform))
+		append([]echo.MiddlewareFunc{h.authz.Require(core.ActionTaxonomyManage, core.ScopePlatform)}, writeOnly...)...)
 	admin.PATCH("/:id", h.updateTaxonomy,
 		h.authz.Require(core.ActionTaxonomyManage, core.ScopePlatform))
 }

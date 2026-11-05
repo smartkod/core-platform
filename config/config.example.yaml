@@ -43,6 +43,13 @@ security:
   # separate clients from one machine. In production list only the proxy's
   # range (for example 10.0.0.0/8).
   trusted_proxies: []
+  # How many resources one account may create per window.
+  #
+  # Keyed on the user, not the address: rotating IPs must not reset it and a
+  # shared office network must not exhaust it for everyone. Only creation is
+  # counted; edits are bounded by the object being edited.
+  write_limit: 30
+  write_window: 1h
 
 identity:
   access_ttl: 15m
