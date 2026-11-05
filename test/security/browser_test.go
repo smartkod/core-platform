@@ -140,8 +140,10 @@ func TestCORSNegativeCases(t *testing.T) {
 	})
 }
 
-// TestSecurityHeaders records the headers the API sends. Missing CSP/HSTS is a
-// finding, not a test failure, so this asserts only what must never regress.
+// TestSecurityHeaders records the headers the API sends.
+//
+// The policy itself is unit-tested in platform/httpx; this proves the running
+// instance actually installs it, which a unit test cannot show.
 func TestSecurityHeaders(t *testing.T) {
 	base := baseURL(t)
 
@@ -157,12 +159,19 @@ func TestSecurityHeaders(t *testing.T) {
 	if res.Header.Get("X-Request-Id") == "" {
 		t.Error("X-Request-ID is missing")
 	}
+	if got := res.Header.Get("Referrer-Policy"); got != "no-referrer" {
+		t.Errorf("Referrer-Policy = %q, want no-referrer", got)
+	}
+	if csp := res.Header.Get("Content-Security-Policy"); !strings.Contains(csp, "default-src 'none'") {
+		t.Errorf("Content-Security-Policy = %q", csp)
+	}
+	if got := res.Header.Get("X-Frame-Options"); got != "DENY" {
+		t.Errorf("X-Frame-Options = %q, want DENY", got)
+	}
 
-	// Reported separately in the audit: these are the headers a production
-	// deployment behind TLS is expected to add.
-	for _, name := range []string{"Content-Security-Policy", "Strict-Transport-Security", "Referrer-Policy"} {
-		if res.Header.Get(name) == "" {
-			t.Logf("FINDING: %s is not set (see the audit report)", name)
-		}
+	// HSTS is production-only, so it must be absent here: this suite runs
+	// against an HTTP development instance.
+	if got := res.Header.Get("Strict-Transport-Security"); got != "" {
+		t.Errorf("development sent Strict-Transport-Security = %q", got)
 	}
 }

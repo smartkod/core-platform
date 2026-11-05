@@ -1,4 +1,4 @@
-﻿FROM golang:1.26-alpine AS build
+﻿FROM golang:1.26.10-alpine AS build
 WORKDIR /src
 
 # Dependencies are copied first so a source-only change reuses this layer.

@@ -13,9 +13,6 @@ func BodyLimit(limit string) echo.MiddlewareFunc {
 	return middleware.BodyLimit(limit)
 }
 
-// SecureHeaders sets the baseline security headers.
-func SecureHeaders() echo.MiddlewareFunc { return middleware.Secure() }
-
 // CSVHeaderCSRF is the header a browser client copies from the csrf cookie.
 //
 // It is duplicated here (rather than imported from the identity module) because

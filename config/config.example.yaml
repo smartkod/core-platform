@@ -33,6 +33,16 @@ security:
   # required in production and "*" is rejected there.
   allowed_origins:
     - http://localhost:3000
+  # Addresses allowed to report the client through X-Forwarded-For.
+  #
+  # Leave this empty unless a reverse proxy you control sits in front of the
+  # API. Empty means the header is ignored and the socket address is used,
+  # which is what stops a caller from resetting its own rate-limit budget.
+  #
+  # Development: add 127.0.0.1/32 and ::1/128 so the test suites can simulate
+  # separate clients from one machine. In production list only the proxy's
+  # range (for example 10.0.0.0/8).
+  trusted_proxies: []
 
 identity:
   access_ttl: 15m

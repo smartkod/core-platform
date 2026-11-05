@@ -59,6 +59,15 @@ type Log struct {
 
 type Security struct {
 	AllowedOrigins []string
+	// TrustedProxies lists the addresses allowed to report a client's address
+	// through X-Forwarded-For.
+	//
+	// Empty means "there is no proxy": the header is ignored and the socket
+	// address is used. That is the safe default, because the header is
+	// caller-controlled — accepting it from anyone lets an attacker mint a fresh
+	// rate-limit budget with every request. Set it only when a reverse proxy
+	// you control sits in front of the API.
+	TrustedProxies []string
 }
 
 // Identity holds the authentication settings.
@@ -122,6 +131,7 @@ type fileShape struct {
 	} `yaml:"log"`
 	Security struct {
 		AllowedOrigins []string `yaml:"allowed_origins"`
+		TrustedProxies []string `yaml:"trusted_proxies"`
 	} `yaml:"security"`
 	Identity struct {
 		AccessSecret  string `yaml:"access_secret"`
@@ -250,6 +260,9 @@ func applyFile(c *Config, f *fileShape) {
 	if len(f.Security.AllowedOrigins) > 0 {
 		c.Security.AllowedOrigins = f.Security.AllowedOrigins
 	}
+	if len(f.Security.TrustedProxies) > 0 {
+		c.Security.TrustedProxies = f.Security.TrustedProxies
+	}
 	if f.Identity.AccessSecret != "" {
 		c.Identity.AccessSecret = f.Identity.AccessSecret
 	}
@@ -323,6 +336,17 @@ func applyEnv(c *Config) {
 			}
 		}
 		c.Security.AllowedOrigins = out
+	}
+	// TRUSTED_PROXIES is comma-separated CIDRs or addresses. An empty value is
+	// meaningful (no proxy), so it only overrides when the variable is present.
+	if v, ok := os.LookupEnv("TRUSTED_PROXIES"); ok {
+		var out []string
+		for _, p := range strings.Split(v, ",") {
+			if p = strings.TrimSpace(p); p != "" {
+				out = append(out, p)
+			}
+		}
+		c.Security.TrustedProxies = out
 	}
 }
 

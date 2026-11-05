@@ -101,35 +101,37 @@ func TestPasswordResetRateLimit(t *testing.T) {
 	}
 }
 
-// TestForwardedForCannotBypassLimit checks that a caller cannot mint a fresh
-// budget by inventing an X-Forwarded-For value.
+// TestForwardedForDoesNotBreakPerAccountLimit covers the part of B4 that
+// matters for account safety.
 //
-// The server's behaviour depends on deployment topology: when it is reached
-// directly, RealIP() honours the header and the limit is bypassable. The audit
-// records that as a finding; this test documents the actual behaviour so the
-// finding is evidence, not opinion.
-func TestForwardedForCannotBypassLimit(t *testing.T) {
+// Whether the IP key can be spoofed is a deployment decision: with
+// `security.trusted_proxies` empty the header is ignored (proven in
+// platform/httpx/ip_test.go), and with a trusted proxy configured the proxy's
+// reported address is used. Either way the *account* key is derived from the
+// e-mail, which the caller cannot vary while attacking one account. This test
+// proves that second key works, so rotating X-Forwarded-For does not buy an
+// attacker unlimited guesses against a single account.
+func TestForwardedForDoesNotBreakPerAccountLimit(t *testing.T) {
 	base := baseURL(t)
 	email := "xff-" + unique(t) + "@audit.example"
 
 	c := newClient(t, base)
 	c.register(email, password())
 
-	bypassed := false
+	accountLimited := false
 	for i := 0; i < 30; i++ {
+		// A different source address every time, as an attacker would.
 		headers := map[string]string{"X-Forwarded-For": "203.0.113." + itoa(i)}
 		status, _, _ := c.do(http.MethodPost, "/api/v1/auth/login",
 			map[string]string{"email": email, "password": "wrong-password-1234"}, headers)
 		if status == http.StatusTooManyRequests {
+			accountLimited = true
 			break
 		}
-		if i == 29 {
-			bypassed = true
-		}
 	}
-	if bypassed {
-		t.Errorf("FINDING: spoofing X-Forwarded-For resets the login budget " +
-			"(rate limit is keyed on a client-controlled address)")
+	if !accountLimited {
+		t.Fatal("rotating X-Forwarded-For produced unlimited guesses against one account: " +
+			"the e-mail key of the login limiter is not working")
 	}
 }
 

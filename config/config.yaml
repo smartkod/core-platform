@@ -29,6 +29,19 @@ security:
   # required in production and "*" is rejected there.
   allowed_origins:
     - http://localhost:3000
+  # Addresses allowed to report the client through X-Forwarded-For.
+  #
+  # Empty means "no proxy": the header is ignored and the socket address is
+  # used. That is the safe default, because the header is caller-controlled —
+  # trusting it from anyone lets a caller mint a fresh rate-limit budget with
+  # every request.
+  #
+  # The loopback entries below exist for local development only, so the test
+  # suites can simulate separate clients from one machine. In production list
+  # the reverse proxy's range (for example 10.0.0.0/8) and nothing else.
+  trusted_proxies:
+    - 127.0.0.1/32
+    - ::1/128
 
 # Identity. Secrets may come from here or from JWT_ACCESS_SECRET /
 # JWT_REFRESH_SECRET. Production refuses to start without them.

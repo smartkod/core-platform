@@ -154,6 +154,16 @@ func buildServer(
 	e.HideBanner = true
 	e.HidePort = true
 	e.HTTPErrorHandler = httpx.ErrorHandler(log)
+
+	// The rate limiter keys on the client address, so how that address is
+	// resolved is a security decision, not a detail. It is configured here,
+	// before any middleware runs, because Echo reads it per request.
+	extractor, err := httpx.IPExtractor(cfg.Security.TrustedProxies)
+	if err != nil {
+		return nil, err
+	}
+	e.IPExtractor = extractor
+
 	e.RouteNotFound("", httpx.NotFound)
 	e.RouteNotFound("/*", httpx.NotFound)
 
@@ -182,7 +192,7 @@ func buildServer(
 		httpx.Recover(),
 		httpx.Timeout(cfg.HTTP.RequestTimeout),
 		httpx.BodyLimit(cfg.HTTP.BodyLimit),
-		httpx.SecureHeaders(),
+		httpx.SecureHeaders(httpx.SecureHeaderConfig{Production: cfg.IsProduction()}),
 		httpx.CORS(cfg.Security.AllowedOrigins),
 		// CSRF is global because cookie authentication is global: the identity
 		// middleware accepts the access cookie on every route, so every route
