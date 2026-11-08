@@ -1,225 +1,597 @@
+/* Core Platform — administration UI.
+ *
+ * One stylesheet, no framework. Two rules shape everything here:
+ *
+ *   1. Every value comes from a token below. A colour or a spacing value that
+ *      does not have a name is a bug: it is the thing that later forces a
+ *      "just this one exception" and the design drifts.
+ *   2. Nothing is styled that cannot also be reached by keyboard or read by a
+ *      screen reader. Focus, disabled and hover states exist for every control.
+ */
+
 :root {
-  --bg: #f6f7f9;
+  /* Neutral ramp — used for text, borders and surfaces. */
+  --gray-25:  #fbfcfd;
+  --gray-50:  #f5f7fa;
+  --gray-100: #eef1f5;
+  --gray-200: #e2e7ee;
+  --gray-300: #cdd5e0;
+  --gray-500: #667085;
+  --gray-600: #4a5568;
+  --gray-900: #101828;
+
   --surface: #ffffff;
-  --border: #e3e6ea;
-  --text: #1b1f24;
-  --muted: #667085;
+  --bg: var(--gray-50);
+  --border: var(--gray-200);
+  --text: var(--gray-900);
+  --muted: var(--gray-500);
+
+  /* Accent: one hue for "act", one for "stop", one for "done". */
   --accent: #2f6fed;
-  --accent-dark: #2456be;
+  --accent-hover: #2456be;
+  --accent-soft: #eaf1ff;
   --danger: #c8342b;
+  --danger-soft: #fdf0ef;
   --ok: #157f4b;
+  --ok-soft: #eaf7f0;
+
+  /* Spacing scale: 4px base, so every gap is a multiple and nothing drifts. */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+
+  --radius-sm: 6px;
   --radius: 10px;
-  --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, .05);
+  --shadow: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, .12);
+
+  --focus: 0 0 0 3px rgba(47, 111, 237, .28);
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "Cascadia Mono", Menlo, monospace;
 }
 
 * { box-sizing: border-box; }
+
+/* `hidden` must win over the display values below. Without this a flex or
+ * inline-flex rule silently re-shows an element the markup hides, which is how
+ * a signed-out page ends up offering "Çıkış" and a register-only field appears
+ * in the login form. */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 15px/1.55 var(--font);
+  -webkit-font-smoothing: antialiased;
 }
 
-h3 { margin: 0 0 12px; font-size: 15px; letter-spacing: .01em; }
+/* A keyboard user's first tab stop: jump past the header straight to content. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: var(--s2);
+  z-index: 100;
+  background: var(--surface);
+  padding: var(--s2) var(--s4);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+.skip-link:focus { left: var(--s4); }
 
-/* ---------------------------------------------------------------- top bar */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: var(--radius-sm);
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+h1 { font-size: 22px; }
+h2 { font-size: 17px; }
+h3 { font-size: 15px; }
+p { margin: 0; }
+
+/* ------------------------------------------------------------------ top bar */
+
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 12px 20px;
+  gap: var(--s4);
+  padding: var(--s3) var(--s5);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
 }
 
-.brand { display: flex; align-items: center; gap: 8px; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 15px;
+}
+.brand strong { letter-spacing: -.01em; }
 .brand .dot {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: var(--accent);
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--accent), #6f9bff);
+  flex: none;
 }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
+.brand .muted { font-size: 12px; font-family: var(--mono); }
 
-/* ------------------------------------------------------------------ layout */
+.topbar-right { display: flex; align-items: center; gap: var(--s3); min-width: 0; }
+.topbar-right .muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+/* ------------------------------------------------------------------- layout */
+
 main {
-  max-width: 1080px;
-  margin: 24px auto 64px;
-  padding: 0 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s5) var(--s7);
 }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  padding: var(--s5);
 }
 
-.card.narrow { max-width: 420px; margin: 48px auto; }
+.card.narrow {
+  max-width: 440px;
+  margin: var(--s7) auto;
+  padding: var(--s6);
+  box-shadow: var(--shadow);
+}
+
+.stack { display: flex; flex-direction: column; gap: var(--s4); }
+.stack > .card + .card { margin-top: var(--s4); }
 
 .grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--s4);
   align-items: start;
 }
 
-@media (max-width: 840px) {
-  .grid { grid-template-columns: 1fr; }
+.row {
+  display: flex;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  align-items: flex-end;
 }
 
-.stack { display: flex; flex-direction: column; gap: 14px; }
-.stack > .card + .card { margin-top: 16px; }
+.grow { flex: 1 1 220px; }
 
-.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-.grow { flex: 1 1 200px; }
+/* -------------------------------------------------------------------- forms */
 
-.orgbar { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 16px; }
-
-/* ------------------------------------------------------------------ forms */
 label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--s2);
   font-size: 13px;
-  color: var(--muted);
-  flex: 1 1 200px;
+  font-weight: 500;
+  color: var(--gray-600);
+  flex: 0 1 auto;
+  min-width: 0;
 }
+
+/* Only a field inside a horizontal row needs to share space. A label in a
+ * vertical stack must size to its content: `flex: 1 1 200px` there would mean
+ * 200px of *height*, which is what once stretched a three-field form down the
+ * page. */
+.row > label { flex: 1 1 200px; }
+label.grow, .row > label.grow { flex: 1 1 220px; }
 
 label.check {
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: var(--s2);
   color: var(--text);
   font-size: 14px;
+  font-weight: 400;
+  flex: 0 0 auto;
 }
 
 input, select, textarea {
   font: inherit;
+  font-weight: 400;
   color: var(--text);
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
   padding: 9px 11px;
   width: 100%;
+  transition: border-color .12s ease, box-shadow .12s ease;
 }
 
+input::placeholder, textarea::placeholder { color: #98a2b3; }
+
+input:hover, select:hover, textarea:hover { border-color: #b6c0cd; }
+
 input:focus, select:focus, textarea:focus {
-  outline: 2px solid rgba(47, 111, 237, .28);
+  outline: none;
   border-color: var(--accent);
+  box-shadow: var(--focus);
 }
 
 input:disabled, select:disabled, textarea:disabled {
-  background: #f3f4f6;
+  background: var(--gray-100);
   color: var(--muted);
+  cursor: not-allowed;
 }
 
-textarea { resize: vertical; }
+textarea { resize: vertical; min-height: 72px; }
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23667085' d='M1.4 1.4 6 6l4.6-4.6L12 2.8 6 8.8 0 2.8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  padding-right: 32px;
+}
 
 /* ------------------------------------------------------------------ buttons */
+
 .btn {
   font: inherit;
-  border: 1px solid var(--border);
-  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--gray-300);
+  background: var(--surface);
   color: var(--text);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 9px 14px;
   cursor: pointer;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  transition: background-color .12s ease, border-color .12s ease, transform .05s ease;
 }
 
-.btn:hover { border-color: #cfd4db; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { background: var(--accent-dark); }
-.btn.ghost { background: transparent; }
-.btn.danger { color: var(--danger); border-color: #f0c8c5; }
-.btn.small { padding: 5px 9px; font-size: 13px; }
-.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn:hover { background: var(--gray-50); border-color: #b6c0cd; }
+.btn:active { transform: translateY(1px); }
 
-/* -------------------------------------------------------------------- tabs */
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn.ghost { background: transparent; border-color: transparent; color: var(--gray-600); }
+.btn.ghost:hover { background: var(--gray-100); border-color: transparent; }
+
+.btn.danger { color: var(--danger); border-color: #f0c8c5; background: var(--surface); }
+.btn.danger:hover { background: var(--danger-soft); border-color: #e3a9a4; }
+
+.btn.small { padding: 5px 10px; font-size: 13px; }
+
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.btn[aria-busy="true"] { position: relative; color: transparent; }
+.btn[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  color: #fff;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* --------------------------------------------------------------------- tabs */
+
 .tabs {
   display: flex;
-  gap: 4px;
+  gap: var(--s1);
   border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
+  margin-bottom: var(--s5);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.tabs::-webkit-scrollbar { display: none; }
 
 .tab {
   font: inherit;
+  font-size: 14px;
+  font-weight: 500;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  padding: 9px 12px;
+  padding: var(--s3) var(--s3) calc(var(--s3) - 2px);
+  margin-bottom: -1px;
   cursor: pointer;
   color: var(--muted);
+  white-space: nowrap;
+  transition: color .12s ease, border-color .12s ease;
 }
 
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-.tabs--main { margin: 0 0 16px; }
+.tabs--main { margin: 0 0 var(--s5); }
 
-/* ------------------------------------------------------------------- table */
-.table { width: 100%; border-collapse: collapse; }
-.table th, .table td {
+/* -------------------------------------------------------------------- table */
+
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
   text-align: left;
-  padding: 10px 8px;
+  padding: var(--s2) var(--s2);
   border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  /* No uppercase transform: Turkish "Şehir" would render as "ŞEHIR", because a
+   * case transform is locale-blind and turns İ→I. Letterspacing gives the same
+   * quiet-header effect without mangling the alphabet. */
+  letter-spacing: .02em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.table td {
+  text-align: left;
+  padding: var(--s3) var(--s2);
+  border-bottom: 1px solid var(--gray-100);
   vertical-align: middle;
 }
-.table th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
-.table tr:last-child td { border-bottom: none; }
-.table td.actions { display: flex; gap: 6px; justify-content: flex-end; }
 
-/* ------------------------------------------------------------------- misc */
+.table tbody tr:hover { background: var(--gray-25); }
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* The actions cell holds buttons, so it must not be a flex container inside a
+ * table: a flex display on a td breaks the row's vertical alignment and makes
+ * the buttons drift above the text they act on. A flex wrapper inside the cell
+ * keeps both. */
+.table td.actions { text-align: right; }
+.table td.actions > .actions-inner {
+  display: flex;
+  gap: var(--s2);
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.table td .cell-title { font-weight: 600; }
+.table td .cell-sub { font-size: 12px; color: var(--muted); }
+
+/* Below this width a five-column table cannot fit. The wrapper scrolls rather
+ * than squeezing cells into a wall of wrapped words — but it is labelled for a
+ * screen reader and gets a visible edge shadow, so a reader can tell there is
+ * more to the right instead of assuming the cut-off button is gone. */
+.table-wrap {
+  overflow-x: auto;
+  margin: calc(-1 * var(--s2));
+  padding: var(--s2);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --------------------------------------------------------------------- misc */
+
 .muted { color: var(--muted); }
 .small-text { font-size: 12px; }
-.hint { margin: 0; font-size: 13px; color: var(--muted); }
-.error { color: var(--danger); margin: 0 0 8px; }
-.loading { padding: 24px; text-align: center; color: var(--muted); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
 
-#org-meta {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  padding: 12px 18px;
+.error {
+  color: var(--danger);
+  margin: 0 0 var(--s2);
   font-size: 13px;
 }
 
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.chip {
+.field-error {
   font-size: 12px;
-  background: #eef3ff;
-  color: var(--accent-dark);
-  border-radius: 999px;
-  padding: 3px 9px;
+  color: var(--danger);
+  font-weight: 400;
 }
 
+.loading {
+  padding: var(--s6);
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* The org summary strip: metadata, not controls, so it is visibly quieter. */
+#org-meta {
+  display: flex;
+  gap: var(--s5);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--s4);
+  padding: var(--s3) var(--s5);
+  font-size: 13px;
+  background: var(--surface);
+}
+
+#org-meta .meta-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* A label/value pair, not a sentence. `slug: x · durum: y` forces a reader to
+ * parse punctuation to find the boundary; two lines do it visually. */
+#org-meta .meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+#org-meta .meta-label {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .02em;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: var(--s3); }
+
+.chip {
+  font-size: 12px;
+  font-family: var(--mono);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.mono { font-family: var(--mono); font-size: 12px; }
+
+/* A status badge: a word plus a colour, so the column can be scanned without
+ * reading every cell. Colour alone would fail for a colour-blind reader, so the
+ * text always carries the meaning. */
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: #fef6e7; color: #96590a; }
+.badge.danger { background: var(--danger-soft); color: var(--danger); }
+.badge.muted { background: var(--gray-100); color: var(--muted); }
+
 .list { list-style: none; margin: 0; padding: 0; }
-.list li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.list li { padding: var(--s3) 0; border-bottom: 1px solid var(--gray-100); }
 .list li:last-child { border-bottom: none; }
 
-.advanced { margin-top: 16px; font-size: 13px; color: var(--muted); }
-.advanced summary { cursor: pointer; }
-.advanced label { margin-top: 10px; }
+.orgbar {
+  display: flex;
+  gap: var(--s3);
+  align-items: flex-end;
+  margin-bottom: var(--s4);
+}
+.orgbar label { max-width: 420px; }
+/* Empty states: an interface that says nothing looks broken. */
+.empty {
+  padding: var(--s6) var(--s4);
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+.empty strong { display: block; color: var(--text); margin-bottom: var(--s1); }
 
-/* ------------------------------------------------------------------ toast */
+/* ----------------------------------------------------------------- settings */
+
+.advanced { margin-top: var(--s5); font-size: 13px; color: var(--muted); }
+.advanced summary { cursor: pointer; user-select: none; }
+.advanced summary:hover { color: var(--text); }
+.advanced label { margin-top: var(--s3); }
+
+/* ------------------------------------------------------------------- pager */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+}
+
+/* -------------------------------------------------------------------- toast */
+
 .toast {
   position: fixed;
-  bottom: 24px;
+  bottom: var(--s5);
   left: 50%;
   transform: translateX(-50%);
-  padding: 11px 18px;
-  border-radius: 8px;
-  background: #23272f;
+  padding: var(--s3) var(--s5);
+  border-radius: var(--radius-sm);
+  background: var(--gray-900);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(16, 24, 40, .22);
-  max-width: 90vw;
+  font-size: 14px;
+  box-shadow: var(--shadow-lg);
+  max-width: min(90vw, 460px);
+  z-index: 50;
+  animation: toast-in .16s ease-out;
 }
 .toast.ok { background: var(--ok); }
 .toast.error { background: var(--danger); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ------------------------------------------------------------------ mobile */
+
+/* Mobile is not a shrunken desktop. Two changes matter: the tab strip scrolls
+ * horizontally with a fade at the edge (so the last tab is discoverable), and
+ * the metadata strip wraps into labelled rows instead of running off-screen. */
+@media (max-width: 860px) {
+  .grid { grid-template-columns: 1fr; }
+  main { padding: var(--s4) var(--s3) var(--s6); }
+  .card { padding: var(--s4); }
+  .card.narrow { margin: var(--s5) auto; padding: var(--s5); }
+  .topbar { padding: var(--s3) var(--s4); }
+  .topbar-right .muted { display: none; }
+  .orgbar { flex-wrap: wrap; }
+  .orgbar label { max-width: none; }
+  .orgbar .btn { width: 100%; }
+
+  #org-meta {
+    gap: var(--s3) var(--s4);
+    padding: var(--s3) var(--s4);
+    font-size: 12px;
+    align-items: flex-start;
+  }
+  #org-meta .meta-name { flex: 1 1 100%; font-size: 13px; }
+  #org-meta .meta-item { flex: 1 1 45%; }
+
+  .tabs {
+    /* A hard stop would look like the list ends there; the mask fades the last
+     * item so it reads as "scrollable". */
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+    padding-right: var(--s5);
+  }
+
+  /* Tables scroll inside their card; the card itself must not grow wider than
+   * the viewport, which is what made the page pan sideways. */
+  .table-wrap { max-width: 100%; }
+  .table { min-width: 640px; }
+  .table td, .table th { padding: var(--s2) var(--s2); }
+}

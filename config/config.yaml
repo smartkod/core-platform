@@ -29,6 +29,9 @@ security:
   # required in production and "*" is rejected there.
   allowed_origins:
     - http://localhost:3000
+    - http://127.0.0.1:3000
+    - http://localhost:3100
+    - http://127.0.0.1:3100
   # Addresses allowed to report the client through X-Forwarded-For.
   #
   # Empty means "no proxy": the header is ignored and the socket address is

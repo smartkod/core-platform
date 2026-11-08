@@ -4,6 +4,12 @@
 // one module. A reviewer can open it, the browser runs it, and nothing has to be
 // installed. The API is the product; this is a thin, honest client.
 //
+// EDITING NOTE: this file is UTF-8 without a BOM and contains Turkish text.
+// Windows PowerShell 5.1 decodes a BOM-less file as the ANSI code page, so
+// `Get-Content | Set-Content` silently turns "Şehir" into mojibake. Edit it with
+// a UTF-8-aware tool, or explicitly: ReadAllText(path, UTF8) / WriteAllText with
+// UTF8Encoding($false).
+//
 // Auth transport: the access token stays in memory (never localStorage, so an
 // XSS bug cannot exfiltrate a long-lived credential) while the refresh token
 // lives in an HttpOnly cookie the page cannot read. On reload the session is
@@ -14,11 +20,16 @@
 // cookie, which is the double-submit check the API expects for cookie-authenticated
 // requests.
 
-const STORAGE_API = 'core.apiBase';
-const DEFAULT_API = 'http://localhost:18080';
+// The API address is a deployment fact, not a user setting. A field that lets a
+// visitor point the panel at an arbitrary server would also let a phishing page
+// borrow this origin's cookies against an attacker-controlled backend, so it is
+// derived instead: same host, API port. A deployment with a different topology
+// sets window.CORE_API_BASE in its own HTML shell.
+const DEFAULT_API = window.CORE_API_BASE
+  || `${window.location.protocol}//${window.location.hostname}:18080`;
 
 const state = {
-  apiBase: localStorage.getItem(STORAGE_API) || DEFAULT_API,
+  apiBase: DEFAULT_API,
   token: null,
   user: null,
   orgs: [],
@@ -27,6 +38,10 @@ const state = {
   perms: new Set(),
   tab: 'general',
   authMode: 'login',
+  // Offsets for the paginated panels. Reset when the tab or organization
+  // changes, so a user does not land on page 3 of a list they just switched to.
+  catalogOffset: 0,
+  notificationsOffset: 0,
 };
 
 class ApiError extends Error {
@@ -98,7 +113,61 @@ function fmtDate(value) {
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString('tr-TR');
 }
 
+// A membership record carries an id, not a name: the API deliberately keeps the
+// account projection out of the tenant payload. So the list shows what it can
+// honestly show — "Siz" for the signed-in account, the address for an
+// invitation, and a short reference for anyone else — instead of dumping a raw
+// UUID, which tells a reader nothing and looks like a bug.
+function personCell(m) {
+  if (m.user_id && state.user && m.user_id === state.user.id) {
+    return h('span', {}, h('strong', {}, 'Siz'), h('span', { class: 'muted small-text' }, ` · ${m.invited_email || ''}`.trimEnd()));
+  }
+  if (m.invited_email) {
+    return h('span', {}, m.invited_email);
+  }
+  return h('span', { class: 'mono muted', title: m.user_id || '' },
+    m.user_id ? `#${m.user_id.slice(-8)}` : '—');
+}
+
+const ROLE_LABELS = {
+  owner: 'Sahip',
+  manager: 'Yönetici',
+  staff: 'Personel',
+  member: 'Üye',
+};
+
+const STATUS_LABELS = {
+  active: 'Etkin',
+  invited: 'Davetli',
+  removed: 'Kaldırıldı',
+  inactive: 'Pasif',
+  draft: 'Taslak',
+  published: 'Yayında',
+  archived: 'Arşivde',
+};
+
+function roleLabel(key) { return ROLE_LABELS[key] || key; }
+function statusLabel(key) { return STATUS_LABELS[key] || key; }
+
+// A status is a small fact, so it gets a badge rather than a bare word: a scan
+// down the column then works without reading.
+function badge(key) {
+  const kind = { published: 'ok', active: 'ok', draft: 'warn', invited: 'warn', archived: 'muted', removed: 'danger' }[key] || '';
+  return h('span', { class: `badge ${kind}` }, statusLabel(key));
+}
+
 // ------------------------------------------------------------------- API call
+
+// A single in-flight refresh. Two requests that both see 401 must share one
+// refresh call, not make two.
+//
+// This is not an optimisation. The API rotates the refresh token on every use
+// and treats a second presentation of the old one as theft: it revokes the whole
+// token family. So two parallel refreshes do not merely waste a request — the
+// second one logs the user out. The browser makes parallel requests all the
+// time (a tab switch renders several panels), so without this guard the session
+// would drop at random under normal use.
+let refreshInFlight = null;
 
 async function request(path, { method = 'GET', body, retry = true } = {}) {
   const headers = { 'X-Client-Type': 'web' };
@@ -133,21 +202,41 @@ async function request(path, { method = 'GET', body, retry = true } = {}) {
 
   if (!res.ok) {
     const err = payload && payload.error ? payload.error : {};
+    if (res.status === 401 && state.token) clearSession();
     throw new ApiError(err.message || res.statusText, res.status, err.code || '');
   }
   return payload && 'data' in payload ? payload.data : payload;
 }
 
-async function refreshSession() {
+// refreshSession returns the shared in-flight refresh when one exists.
+function refreshSession() {
+  if (!refreshInFlight) {
+    refreshInFlight = doRefresh().finally(() => { refreshInFlight = null; });
+  }
+  return refreshInFlight;
+}
+
+async function doRefresh() {
   try {
     const data = await request('/api/v1/auth/refresh', { method: 'POST', body: {}, retry: false });
     state.token = data.access_token;
     if (data.user) state.user = data.user;
     return true;
   } catch {
-    state.token = null;
+    clearSession();
     return false;
   }
+}
+
+// clearSession forgets the in-memory credentials. It does not call the API:
+// a session that has already been rejected must not trigger another round trip.
+function clearSession() {
+  state.token = null;
+  state.user = null;
+  state.orgs = [];
+  state.orgId = null;
+  state.org = null;
+  state.perms = new Set();
 }
 
 // Users cannot mutate permissions; this only decides which buttons to show.
@@ -172,8 +261,6 @@ async function loadPermissions() {
 // --------------------------------------------------------------- boot + auth
 
 async function boot() {
-  $('#api-label').textContent = state.apiBase;
-  $('#api-base').value = state.apiBase;
   bindAuthForm();
   bindOrgForm();
   bindTabs();
@@ -190,7 +277,6 @@ function showAuth() {
   $('#app-view').hidden = true;
   $('#logout').hidden = true;
   $('#whoami').textContent = '';
-  $('#api-label').textContent = state.apiBase;
 }
 
 function setAuthMode(mode) {
@@ -209,13 +295,6 @@ function bindAuthForm() {
   for (const tab of $$('[data-auth]')) {
     tab.addEventListener('click', () => setAuthMode(tab.dataset.auth));
   }
-
-  $('#api-base').addEventListener('change', (event) => {
-    const value = event.target.value.trim().replace(/\/$/, '');
-    state.apiBase = value || DEFAULT_API;
-    localStorage.setItem(STORAGE_API, state.apiBase);
-    $('#api-label').textContent = state.apiBase;
-  });
 
   $('#auth-form').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -250,10 +329,7 @@ function bindAuthForm() {
 
   $('#logout').addEventListener('click', async () => {
     try { await request('/api/v1/auth/logout', { method: 'POST', body: {} }); } catch { /* already gone */ }
-    state.token = null;
-    state.user = null;
-    state.orgs = [];
-    state.orgId = null;
+    clearSession();
     showAuth();
   });
 }
@@ -269,7 +345,46 @@ async function enterApp() {
   $('#whoami').textContent = state.user.name || state.user.email;
 
   await loadOrganizations();
+
+  // Deep link: #katalog, #subeler, ... . The panel is a single page, so a tab
+  // that cannot be linked is a tab a user cannot bookmark or send to a
+  // colleague.
+  applyHashTab();
   await renderPanel();
+}
+
+const TAB_HASHES = {
+  general: '#genel',
+  branches: '#subeler',
+  members: '#ekip',
+  catalog: '#katalog',
+  notifications: '#bildirimler',
+};
+
+function applyHashTab() {
+  const hash = location.hash.toLowerCase();
+  for (const [tab, value] of Object.entries(TAB_HASHES)) {
+    if (value === hash) state.tab = tab;
+  }
+  syncTabUI();
+}
+
+function selectTab(tab) {
+  state.tab = tab;
+  state.catalogOffset = 0;
+  state.notificationsOffset = 0;
+  const hash = TAB_HASHES[tab];
+  if (hash && location.hash !== hash) history.replaceState(null, '', hash);
+  syncTabUI();
+}
+
+function syncTabUI() {
+  for (const button of $$('[data-tab]')) {
+    const active = button.dataset.tab === state.tab;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+    button.tabIndex = active ? 0 : -1;
+  }
 }
 
 // ---------------------------------------------------------------- org switch
@@ -326,12 +441,16 @@ function showOrgMeta() {
   const box = $('#org-meta');
   if (!state.org) { box.hidden = true; return; }
 
+  const meta = (label, value) => h('span', { class: 'meta-item' },
+    h('span', { class: 'meta-label' }, label),
+    h('span', {}, value));
+
   box.replaceChildren(
-    h('span', {}, h('strong', {}, state.org.name)),
-    h('span', {}, `slug: ${state.org.slug}`),
-    h('span', {}, `durum: ${state.org.status}`),
-    h('span', {}, `doğrulama: ${state.org.verification_level}`),
-    h('span', {}, `rol: ${state.org.role}`),
+    h('span', { class: 'meta-name' }, state.org.name),
+    meta('Adres', `/${state.org.slug}`),
+    meta('Durum', statusLabel(state.org.status)),
+    meta('Doğrulama', { none: 'Yok', basic: 'Temel', verified: 'Doğrulanmış' }[state.org.verification_level] || state.org.verification_level),
+    meta('Rolünüz', roleLabel(state.org.role)),
   );
   box.hidden = false;
 }
@@ -340,6 +459,8 @@ function bindOrgForm() {
   $('#org-select').addEventListener('change', async (event) => {
     state.orgId = event.target.value || null;
     state.org = state.orgs.find((o) => o.id === state.orgId) || null;
+    state.catalogOffset = 0;
+    state.notificationsOffset = 0;
     await loadPermissions();
     showOrgMeta();
     await renderPanel();
@@ -380,11 +501,17 @@ function bindOrgForm() {
 function bindTabs() {
   for (const tab of $$('[data-tab]')) {
     tab.addEventListener('click', async () => {
-      state.tab = tab.dataset.tab;
-      for (const other of $$('[data-tab]')) other.classList.toggle('active', other === tab);
+      selectTab(tab.dataset.tab);
       await renderPanel();
+      $('#panel').focus();
     });
   }
+
+  // The back button must move between sections, not leave the app.
+  window.addEventListener('hashchange', async () => {
+    applyHashTab();
+    await renderPanel();
+  });
 }
 
 // -------------------------------------------------------------------- panels
@@ -474,31 +601,36 @@ async function renderBranches() {
   const editable = can('org.branch.manage');
 
   const rows = list.length
-    ? h('table', { class: 'table' },
-      h('thead', {}, h('tr', {},
-        h('th', {}, 'Ad'), h('th', {}, 'Tür'), h('th', {}, 'Şehir'),
-        h('th', {}, 'Durum'), h('th', {}, 'Public'), h('th', {}, ''))),
-      h('tbody', {}, list.map((b) => h('tr', {},
-        h('td', {}, b.name),
-        h('td', {}, b.type),
-        h('td', {}, b.city || '—'),
-        h('td', {}, b.status),
-        h('td', {}, b.public ? 'evet' : 'hayır'),
-        h('td', {}, editable
-          ? h('button', {
-            class: 'btn small danger',
-            type: 'button',
-            onclick: async () => {
-              if (!confirm(`“${b.name}” şubesi silinsin mi?`)) return;
-              try {
-                await request(`/api/v1/organizations/${orgId}/branches/${b.id}`, { method: 'DELETE' });
-                toast('Şube silindi.', 'ok');
-                await renderPanel();
-              } catch (err) { toast(err.message || 'Silinemedi'); }
-            },
-          }, 'Sil')
-          : null)))))
-    : h('p', { class: 'muted' }, 'Henüz şube yok.');
+    ? h('div', { class: 'table-wrap' },
+      h('table', { class: 'table' },
+        h('thead', {}, h('tr', {},
+          h('th', {}, 'Ad'), h('th', {}, 'Tür'), h('th', {}, 'Şehir'),
+          h('th', {}, 'Durum'), h('th', {}, 'Herkese açık'), h('th', {}, ''))),
+        h('tbody', {}, list.map((b) => h('tr', {},
+          h('td', {}, b.name),
+          h('td', {}, b.type === 'physical' ? 'Fiziksel' : b.type === 'online' ? 'Online' : 'Hizmet alanı'),
+          h('td', {}, b.city || '—'),
+          h('td', {}, badge(b.status)),
+          h('td', {}, b.public ? 'Evet' : 'Hayır'),
+          h('td', { class: 'actions' },
+            h('div', { class: 'actions-inner' },
+              editable
+                ? h('button', {
+                  class: 'btn small danger',
+                  type: 'button',
+                  onclick: async () => {
+                    if (!confirm(`“${b.name}” şubesi silinsin mi?`)) return;
+                    try {
+                      await request(`/api/v1/organizations/${orgId}/branches/${b.id}`, { method: 'DELETE' });
+                      toast('Şube silindi.', 'ok');
+                      await renderPanel();
+                    } catch (err) { toast(err.message || 'Silinemedi'); }
+                  },
+                }, 'Sil')
+                : null)))))))
+    : h('div', { class: 'empty' },
+      h('strong', {}, 'Henüz şube yok'),
+      'İlk şubenizi ekleyerek başlayın. Adres bilgisi herkese açık olabilir.');
 
   const form = editable
     ? h('form', { class: 'card stack' },
@@ -549,27 +681,30 @@ async function renderMembers() {
   const members = await request(`/api/v1/organizations/${orgId}/members`);
   const editable = can('org.member.manage');
 
-  const rows = h('table', { class: 'table' },
-    h('thead', {}, h('tr', {},
-      h('th', {}, 'Kişi'), h('th', {}, 'Rol'), h('th', {}, 'Durum'), h('th', {}, ''))),
-    h('tbody', {}, members.map((m) => h('tr', {},
-      h('td', {}, m.user_id ? m.user_id : (m.invited_email || '—')),
-      h('td', {}, m.role_key),
-      h('td', {}, m.status),
-      h('td', {}, editable && m.role_key !== 'owner'
-        ? h('button', {
-          class: 'btn small danger',
-          type: 'button',
-          onclick: async () => {
-            if (!confirm('Üyelik kaldırılsın mı?')) return;
-            try {
-              await request(`/api/v1/organizations/${orgId}/members/${m.id}`, { method: 'DELETE' });
-              toast('Üyelik kaldırıldı.', 'ok');
-              await renderPanel();
-            } catch (err) { toast(err.message || 'Kaldırılamadı'); }
-          },
-        }, 'Kaldır')
-        : null)))));
+  const rows = h('div', { class: 'table-wrap' },
+    h('table', { class: 'table' },
+      h('thead', {}, h('tr', {},
+        h('th', {}, 'Kişi'), h('th', {}, 'Rol'), h('th', {}, 'Durum'), h('th', {}, ''))),
+      h('tbody', {}, members.map((m) => h('tr', {},
+        h('td', {}, personCell(m)),
+        h('td', {}, roleLabel(m.role_key)),
+        h('td', {}, badge(m.status)),
+        h('td', { class: 'actions' },
+          h('div', { class: 'actions-inner' },
+            editable && m.role_key !== 'owner'
+              ? h('button', {
+                class: 'btn small danger',
+                type: 'button',
+                onclick: async () => {
+                  if (!confirm('Üyelik kaldırılsın mı?')) return;
+                  try {
+                    await request(`/api/v1/organizations/${orgId}/members/${m.id}`, { method: 'DELETE' });
+                    toast('Üyelik kaldırıldı.', 'ok');
+                    await renderPanel();
+                  } catch (err) { toast(err.message || 'Kaldırılamadı'); }
+                },
+              }, 'Kaldır')
+              : null)))))));
 
   const form = editable
     ? h('form', { class: 'card stack' },
@@ -604,13 +739,78 @@ async function renderMembers() {
   return h('div', { class: 'stack' }, h('div', { class: 'card' }, rows), form);
 }
 
+// requestPage reads a paginated endpoint, keeping the envelope.
+//
+// A list endpoint answers {data: [...], total, limit, offset}; `request` returns
+// only `data`, which is right for most calls but silently drops the total. A
+// screen that then renders "the list" shows the first page and claims it is all
+// of it, so a business with 40 offerings would only ever see 20 and have no
+// reason to suspect the rest exist.
+async function requestPage(path, { limit = 20, offset = 0 } = {}) {
+  const sep = path.includes('?') ? '&' : '?';
+  const res = await fetch(`${state.apiBase}${path}${sep}limit=${limit}&offset=${offset}`, {
+    headers: pageHeaders(),
+    credentials: 'include',
+  });
+
+  if (res.status === 401 && state.token && await refreshSession()) {
+    return requestPage(path, { limit, offset });
+  }
+
+  const payload = await res.json().catch(() => null);
+  if (!res.ok) {
+    const err = (payload && payload.error) || {};
+    if (res.status === 401 && state.token) clearSession();
+    throw new ApiError(err.message || res.statusText, res.status, err.code || '');
+  }
+
+  return {
+    items: Array.isArray(payload.data) ? payload.data : (payload.data?.items || []),
+    total: payload.total ?? (payload.data?.total ?? 0),
+    limit: payload.limit ?? limit,
+    offset: payload.offset ?? offset,
+  };
+}
+
+function pageHeaders() {
+  const headers = { 'X-Client-Type': 'web' };
+  if (state.token) headers.Authorization = `Bearer ${state.token}`;
+  const csrf = cookie('csrf');
+  if (csrf) headers['X-CSRF-Token'] = csrf;
+  return headers;
+}
+
+// pager renders "1–20 / 43" with previous/next, or nothing when one page holds
+// everything. Hidden rather than absent when empty: a control that appears and
+// disappears as data changes makes the layout jump.
+function pager(page, onGoto) {
+  const from = page.total === 0 ? 0 : page.offset + 1;
+  const to = Math.min(page.offset + page.items.length, page.total);
+  const canPrev = page.offset > 0;
+  const canNext = page.offset + page.limit < page.total;
+
+  return h('div', { class: 'pager' },
+    h('span', { class: 'muted small-text' }, `${from}–${to} / ${page.total}`),
+    h('div', { class: 'row', style: 'gap:8px' },
+      h('button', {
+        class: 'btn small', type: 'button', disabled: !canPrev,
+        onclick: () => onGoto(Math.max(0, page.offset - page.limit)),
+      }, 'Önceki'),
+      h('button', {
+        class: 'btn small', type: 'button', disabled: !canNext,
+        onclick: () => onGoto(page.offset + page.limit),
+      }, 'Sonraki')));
+}
+
 async function renderCatalog() {
   const orgId = state.orgId;
-  const [offerings, taxonomy, categories] = await Promise.all([
-    request(`/api/v1/organizations/${orgId}/offerings`),
+  const offset = state.catalogOffset || 0;
+  const [page, taxonomy, categories] = await Promise.all([
+    requestPage(`/api/v1/organizations/${orgId}/offerings`, { offset }),
     request('/api/v1/taxonomy'),
     request(`/api/v1/organizations/${orgId}/categories`).catch(() => []),
   ]);
+  const offerings = page.items;
 
   const editable = can('catalog.manage');
   const publishable = can('catalog.publish');
@@ -639,32 +839,36 @@ async function renderCatalog() {
   };
 
   const rows = offerings.length
-    ? h('table', { class: 'table' },
-      h('thead', {}, h('tr', {},
-        h('th', {}, 'Ad'), h('th', {}, 'Kategori'), h('th', {}, 'Durum'),
-        h('th', {}, 'Görünürlük'), h('th', {}, ''))),
-      h('tbody', {}, offerings.map((o) => h('tr', {},
+    ? h('div', { class: 'table-wrap' },
+      h('table', { class: 'table' },
+        h('thead', {}, h('tr', {},
+          h('th', {}, 'Ad'), h('th', {}, 'Kategori'), h('th', {}, 'Durum'),
+          h('th', {}, 'Görünürlük'), h('th', {}, ''))),
+        h('tbody', {}, offerings.map((o) => h('tr', {},
         h('td', {}, h('strong', {}, o.name), h('div', { class: 'muted small-text' }, o.slug)),
         h('td', {}, taxonomyById.get(o.taxonomy_id)?.name || '—'),
-        h('td', {}, o.status),
-        h('td', {}, o.visibility),
+        h('td', {}, badge(o.status)),
+        h('td', {}, o.visibility === 'public' ? 'Genel' : 'Özel'),
         h('td', { class: 'actions' },
-          ...(statusButtons(o) || []),
-          editable && o.status !== 'published'
-            ? h('button', {
-              class: 'btn small danger',
-              type: 'button',
-              onclick: async () => {
-                if (!confirm(`“${o.name}” silinsin mi?`)) return;
-                try {
-                  await request(`/api/v1/organizations/${orgId}/offerings/${o.id}`, { method: 'DELETE' });
-                  toast('Sunum silindi.', 'ok');
-                  await renderPanel();
-                } catch (err) { toast(err.message || 'Silinemedi'); }
-              },
-            }, 'Sil')
-            : null)))))
-    : h('p', { class: 'muted' }, 'Henüz sunum yok. Katalog, işletmenin “ne sunduğunu” tutar; fiyat/süre/stok motora aittir.');
+          h('div', { class: 'actions-inner' },
+            ...(statusButtons(o) || []),
+            editable && o.status !== 'published'
+              ? h('button', {
+                class: 'btn small danger',
+                type: 'button',
+                onclick: async () => {
+                  if (!confirm(`“${o.name}” silinsin mi?`)) return;
+                  try {
+                    await request(`/api/v1/organizations/${orgId}/offerings/${o.id}`, { method: 'DELETE' });
+                    toast('Sunum silindi.', 'ok');
+                    await renderPanel();
+                  } catch (err) { toast(err.message || 'Silinemedi'); }
+                },
+              }, 'Sil')
+              : null)))))))
+    : h('div', { class: 'empty' },
+      h('strong', {}, 'Henüz sunum yok'),
+      'Katalog, işletmenin “ne sunduğunu” tutar; fiyat, süre ve stok motora aittir.');
 
   const options = taxonomy.map((t) => h('option', { value: t.id }, t.name));
 
@@ -706,21 +910,40 @@ async function renderCatalog() {
     });
   }
 
-  return h('div', { class: 'stack' }, h('div', { class: 'card' }, rows), form);
+  const body = h('div', { class: 'card' }, rows);
+  if (page.total > page.limit) {
+    body.append(pager(page, async (next) => {
+      state.catalogOffset = next;
+      await renderPanel();
+    }));
+  }
+
+  return h('div', { class: 'stack' }, body, form);
 }
 
 async function renderNotifications() {
-  const [list, prefs] = await Promise.all([
-    request('/api/v1/notifications'),
+  const offset = state.notificationsOffset || 0;
+  const [page, prefs] = await Promise.all([
+    requestPage('/api/v1/notifications', { offset }),
     request('/api/v1/notifications/preferences'),
   ]);
 
-  const items = (list.items || list || []).slice(0, 20);
+  const items = page.items;
   const rows = items.length
     ? h('ul', { class: 'list' }, items.map((n) => h('li', {},
       h('strong', {}, n.subject || n.template || 'Bildirim'),
       h('div', { class: 'muted small-text' }, `${n.channel} · ${fmtDate(n.created_at)}`))))
-    : h('p', { class: 'muted' }, 'Gelen kutusu boş.');
+    : h('div', { class: 'empty' },
+      h('strong', {}, 'Gelen kutusu boş'),
+      'Yeni bir bildirim geldiğinde burada görünecek.');
+
+  const inbox = h('div', { class: 'card' }, h('h2', {}, 'Gelen kutusu'), rows);
+  if (page.total > page.limit) {
+    inbox.append(pager(page, async (next) => {
+      state.notificationsOffset = next;
+      await renderPanel();
+    }));
+  }
 
   const channels = prefs.channels || {};
   const form = h('form', { class: 'card stack' },
@@ -746,9 +969,7 @@ async function renderNotifications() {
     } catch (err) { toast(err.message || 'Kaydedilemedi'); }
   });
 
-  return h('div', { class: 'grid' },
-    h('div', { class: 'card' }, h('h3', {}, 'Gelen kutusu'), rows),
-    form);
+  return h('div', { class: 'grid' }, inbox, form);
 }
 
 boot();
